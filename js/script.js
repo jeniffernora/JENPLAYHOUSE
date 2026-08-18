@@ -30,12 +30,36 @@ function safe(value) {
         .replaceAll("'", "&#039;");
 }
 
-function published(status) {
-    return (
-        String(status || "")
-            .trim()
-            .toLowerCase() === "published"
+function normalizeStatus(status) {
+    return String(status || "")
+        .trim()
+        .toLowerCase();
+}
+
+function isPublished(status) {
+    return normalizeStatus(status) === "published";
+}
+
+function isComingSoon(status) {
+    return normalizeStatus(status) === "coming soon";
+}
+
+function isSoldOut(status) {
+    return normalizeStatus(status) === "sold out";
+}
+
+function isHiddenStatus(status) {
+    return [
+        "draft",
+        "hidden",
+        "archived"
+    ].includes(
+        normalizeStatus(status)
     );
+}
+
+function isVisible(status) {
+    return !isHiddenStatus(status);
 }
 
 function formatMoney(
@@ -99,6 +123,48 @@ function roleplayArtist(row) {
     );
 }
 
+function getLyrics(row) {
+    return [
+        row["Lyric 1"],
+        row["Lyric 2"],
+        row["Lyric 3"],
+        row["Lyric 4"],
+        row["Lyric 5"]
+    ]
+        .map(
+            lyric =>
+                String(
+                    lyric || ""
+                ).trim()
+        )
+        .filter(Boolean);
+}
+
+function encodeLyrics(lyrics) {
+    return encodeURIComponent(
+        JSON.stringify(lyrics)
+    );
+}
+
+function decodeLyrics(value) {
+    try {
+        return JSON.parse(
+            decodeURIComponent(
+                value || "%5B%5D"
+            )
+        );
+    }
+
+    catch (error) {
+        console.warn(
+            "Could not read lyric options:",
+            error
+        );
+
+        return [];
+    }
+}
+
 
 /* =========================================================
    GOOGLE SHEETS CSV CMS
@@ -143,6 +209,7 @@ function parseCSV(csvText) {
             !insideQuotes
         ) {
             row.push(cell);
+
             cell = "";
         }
 
@@ -161,6 +228,7 @@ function parseCSV(csvText) {
             }
 
             row.push(cell);
+
             cell = "";
 
             if (
@@ -206,7 +274,10 @@ function parseCSV(csvText) {
         rows[0].map(
             header =>
                 String(header)
-                    .replace(/^\uFEFF/, "")
+                    .replace(
+                        /^\uFEFF/,
+                        ""
+                    )
                     .trim()
         );
 
@@ -227,7 +298,8 @@ function parseCSV(csvText) {
 
                         result[header] =
                             String(
-                                row[index] ?? ""
+                                row[index] ??
+                                ""
                             ).trim();
                     }
                 );
@@ -428,7 +500,7 @@ async function loadSettings() {
         rows
             .filter(
                 row =>
-                    published(
+                    isVisible(
                         row.Status
                     )
             )
@@ -496,69 +568,76 @@ function groupAlbums(rows) {
     const albums =
         new Map();
 
-    rows.forEach(
-        row => {
-            const title =
-                row[
-                    "Release / Album"
-                ];
+    rows
+        .filter(
+            row =>
+                isVisible(
+                    row.Status
+                )
+        )
+        .forEach(
+            row => {
+                const title =
+                    row[
+                        "Release / Album"
+                    ];
 
-            if (!title) {
-                return;
-            }
+                if (!title) {
+                    return;
+                }
 
-            if (
-                !albums.has(title)
-            ) {
-                albums.set(
-                    title,
-                    {
-                        order:
-                            Number(
-                                row[
-                                    "Release Order"
-                                ]
-                            ) || 999,
-
+                if (
+                    !albums.has(title)
+                ) {
+                    albums.set(
                         title,
+                        {
+                            order:
+                                Number(
+                                    row[
+                                        "Release Order"
+                                    ]
+                                ) || 999,
 
-                        label:
-                            row[
-                                "Release Label"
-                            ] ||
-                            "Album",
+                            title,
 
-                        cover:
-                            row[
-                                "Cover URL or Path"
-                            ] ||
-                            "",
+                            label:
+                                row[
+                                    "Release Label"
+                                ] ||
+                                "Album",
 
-                        tracks: []
-                    }
-                );
-            }
+                            cover:
+                                row[
+                                    "Cover URL or Path"
+                                ] ||
+                                "",
 
-            const album =
-                albums.get(title);
+                            tracks: []
+                        }
+                    );
+                }
 
-            if (
-                !album.cover &&
-                row[
-                    "Cover URL or Path"
-                ]
-            ) {
-                album.cover =
+                const album =
+                    albums.get(title);
+
+                if (
+                    !album.cover &&
                     row[
                         "Cover URL or Path"
-                    ];
-            }
+                    ]
+                ) {
+                    album.cover =
+                        row[
+                            "Cover URL or Path"
+                        ];
+                }
 
-            album.tracks.push(
-                row
-            );
-        }
-    );
+                album.tracks.push(
+                    row
+                );
+            }
+        );
 
     return Array
         .from(
@@ -641,6 +720,16 @@ function albumHTML(
                         ] ||
                         album.cover;
 
+                    const lyrics =
+                        getLyrics(
+                            track
+                        );
+
+                    const comingSoon =
+                        isComingSoon(
+                            track.Status
+                        );
+
                     return `
                         <li class="track-row">
 
@@ -677,13 +766,23 @@ function albumHTML(
                                     trackCover
                                 )}"
 
-                                data-quote="${safe(
-                                    track[
-                                        "Mood Quote"
-                                    ]
+                                data-lyrics="${safe(
+                                    encodeLyrics(
+                                        lyrics
+                                    )
                                 )}"
+
+                                ${
+                                    comingSoon
+                                        ? "disabled"
+                                        : ""
+                                }
                             >
-                                ▶
+                                ${
+                                    comingSoon
+                                        ? "Coming Soon"
+                                        : "▶"
+                                }
                             </button>
 
 
@@ -804,12 +903,7 @@ async function loadAlbums() {
 
         const albums =
             groupAlbums(
-                rows.filter(
-                    row =>
-                        published(
-                            row.Status
-                        )
-                )
+                rows
             );
 
         container.innerHTML =
@@ -859,12 +953,7 @@ async function loadKoreanAlbums() {
 
         const albums =
             groupAlbums(
-                rows.filter(
-                    row =>
-                        published(
-                            row.Status
-                        )
-                )
+                rows
             );
 
         container.innerHTML =
@@ -916,7 +1005,7 @@ async function loadSingles() {
             rows
                 .filter(
                     row =>
-                        published(
+                        isVisible(
                             row.Status
                         )
                 )
@@ -952,6 +1041,16 @@ async function loadSingles() {
                             item[
                                 "Cover URL or Path"
                             ];
+
+                        const lyrics =
+                            getLyrics(
+                                item
+                            );
+
+                        const comingSoon =
+                            isComingSoon(
+                                item.Status
+                            );
 
                         return `
                             <article class="single-card">
@@ -1053,13 +1152,23 @@ async function loadSingles() {
                                         cover
                                     )}"
 
-                                    data-quote="${safe(
-                                        item[
-                                            "Mood Quote"
-                                        ]
+                                    data-lyrics="${safe(
+                                        encodeLyrics(
+                                            lyrics
+                                        )
                                     )}"
+
+                                    ${
+                                        comingSoon
+                                            ? "disabled"
+                                            : ""
+                                    }
                                 >
-                                    ▶ Listen
+                                    ${
+                                        comingSoon
+                                            ? "Coming Soon"
+                                            : "▶ Listen"
+                                    }
                                 </button>
 
                             </article>
@@ -1091,7 +1200,7 @@ async function loadSingles() {
 
 
 /* =========================================================
-   MUSIC PLAYER
+   MUSIC PLAYER + 5 LYRIC OPTIONS
 ========================================================= */
 
 const musicModal =
@@ -1100,9 +1209,165 @@ const musicModal =
 const youtubePlayer =
     $("#youtubePlayer");
 
-function openMusicPlayer(
-    button
-) {
+
+function ensureLyricSelector() {
+
+    if ($("#lyricSelector")) {
+        return;
+    }
+
+    const saveButton =
+        $("#saveLyricCard");
+
+    if (!saveButton) {
+        console.warn(
+            "Save Lyric Card button not found."
+        );
+        return;
+    }
+
+    const selector =
+        document.createElement("div");
+
+    selector.id = "lyricSelector";
+    selector.className = "lyric-selector";
+
+    selector.innerHTML = `
+        <p class="lyric-selector-title">
+            Choose Your Lyric ♡
+        </p>
+
+        <div
+            id="lyricOptions"
+            class="lyric-options"
+        ></div>
+    `;
+
+    const buttonWrapper =
+        saveButton.parentElement;
+
+    if (!buttonWrapper) {
+        return;
+    }
+
+    buttonWrapper.parentElement.insertBefore(
+        selector,
+        buttonWrapper
+    );
+}
+
+
+function renderLyricOptions(lyrics) {
+    ensureLyricSelector();
+
+    const container =
+        $("#lyricOptions");
+
+    const preview =
+        $("#lyricQuote");
+
+    if (!container) {
+        return;
+    }
+
+    if (!lyrics.length) {
+        container.innerHTML = `
+            <p class="lyric-empty">
+                Lyric options coming soon ♡
+            </p>
+        `;
+
+        if (preview) {
+            preview.textContent =
+                "Choose your favorite lyric.";
+        }
+
+        return;
+    }
+
+    container.innerHTML =
+        lyrics
+            .slice(0, 5)
+            .map(
+                (
+                    lyric,
+                    index
+                ) => `
+                    <button
+                        type="button"
+                        class="
+                            lyric-option
+                            ${
+                                index === 0
+                                    ? "active"
+                                    : ""
+                            }
+                        "
+                        data-lyric="${safe(
+                            lyric
+                        )}"
+                    >
+                        <span class="lyric-option-number">
+                            ${String(
+                                index + 1
+                            ).padStart(
+                                2,
+                                "0"
+                            )}
+                        </span>
+
+                        <span class="lyric-option-text">
+                            ${safe(
+                                lyric
+                            )}
+                        </span>
+                    </button>
+                `
+            )
+            .join("");
+
+    if (preview) {
+        preview.textContent =
+            lyrics[0];
+    }
+}
+
+
+document.addEventListener(
+    "click",
+    event => {
+        const option =
+            event.target.closest(
+                ".lyric-option"
+            );
+
+        if (!option) {
+            return;
+        }
+
+        $$(".lyric-option")
+            .forEach(
+                button =>
+                    button.classList.remove(
+                        "active"
+                    )
+            );
+
+        option.classList.add(
+            "active"
+        );
+
+        if ($("#lyricQuote")) {
+            $("#lyricQuote")
+                .textContent =
+                option.dataset.lyric ||
+                "";
+        }
+    }
+);
+
+
+function openMusicPlayer(button) {
     const title =
         button.dataset.title ||
         "Song Title";
@@ -1123,46 +1388,31 @@ function openMusicPlayer(
         button.dataset.cover ||
         "";
 
-    const quote =
-        button.dataset.quote ||
-        "A little piece of Jeniffer Nora’s universe.";
+    const lyrics =
+        decodeLyrics(
+            button.dataset.lyrics
+        );
 
-    if (
-        $("#playerSongTitle")
-    ) {
+    if ($("#playerSongTitle")) {
         $("#playerSongTitle")
             .textContent =
             title;
     }
 
-    if (
-        $("#playerRoleplayArtist")
-    ) {
+    if ($("#playerRoleplayArtist")) {
         $("#playerRoleplayArtist")
             .textContent =
             artist;
     }
 
-    if (
-        $("#playerOriginalCredit")
-    ) {
+    if ($("#playerOriginalCredit")) {
         $("#playerOriginalCredit")
             .textContent =
             "Original song by " +
             original;
     }
 
-    if (
-        $("#lyricQuote")
-    ) {
-        $("#lyricQuote")
-            .textContent =
-            quote;
-    }
-
-    if (
-        $("#lyricBackground")
-    ) {
+    if ($("#lyricBackground")) {
         $("#lyricBackground")
             .style
             .backgroundImage =
@@ -1171,40 +1421,61 @@ function openMusicPlayer(
                 : "none";
     }
 
+    renderLyricOptions(
+        lyrics
+    );
+
     if (video) {
-        $("#youtubePlayerContainer")
-            .style.display =
-            "block";
+        if ($("#youtubePlayerContainer")) {
+            $("#youtubePlayerContainer")
+                .style
+                .display =
+                "block";
+        }
 
-        youtubePlayer.src =
-            "https://www.youtube-nocookie.com/embed/" +
-            encodeURIComponent(
-                video
-            ) +
-            "?autoplay=1&rel=0";
+        if (youtubePlayer) {
+            youtubePlayer.src =
+                "https://www.youtube-nocookie.com/embed/" +
+                encodeURIComponent(
+                    video
+                ) +
+                "?autoplay=1&rel=0";
+        }
 
-        $("#openYouTubeButton")
-            .style.display =
-            "inline-block";
+        if ($("#openYouTubeButton")) {
+            $("#openYouTubeButton")
+                .style
+                .display =
+                "inline-block";
 
-        $("#openYouTubeButton")
-            .href =
-            "https://www.youtube.com/watch?v=" +
-            encodeURIComponent(
-                video
-            );
+            $("#openYouTubeButton")
+                .href =
+                "https://www.youtube.com/watch?v=" +
+                encodeURIComponent(
+                    video
+                );
+        }
     }
 
     else {
-        $("#youtubePlayerContainer")
-            .style.display =
-            "none";
+        if ($("#youtubePlayerContainer")) {
+            $("#youtubePlayerContainer")
+                .style
+                .display =
+                "none";
+        }
 
-        youtubePlayer.src = "";
+        if (youtubePlayer) {
+            youtubePlayer.src =
+                "";
+        }
 
-        $("#openYouTubeButton")
-            .style.display =
-            "none";
+        if ($("#openYouTubeButton")) {
+            $("#openYouTubeButton")
+                .style
+                .display =
+                "none";
+        }
     }
 
     musicModal?.classList.add(
@@ -1216,19 +1487,22 @@ function openMusicPlayer(
     );
 }
 
+
 function closeMusicPlayer() {
     musicModal?.classList.remove(
         "active"
     );
 
     if (youtubePlayer) {
-        youtubePlayer.src = "";
+        youtubePlayer.src =
+            "";
     }
 
     document.body.classList.remove(
         "menu-open"
     );
 }
+
 
 document.addEventListener(
     "click",
@@ -1238,19 +1512,26 @@ document.addEventListener(
                 ".js-track-play"
             );
 
-        if (button) {
-            openMusicPlayer(
-                button
-            );
+        if (
+            !button ||
+            button.disabled
+        ) {
+            return;
         }
+
+        openMusicPlayer(
+            button
+        );
     }
 );
+
 
 $("#closeMusicPlayer")
     ?.addEventListener(
         "click",
         closeMusicPlayer
     );
+
 
 $("#musicModalBackground")
     ?.addEventListener(
@@ -1277,7 +1558,7 @@ async function loadVideos() {
             rows
                 .filter(
                     row =>
-                        published(
+                        isVisible(
                             row.Status
                         )
                 )
@@ -1427,7 +1708,7 @@ async function loadTour() {
             rows
                 .filter(
                     row =>
-                        published(
+                        isVisible(
                             row.Status
                         )
                 )
@@ -1570,7 +1851,7 @@ async function loadShop() {
             rows
                 .filter(
                     row =>
-                        published(
+                        isVisible(
                             row.Status
                         )
                 )
@@ -1642,7 +1923,15 @@ function renderShop() {
                             product.Stock
                         ) || 0;
 
+                    const comingSoon =
+                        isComingSoon(
+                            product.Status
+                        );
+
                     const soldOut =
+                        isSoldOut(
+                            product.Status
+                        ) ||
                         stock <= 0;
 
                     const image =
@@ -1706,9 +1995,11 @@ function renderShop() {
 
                             <p class="shop-stock">
                                 ${
-                                    soldOut
-                                        ? "Sold Out"
-                                        : `${stock} available`
+                                    comingSoon
+                                        ? "Coming Soon"
+                                        : soldOut
+                                            ? "Sold Out"
+                                            : `${stock} available`
                                 }
                             </p>
 
@@ -1724,15 +2015,18 @@ function renderShop() {
                                 )}"
 
                                 ${
-                                    soldOut
+                                    soldOut ||
+                                    comingSoon
                                         ? "disabled"
                                         : ""
                                 }
                             >
                                 ${
-                                    soldOut
-                                        ? "Sold Out"
-                                        : "Add to Bag"
+                                    comingSoon
+                                        ? "Coming Soon"
+                                        : soldOut
+                                            ? "Sold Out"
+                                            : "Add to Bag"
                                 }
                             </button>
 
@@ -1856,7 +2150,15 @@ function addToCart(
                 )
         );
 
-    if (!product) {
+    if (
+        !product ||
+        isComingSoon(
+            product.Status
+        ) ||
+        isSoldOut(
+            product.Status
+        )
+    ) {
         return;
     }
 
@@ -2663,11 +2965,11 @@ async function saveCurrentLyricCard() {
                 ?.trim() ||
             "";
 
-        const quote =
+        const lyric =
             $("#lyricQuote")
                 ?.textContent
                 ?.trim() ||
-            "A little piece of Jeniffer Nora’s universe.";
+            "Choose your favorite lyric.";
 
         const cover =
             getLyricCardCover();
@@ -2704,8 +3006,6 @@ async function saveCurrentLyricCard() {
             canvas.height
         );
 
-
-        /* COVER */
 
         if (cover) {
             try {
@@ -2767,8 +3067,6 @@ async function saveCurrentLyricCard() {
         }
 
 
-        /* OVERLAY */
-
         const gradient =
             context.createLinearGradient(
                 0,
@@ -2803,8 +3101,6 @@ async function saveCurrentLyricCard() {
         );
 
 
-        /* TEXT */
-
         context.textBaseline =
             "top";
 
@@ -2824,10 +3120,10 @@ async function saveCurrentLyricCard() {
         context.font =
             "66px Georgia";
 
-        const quoteEnd =
+        const lyricEnd =
             drawWrappedText(
                 context,
-                quote,
+                lyric,
                 80,
                 270,
                 900,
@@ -2839,7 +3135,8 @@ async function saveCurrentLyricCard() {
         const infoY =
             Math.max(
                 870,
-                quoteEnd + 100
+                lyricEnd +
+                100
             );
 
 
@@ -2924,8 +3221,6 @@ async function saveCurrentLyricCard() {
         );
 
 
-        /* FILE NAME */
-
         const safeName =
             title
                 .toLowerCase()
@@ -3000,7 +3295,7 @@ document.addEventListener(
 
 
 /* =========================================================
-   START WEBSITE ONCE
+   START WEBSITE
 ========================================================= */
 
 async function initialiseWebsite() {

@@ -2143,3 +2143,154 @@ footer {
     }
 
 }
+/* =========================
+   LYRIC OPTIONS
+========================= */
+
+#lyricSelector {
+    margin-top: 18px;
+    padding: 22px;
+
+    background-color: var(--cream);
+}
+
+.lyric-selector-title {
+    margin-bottom: 14px;
+
+    color: var(--maroon);
+
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.lyric-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.lyric-option {
+    width: 100%;
+    padding: 13px 15px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    border: 1px solid
+        rgba(99, 0, 0, 0.18);
+
+    background-color: transparent;
+    color: var(--maroon);
+
+    font-family: Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size: 14px;
+    line-height: 1.45;
+    text-align: left;
+
+    transition: 0.25s ease;
+}
+
+.lyric-option span {
+    flex: 0 0 auto;
+
+    font-family: Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 8px;
+    letter-spacing: 1px;
+
+    opacity: 0.55;
+}
+
+.lyric-option:hover,
+.lyric-option.active {
+    background-color: var(--maroon);
+    color: var(--cream);
+}
+
+.lyric-empty {
+    color: rgba(27, 23, 23, 0.5);
+
+    font-size: 10px;
+}
+/* =========================
+   LYRIC OPTIONS
+========================= */
+
+#lyricSelector {
+    margin-top: 18px;
+    padding: 22px;
+
+    background-color: var(--cream);
+}
+
+.lyric-selector-title {
+    margin-bottom: 14px;
+
+    color: var(--maroon);
+
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.lyric-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.lyric-option {
+    width: 100%;
+    padding: 13px 15px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    border: 1px solid
+        rgba(99, 0, 0, 0.18);
+
+    background-color: transparent;
+    color: var(--maroon);
+
+    font-family: Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size: 14px;
+    line-height: 1.45;
+    text-align: left;
+
+    transition: 0.25s ease;
+}
+
+.lyric-option-number {
+    flex: 0 0 auto;
+
+    font-family: Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 8px;
+    letter-spacing: 1px;
+
+    opacity: 0.55;
+}
+
+.lyric-option:hover,
+.lyric-option.active {
+    background-color: var(--maroon);
+    color: var(--cream);
+}
+
+.lyric-empty {
+    color: rgba(27, 23, 23, 0.5);
+    font-size: 10px;
+}
