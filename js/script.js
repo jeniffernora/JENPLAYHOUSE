@@ -3372,4 +3372,127 @@ async function initialiseWebsite() {
     );
 }
 
+/* =========================================================
+   SHARE CURRENT SONG
+========================================================= */
+
+function createSongSlug(title) {
+    return String(title || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+}
+
+
+function getCurrentSongShareData() {
+    const title =
+        $("#playerSongTitle")
+            ?.textContent
+            ?.trim() ||
+        "Jeniffer Nora";
+
+    const artist =
+        $("#playerRoleplayArtist")
+            ?.textContent
+            ?.trim() ||
+        "Jeniffer Nora";
+
+    const slug =
+        createSongSlug(title);
+
+    const url =
+        `https://jeniffernora.github.io/vinyl-from-jen/share/${slug}/`;
+
+    return {
+        title:
+            `${title} — ${artist}`,
+
+        text:
+            `${title} by ${artist} · Vinyl From Jen`,
+
+        url
+    };
+}
+
+
+async function shareCurrentSong() {
+    const shareData =
+        getCurrentSongShareData();
+
+    try {
+        if (
+            navigator.share &&
+            navigator.canShare?.({
+                url: shareData.url
+            })
+        ) {
+            await navigator.share(
+                shareData
+            );
+
+            return;
+        }
+
+        await navigator.clipboard.writeText(
+            shareData.url
+        );
+
+        alert(
+            "Song link copied ♡"
+        );
+    }
+
+    catch (error) {
+        if (
+            error?.name ===
+            "AbortError"
+        ) {
+            return;
+        }
+
+        console.error(
+            "SHARE ERROR:",
+            error
+        );
+
+        try {
+            await navigator.clipboard.writeText(
+                shareData.url
+            );
+
+            alert(
+                "Song link copied ♡"
+            );
+        }
+
+        catch {
+            alert(
+                "Could not share this song."
+            );
+        }
+    }
+}
+
+
+document.addEventListener(
+    "click",
+    event => {
+        const button =
+            event.target.closest(
+                "#shareSongButton"
+            );
+
+        if (!button) {
+            return;
+        }
+
+        event.preventDefault();
+
+        shareCurrentSong();
+    }
+);
+
 initialiseWebsite();
