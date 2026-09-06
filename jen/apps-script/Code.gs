@@ -1,4 +1,5 @@
 const SHEET_ID = '1MALZe1C5SRT05ZfIaFK6Q8X2ieymbM6mFPbB1Tqt7Gc';
+const DRIVE_FOLDER_ID = '1C4tYbqaP-muuWj9dp6h1cyD8srpQRVlQ';
 const TIMEZONE = 'Asia/Jakarta';
 
 function doGet(e) {
@@ -10,6 +11,7 @@ function doGet(e) {
 function doPost(e) {
   const action = String(e.parameter.action || '').trim();
   if (action === 'createUpdate') return createUpdate(e);
+  if (action === 'uploadMedia') return uploadMedia(e);
   return jsonResponse({ success: false, message: 'Unknown POST action' });
 }
 
@@ -19,7 +21,7 @@ function loginUser(e) {
     if (!email) return jsonResponse({ success: false, message: 'Email is required' });
     const user = findUserByEmail(email);
     if (!user) return jsonResponse({ success: false, message: 'Access denied' });
-    return jsonResponse({ success: true, user });
+    return jsonResponse({ success: true, user: user });
   } catch (error) {
     return jsonResponse({ success: false, message: error.message });
   }
@@ -35,7 +37,6 @@ function createUpdate(e) {
     const media1 = String(e.parameter.media1 || '').trim();
     const media2 = String(e.parameter.media2 || '').trim();
     const media3 = String(e.parameter.media3 || '').trim();
-    const media4 = String(e.parameter.media4 || '').trim();
     const thumbnail = String(e.parameter.thumbnail || '').trim();
     const duration = String(e.parameter.duration || '').trim();
     const pinned = String(e.parameter.pinned || 'No').trim();
@@ -45,13 +46,14 @@ function createUpdate(e) {
     if (!user) return jsonResponse({ success: false, message: 'User not found or inactive' });
     if (!isYes(user.canPost)) return jsonResponse({ success: false, message: 'This account cannot create posts' });
     if (postType.toLowerCase() === 'text' && !text) return jsonResponse({ success: false, message: 'Write something before saving' });
+    if (['photo','carousel','video','voice note'].includes(postType.toLowerCase()) && !media1) {
+      return jsonResponse({ success: false, message: 'Upload media before saving this post' });
+    }
 
     const ss = SpreadsheetApp.openById(SHEET_ID);
     const sheet = ss.getSheetByName('Updates');
     if (!sheet) return jsonResponse({ success: false, message: 'Updates sheet not found' });
 
-    ensureUpdatesHeaders(sheet);
-    const headers = sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0];
     const updateId = getNextUpdateId(sheet);
     const now = new Date();
     const date = Utilities.formatDate(now, TIMEZONE, 'dd MMMM yyyy');
@@ -61,30 +63,50 @@ function createUpdate(e) {
       ? 'Jeniffer Nora via Updates ♡\n\n{TEXT}\n\n{URL}'
       : 'J-Team Update\n\n{TEXT}\n\n{URL}';
 
-    const record = {
-      'Update ID': updateId, 'Author ID': user.userId, 'Date': date, 'Time': time,
-      'Post Type': postType, 'Category': category, 'Text': text,
-      'Media 1': media1, 'Media 2': media2, 'Media 3': media3, 'Media 4': media4,
-      'Thumbnail': thumbnail, 'Duration': duration, 'Slug': slug,
-      'X Template': xTemplate, 'Pinned': pinned, 'Status': status
-    };
-    sheet.appendRow(headers.map(h => record[h] !== undefined ? record[h] : ''));
+    sheet.appendRow([
+      updateId, user.userId, date, time, postType, category, text,
+      media1, media2, media3, thumbnail, duration, slug, xTemplate, pinned, status
+    ]);
 
-    return jsonResponse({ success: true, message: 'Update saved', update: {
-      updateId, authorId:user.userId, author:user.name, displayName:user.displayName,
-      verified:user.verified, date, time, postType, category, text,
-      media1, media2, media3, media4, thumbnail, duration, slug, pinned, status
-    }});
+    return jsonResponse({
+      success: true,
+      message: 'Update saved',
+      update: { updateId, authorId: user.userId, author: user.name, displayName: user.displayName,
+        verified: user.verified, date, time, postType, category, text, media1, media2, media3,
+        thumbnail, duration, slug, pinned, status }
+    });
   } catch (error) {
     return jsonResponse({ success: false, message: error.message });
   }
 }
 
-function ensureUpdatesHeaders(sheet){
-  const desired=['Update ID','Author ID','Date','Time','Post Type','Category','Text','Media 1','Media 2','Media 3','Media 4','Thumbnail','Duration','Slug','X Template','Pinned','Status'];
-  const last=Math.max(sheet.getLastColumn(),1);
-  const headers=sheet.getRange(1,1,1,last).getValues()[0].map(String);
-  desired.forEach(h=>{if(!headers.includes(h)){sheet.getRange(1,sheet.getLastColumn()+1).setValue(h);headers.push(h);}});
+function uploadMedia(e) {
+  try {
+    const email = normalizeEmail(e.parameter.email);
+    const fileName = String(e.parameter.fileName || 'upload').trim();
+    const mimeType = String(e.parameter.mimeType || 'application/octet-stream').trim();
+    const base64Data = String(e.parameter.base64 || '').trim();
+
+    if (!email) return jsonResponse({ success: false, message: 'Login email is missing' });
+    const user = findUserByEmail(email);
+    if (!user) return jsonResponse({ success: false, message: 'User not found or inactive' });
+    if (!isYes(user.canPost)) return jsonResponse({ success: false, message: 'This account cannot upload media' });
+    if (!base64Data) return jsonResponse({ success: false, message: 'No file data received' });
+
+    const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+    const bytes = Utilities.base64Decode(base64Data);
+    const safeName = createSafeFileName(user.userId, fileName);
+    const blob = Utilities.newBlob(bytes, mimeType, safeName);
+    const file = folder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+    const fileId = file.getId();
+    const viewUrl = 'https://drive.google.com/uc?export=view&id=' + fileId;
+    const downloadUrl = 'https://drive.google.com/uc?export=download&id=' + fileId;
+    return jsonResponse({ success: true, message: 'Media uploaded', file: { id: fileId, name: file.getName(), mimeType, url: viewUrl, downloadUrl } });
+  } catch (error) {
+    return jsonResponse({ success: false, message: error.message });
+  }
 }
 
 function findUserByEmail(email) {
@@ -94,30 +116,61 @@ function findUserByEmail(email) {
   const data = sheet.getDataRange().getValues();
   if (data.length < 2) return null;
   const headers = data[0];
-  const ix = n => headers.indexOf(n);
-  for (let i=1;i<data.length;i++) {
-    const row=data[i];
-    const rowEmail=normalizeEmail(row[ix('Email')]);
-    const state=String(row[ix('Status')]||'').trim().toLowerCase();
-    if(rowEmail===email && state==='active') return {
-      userId:row[ix('User ID')], name:row[ix('Name')], displayName:row[ix('Display Name')],
-      position:row[ix('Position')], photo:row[ix('Photo')], updateFolder:row[ix('Update Asset Folder')],
-      email:rowEmail, role:row[ix('Role')], verified:row[ix('Verified')],
-      canPost:row[ix('Can Post')], canEdit:row[ix('Can Edit')], canDelete:row[ix('Can Delete')]
-    };
+  const index = {
+    userId: headers.indexOf('User ID'), name: headers.indexOf('Name'), displayName: headers.indexOf('Display Name'),
+    position: headers.indexOf('Position'), photo: headers.indexOf('Photo'), updateFolder: headers.indexOf('Update Asset Folder'),
+    email: headers.indexOf('Email'), role: headers.indexOf('Role'), verified: headers.indexOf('Verified'),
+    canPost: headers.indexOf('Can Post'), canEdit: headers.indexOf('Can Edit'), canDelete: headers.indexOf('Can Delete'),
+    status: headers.indexOf('Status')
+  };
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const rowEmail = normalizeEmail(row[index.email]);
+    const status = String(row[index.status] || '').trim().toLowerCase();
+    if (rowEmail === email && status === 'active') {
+      return {
+        userId: row[index.userId], name: row[index.name], displayName: row[index.displayName], position: row[index.position],
+        photo: row[index.photo], updateFolder: row[index.updateFolder], email: rowEmail, role: row[index.role],
+        verified: row[index.verified], canPost: row[index.canPost], canEdit: row[index.canEdit], canDelete: row[index.canDelete]
+      };
+    }
   }
   return null;
 }
 
 function getNextUpdateId(sheet) {
-  const lastRow=sheet.getLastRow();
-  if(lastRow<2) return 'UPD-001';
-  const ids=sheet.getRange(2,1,lastRow-1,1).getValues().flat();
-  let highest=0;
-  ids.forEach(id=>{const m=String(id||'').match(/^UPD-(\d+)$/i);if(m) highest=Math.max(highest,Number(m[1]));});
-  return 'UPD-'+String(highest+1).padStart(3,'0');
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return 'UPD-001';
+  const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues().flat();
+  let highest = 0;
+  ids.forEach(function(id) {
+    const match = String(id || '').match(/^UPD-(\d+)$/i);
+    if (match) highest = Math.max(highest, Number(match[1]));
+  });
+  return 'UPD-' + String(highest + 1).padStart(3, '0');
 }
-function createSlug(value){return String(value||'update').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').substring(0,50)||'update';}
-function normalizeEmail(value){return String(value||'').trim().toLowerCase();}
-function isYes(value){return String(value||'').trim().toLowerCase()==='yes';}
-function jsonResponse(data){return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);}
+
+function createSlug(value) {
+  const slug = String(value || 'update').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').substring(0, 50);
+  return slug || 'update';
+}
+
+function createSafeFileName(userId, fileName) {
+  const original = String(fileName || 'upload');
+  const dotIndex = original.lastIndexOf('.');
+  let extension = '';
+  let name = original;
+  if (dotIndex !== -1) {
+    extension = original.substring(dotIndex).toLowerCase();
+    name = original.substring(0, dotIndex);
+  }
+  const safe = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const timestamp = Utilities.formatDate(new Date(), TIMEZONE, 'yyyyMMdd-HHmmss');
+  return String(userId || 'USER') + '-' + timestamp + '-' + (safe || 'media') + extension;
+}
+
+function normalizeEmail(value) { return String(value || '').trim().toLowerCase(); }
+function isYes(value) { return String(value || '').trim().toLowerCase() === 'yes'; }
+function jsonResponse(data) {
+  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+}

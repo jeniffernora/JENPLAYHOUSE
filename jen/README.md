@@ -1,18 +1,22 @@
-# Jeniffer Nora Website V19 — Cloudinary Media Upload
+# Jeniffer Nora Website V18 — Photo Upload Connected
 
-V19 keeps the connected Apps Script login + Google Sheet Updates saving, but media uploads now go directly to Cloudinary.
+V18 keeps V17 login + text save and adds single-photo upload from admin.html.
 
-Cloudinary:
-- Cloud name: rle84npy
-- Unsigned upload preset: jeniffer_updates
+## What is connected
+- Login via Apps Script + Users sheet
+- Text update -> Updates sheet
+- Photo upload -> Google Drive folder
+- Photo URL -> Updates.Media 1 + Thumbnail
+- Draft / Posted status
 
-Supported update media:
-- Text: no media
-- Photo: 1 image
-- Carousel: 2–4 images
-- Video: 1 video
-- Voice Note: 1 audio file
+## Test V18
+1. Make sure the latest Code.gs is deployed as a new version.
+2. Open admin.html.
+3. Login with a registered email.
+4. Choose Post Type: Photo.
+5. Pick ONE image under 5 MB.
+6. Add an optional caption.
+7. Save Update.
+8. Check Google Drive and the Updates sheet.
 
-Google Sheet must include Media 1, Media 2, Media 3, Media 4 columns in Updates.
-
-Apps Script no longer needs DriveApp for V19. Copy apps-script/Code.gs into the Apps Script project, Save, then redeploy a New version.
+Video, Carousel and Voice Note are intentionally not connected yet.
