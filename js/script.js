@@ -267,3 +267,26 @@ async function buildLyricCardBlob(){if(!currentSong)return null;const quote=sele
 $('#saveLyricCard').onclick=async()=>{const card=await buildLyricCardBlob();if(!card)return;const link=document.createElement('a');link.download=`${slugify(currentSong['Song Title']||'jeniffer-lyric')}-lyric.png`;link.href=URL.createObjectURL(card.blob);link.click();setTimeout(()=>URL.revokeObjectURL(link.href),2000)};
 $('#shareSongButton').onclick=async()=>{const card=await buildLyricCardBlob();if(!card)return;const file=new File([card.blob],`${slugify(currentSong['Song Title']||'jeniffer-lyric')}-jeniffer-nora.png`,{type:'image/png'});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:`${currentSong['Song Title']} · Jeniffer Nora`});return}catch(e){if(e&&e.name==='AbortError')return}}const link=document.createElement('a');link.download=file.name;link.href=URL.createObjectURL(card.blob);link.click();setTimeout(()=>URL.revokeObjectURL(link.href),2000);alert('Lyric card saved as an image. You can attach it to X or another app.');};}
 (async()=>{await loadLiveSheetData();setupExtraUI();renderAll();bind();setupAdmin();setupSectionRouting();handleDeepLinks();})();})();
+/* V21.12 — robust mobile navigation patch. Existing navigation and
+   section routing remain intact. This only guarantees the hamburger
+   has a reliable click/tap target and closes after a destination. */
+(function(){
+  const btn=document.getElementById('menuButton');
+  const nav=document.getElementById('navigation');
+  if(!btn||!nav) return;
+
+  btn.setAttribute('aria-expanded',nav.classList.contains('open')?'true':'false');
+
+  btn.addEventListener('click',function(){
+    requestAnimationFrame(()=>{
+      btn.setAttribute('aria-expanded',nav.classList.contains('open')?'true':'false');
+    });
+  });
+
+  nav.querySelectorAll('a[href^="#"]').forEach(link=>{
+    link.addEventListener('click',()=>{
+      nav.classList.remove('open');
+      btn.setAttribute('aria-expanded','false');
+    });
+  });
+})();

@@ -1928,3 +1928,215 @@ footer{background:var(--jph-deep-berry)!important}
     margin:10px 0 14px!important;
   }
 }
+
+/* =========================================================
+   V21.12 — LOCKED HOME / MOBILE NAV / UPDATE CARD PATCH
+   IMPORTANT: patch-only. Preserve every existing feature and
+   visual treatment. Mobile hero framing is intentionally NOT
+   redesigned here because the user will replace the mobile
+   hero asset itself.
+   ========================================================= */
+
+/* Desktop hero copy: lock exact center without touching imagery. */
+@media (min-width:701px){
+  #home .home-content{
+    left:50%!important;
+    right:auto!important;
+    top:54%!important;
+    transform:translate(-50%,-50%)!important;
+    width:min(980px,92vw)!important;
+    max-width:980px!important;
+    margin:0!important;
+    text-align:center!important;
+  }
+  #home .home-content .home-label{
+    display:block!important;
+    width:100%!important;
+    margin:0 auto 6px!important;
+    text-align:center!important;
+  }
+  #home #homeTitle.avermont-title{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:auto!important;
+    max-width:100%!important;
+    margin:0 auto 10px!important;
+    text-align:center!important;
+    white-space:nowrap!important;
+  }
+  #home .home-title-heart{
+    font-size:.34em!important;
+    line-height:1!important;
+    transform:translateY(-.01em)!important;
+    flex:0 0 auto!important;
+  }
+}
+
+/* Home is a preview dashboard only. All full sections stay routed
+   behind their navigation items; the dashboard itself contains only
+   Updates + News + Schedule. */
+body.section-routing-enabled.view-home #music,
+body.section-routing-enabled.view-home #updates,
+body.section-routing-enabled.view-home #schedule,
+body.section-routing-enabled.view-home #shop,
+body.section-routing-enabled.view-home #news,
+body.section-routing-enabled.view-home #team,
+body.section-routing-enabled.view-home #signup{
+  display:none!important;
+}
+body.section-routing-enabled.view-home .home-preview-section{
+  display:block!important;
+}
+
+/* Latest Updates preview: ALWAYS occupy the full panel width. */
+.home-preview-updates .home-updates-preview{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+}
+.home-preview-updates .home-update-card{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+.home-preview-updates .home-update-card p{
+  width:100%!important;
+  max-width:none!important;
+}
+
+/* Team/avatar rows: never crop into white half-circles. */
+.home-update-profiles,
+#updatesAuthors,
+.jteam-member-filters{
+  align-items:flex-start!important;
+}
+.home-profile-bubble,
+.update-author-bubble,
+.jteam-member-bubble{
+  overflow:visible!important;
+}
+.home-profile-bubble img,
+.update-author-bubble img,
+.jteam-member-bubble img,
+.jteam-all-avatar,
+.home-profile-mark{
+  display:block!important;
+  aspect-ratio:1/1!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  overflow:hidden!important;
+  background:var(--jph-ivory,#FFF9F4)!important;
+}
+
+/* Mobile navigation button stays above hero/border decorative layers
+   and has a real clickable hit area. */
+@media (max-width:850px){
+  #menuButton{
+    position:relative!important;
+    z-index:1002!important;
+    display:flex!important;
+    width:46px!important;
+    height:42px!important;
+    padding:8px!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:6px!important;
+    cursor:pointer!important;
+    pointer-events:auto!important;
+  }
+  #menuButton span{
+    width:28px!important;
+    height:1px!important;
+    margin:0!important;
+    flex:0 0 1px!important;
+  }
+  #navigation{
+    z-index:1001!important;
+  }
+}
+
+@media (max-width:700px){
+  /* Mobile home dashboard = Updates -> News -> Schedule. */
+  .home-preview-section{
+    padding:26px 14px 30px!important;
+  }
+  .home-preview-grid{
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    max-width:none!important;
+    gap:18px!important;
+  }
+  .home-preview-updates,
+  .home-preview-side,
+  .home-preview-side>.home-preview-panel{
+    width:100%!important;
+    min-width:0!important;
+  }
+  .home-preview-side{
+    display:flex!important;
+    flex-direction:column!important;
+    gap:18px!important;
+  }
+
+  /* Team members wrap down when the row is full. */
+  .home-update-profiles{
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    width:100%!important;
+    gap:18px 8px!important;
+    overflow:visible!important;
+    white-space:normal!important;
+  }
+  .home-profile-bubble{
+    width:100%!important;
+    min-width:0!important;
+    justify-items:center!important;
+  }
+  .home-profile-bubble img,
+  .home-profile-mark{
+    width:54px!important;
+    height:54px!important;
+    margin:0 auto!important;
+  }
+  .home-profile-bubble i{
+    right:calc(50% - 29px)!important;
+    top:39px!important;
+  }
+
+  /* Full-width, landscape-feeling latest update card. */
+  .home-preview-updates .home-updates-preview{
+    width:100%!important;
+    grid-template-columns:1fr!important;
+  }
+  .home-preview-updates .home-update-card{
+    width:100%!important;
+    max-width:none!important;
+    min-height:0!important;
+    padding:18px 20px!important;
+  }
+  .home-preview-updates .home-update-head{
+    margin-bottom:10px!important;
+  }
+  .home-preview-updates .home-update-card p{
+    font-size:16px!important;
+    line-height:1.35!important;
+    margin:10px 0 14px!important;
+  }
+
+  /* Full Updates page: team bubbles may wrap instead of overflowing. */
+  #updates .updates-authors,
+  #updates .jteam-member-filters{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    overflow:visible!important;
+    white-space:normal!important;
+    gap:14px 12px!important;
+  }
+}
