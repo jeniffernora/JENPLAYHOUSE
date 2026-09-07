@@ -1305,3 +1305,478 @@ footer{background:var(--jph-deep-berry)!important}
     background-size:24px 24px!important;
   }
 }
+
+/* =========================================================
+   V21.6 — MOBILE FIT + HERO TITLE PRECISION
+   - Never let the heart overpower "Hi, Jeadore"
+   - Clean, centered mobile hero copy
+   - Fallback desktop hero image is shown uncropped on phones
+   - J-Team/profile bubbles wrap to another line instead of squeezing
+   - Mobile double-wave trim is cleaner and evenly rounded
+   ========================================================= */
+#homeTitle.avermont-title{
+  display:inline-flex!important;
+  align-items:baseline!important;
+  justify-content:center!important;
+  gap:.08em!important;
+  width:auto!important;
+  max-width:100%!important;
+  white-space:nowrap!important;
+  text-align:center!important;
+}
+.home-title-text{display:inline-block;line-height:1}
+.home-title-heart{
+  display:inline-block!important;
+  font-family:Georgia,serif!important;
+  font-size:.50em!important;
+  line-height:1!important;
+  font-weight:400!important;
+  transform:translateY(-.05em)!important;
+  flex:0 0 auto!important;
+}
+
+@media(max-width:700px){
+  .home-section{
+    min-height:100svh!important;
+    background:linear-gradient(180deg,#cbb8d9 0%,var(--jph-blush) 70%,var(--jph-cream) 100%)!important;
+  }
+  .home-content{
+    left:50%!important;
+    top:62%!important;
+    transform:translate(-50%,-50%)!important;
+    width:100%!important;
+    max-width:none!important;
+    padding:0 18px!important;
+    text-align:center!important;
+  }
+  #homeTitle.avermont-title{
+    font-size:clamp(48px,12vw,66px)!important;
+    margin:7px auto 10px!important;
+  }
+  .home-title-heart{font-size:.46em!important;transform:translateY(-.03em)!important}
+  .home-label{display:block!important;text-align:center!important;margin:0 auto 4px!important}
+  .home-description{font-size:14px!important;line-height:1.35!important;margin:8px auto 15px!important;max-width:92vw!important}
+  .home-buttons{justify-content:center!important}
+
+  /* If the dedicated portrait mobile GIF does not exist, show the whole
+     desktop/static artwork instead of brutally cropping it with cover. */
+  body.hero-mobile-fit .home-background{
+    background-size:100% auto!important;
+    background-position:center 138px!important;
+    background-repeat:no-repeat!important;
+    background-color:#cbb8d9!important;
+  }
+  body.hero-mobile-cover .home-background{
+    background-size:cover!important;
+    background-position:center 32%!important;
+  }
+
+  /* Clean two-tier candy awning: big round wave + smaller round trim. */
+  .home-wave-big{
+    top:74px!important;
+    height:30px!important;
+    background-color:transparent!important;
+    background-image:radial-gradient(ellipse 44px 29px at 44px 0,var(--jph-soft-pink) 42px,transparent 43px)!important;
+    background-size:88px 30px!important;
+    background-repeat:repeat-x!important;
+    filter:none!important;
+  }
+  .home-scallop-small{
+    top:98px!important;
+    height:18px!important;
+    background-color:transparent!important;
+    background-image:radial-gradient(circle at 9px 0,var(--jph-blush) 9px,transparent 9.7px)!important;
+    background-size:18px 18px!important;
+    background-repeat:repeat-x!important;
+    filter:none!important;
+  }
+  .home-playhouse-badge{top:126px!important}
+
+  /* Profiles should wrap naturally instead of turning into a squeezed,
+     horizontally-scrolling icon line. */
+  .home-update-profiles,
+  #updates .updates-authors,
+  #updates .jteam-member-filters{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    overflow:visible!important;
+    justify-content:flex-start!important;
+    align-items:flex-start!important;
+    gap:12px 13px!important;
+    width:100%!important;
+  }
+  .home-profile-bubble{
+    flex:0 0 48px!important;
+    min-width:48px!important;
+    width:48px!important;
+  }
+  #updates .update-author-bubble,
+  #updates .jteam-member-bubble{
+    flex:0 0 54px!important;
+    min-width:54px!important;
+    width:54px!important;
+  }
+}
+
+@media(min-width:701px){
+  .home-title-heart{font-size:.48em!important}
+}
+
+
+/* =========================================================
+   V21.7 — MOBILE LANDSCAPE HERO
+   Keep the SAME landscape hero artwork on phones.
+   No portrait crop / no separate portrait hero asset.
+   ========================================================= */
+@media (max-width:700px){
+  .home-section{
+    min-height:520px!important;
+    height:520px!important;
+    background:var(--jph-deep-maroon,#7A0F24);
+    overflow:hidden!important;
+  }
+  .home-background,
+  body.hero-mobile-fit .home-background,
+  body.hero-mobile-cover .home-background{
+    top:0!important;
+    inset:0!important;
+    background-size:100% auto!important;
+    background-position:center 118px!important;
+    background-repeat:no-repeat!important;
+    background-color:var(--jph-deep-maroon,#7A0F24)!important;
+  }
+  .home-overlay{
+    background:linear-gradient(to bottom,
+      rgba(42,23,24,.08) 118px,
+      rgba(42,23,24,.24) 230px,
+      rgba(42,23,24,.54) 365px,
+      rgba(42,23,24,.78) 100%)!important;
+  }
+  .home-content{
+    position:absolute!important;
+    left:50%!important;
+    top:275px!important;
+    transform:translate(-50%,-50%)!important;
+    width:92%!important;
+    max-width:520px!important;
+    padding:0 14px!important;
+    text-align:center!important;
+  }
+  .home-label{
+    font-size:9px!important;
+    letter-spacing:.15em!important;
+    margin-bottom:5px!important;
+  }
+  .home-content h1,
+  .hero-title{
+    font-size:clamp(42px,12.5vw,58px)!important;
+    line-height:.94!important;
+    margin:4px 0 8px!important;
+    white-space:nowrap!important;
+    justify-content:center!important;
+  }
+  .hero-heart{
+    font-size:.66em!important;
+    line-height:1!important;
+    transform:translateY(-.01em)!important;
+  }
+  .home-description{
+    font-size:15px!important;
+    line-height:1.25!important;
+    margin:6px 0 12px!important;
+  }
+  .home-buttons{
+    gap:7px!important;
+    flex-wrap:nowrap!important;
+  }
+  .home-buttons .button{
+    padding:9px 13px!important;
+    font-size:8px!important;
+  }
+  .home-wave-big{
+    top:72px!important;
+    height:42px!important;
+    background-size:96px 42px!important;
+  }
+  .home-scallop-small{
+    top:102px!important;
+    height:22px!important;
+    background-size:22px 22px!important;
+  }
+  .scroll-down{
+    bottom:10px!important;
+    font-size:8px!important;
+  }
+}
+
+/* =========================================================
+   V21.8 — HERO KICKER + HOUSE AWNING BORDER FIX
+   - Keep mobile hero landscape.
+   - Keep the kicker above the title, never inline.
+   - Put the decorative scallops on the BOTTOM edge of the
+     colored header trim so it reads like a house awning.
+   ========================================================= */
+
+/* Force the hero text stack into a clean vertical composition. */
+.home-content{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.home-label{
+  display:block!important;
+  width:100%!important;
+  text-align:center!important;
+  order:1!important;
+}
+#homeTitle{
+  order:2!important;
+  display:inline-flex!important;
+  align-items:baseline!important;
+  justify-content:center!important;
+  gap:.055em!important;
+}
+.home-description{order:3!important}
+.home-buttons{order:4!important}
+.home-title-heart{
+  font-size:.46em!important;
+  line-height:1!important;
+  transform:translateY(-.01em)!important;
+  flex:0 0 auto!important;
+}
+
+/* HOUSE AWNING: two solid color bands with scallops only at the lower edge. */
+.home-wave-big,
+.home-scallop-small{
+  left:0!important;
+  width:100%!important;
+  position:absolute!important;
+  pointer-events:none!important;
+}
+.home-wave-big{
+  top:74px!important;
+  height:52px!important;
+  z-index:5!important;
+  background-color:var(--jph-cherry)!important;
+  background-image:radial-gradient(circle at 32px 52px, var(--jph-cherry) 31px, transparent 32px)!important;
+  background-size:64px 64px!important;
+  background-position:0 0!important;
+  background-repeat:repeat-x!important;
+  filter:none!important;
+}
+.home-scallop-small{
+  top:118px!important;
+  height:34px!important;
+  z-index:6!important;
+  background-color:var(--jph-soft-pink)!important;
+  background-image:radial-gradient(circle at 17px 34px, var(--jph-soft-pink) 16px, transparent 17px)!important;
+  background-size:34px 34px!important;
+  background-position:0 0!important;
+  background-repeat:repeat-x!important;
+  filter:none!important;
+}
+.home-playhouse-badge{top:162px!important}
+
+@media(max-width:700px){
+  .home-section{
+    min-height:520px!important;
+    height:520px!important;
+    overflow:hidden!important;
+  }
+  .home-background,
+  body.hero-mobile-fit .home-background,
+  body.hero-mobile-cover .home-background{
+    inset:0!important;
+    background-size:100% auto!important;
+    background-position:center 126px!important;
+    background-repeat:no-repeat!important;
+  }
+  .home-content{
+    left:50%!important;
+    top:300px!important;
+    transform:translate(-50%,-50%)!important;
+    width:94%!important;
+    max-width:520px!important;
+    padding:0 12px!important;
+  }
+  .home-label{
+    font-size:8px!important;
+    letter-spacing:.13em!important;
+    text-transform:none!important;
+    margin:0 0 4px!important;
+  }
+  #homeTitle.avermont-title{
+    font-size:clamp(40px,11.7vw,56px)!important;
+    line-height:.94!important;
+    margin:0 auto 8px!important;
+    white-space:nowrap!important;
+  }
+  .home-title-heart{font-size:.43em!important}
+  .home-description{
+    margin:4px auto 11px!important;
+    font-size:14px!important;
+    line-height:1.25!important;
+  }
+  .home-buttons{gap:7px!important;flex-wrap:nowrap!important}
+  .home-buttons .button{padding:9px 12px!important;font-size:8px!important}
+
+  /* Mobile awning stays directly under the navbar: solid bands first,
+     scallop edge at the bottom. No floating cake-frosting line. */
+  .home-wave-big{
+    top:72px!important;
+    height:42px!important;
+    background-color:var(--jph-cherry)!important;
+    background-image:radial-gradient(circle at 24px 42px,var(--jph-cherry) 23px,transparent 24px)!important;
+    background-size:48px 48px!important;
+  }
+  .home-scallop-small{
+    top:108px!important;
+    height:26px!important;
+    background-color:var(--jph-soft-pink)!important;
+    background-image:radial-gradient(circle at 13px 26px,var(--jph-soft-pink) 12px,transparent 13px)!important;
+    background-size:26px 26px!important;
+  }
+  .home-playhouse-badge{top:142px!important}
+}
+
+/* =========================================================
+   V21.9 — RESTORE THE HOUSE WAVE CORRECTLY
+   Structure: maroon nav -> cherry band -> LARGE rounded wave
+   -> soft-pink band -> SMALL scallop -> hero image.
+   The curves live on the LOWER edges, not in the middle.
+   ========================================================= */
+.home-wave-big,
+.home-scallop-small{
+  position:absolute!important;
+  left:0!important;
+  width:100%!important;
+  pointer-events:none!important;
+  overflow:visible!important;
+  background-image:none!important;
+  filter:none!important;
+}
+
+/* Cherry strip directly under the navbar. */
+.home-wave-big{
+  top:72px!important;
+  height:30px!important;
+  z-index:8!important;
+  background:var(--jph-cherry)!important;
+}
+/* BIG rounded wave hanging from the cherry strip. */
+.home-wave-big::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:-34px;
+  height:36px;
+  background:
+    radial-gradient(ellipse 58px 34px at 58px 0,
+      var(--jph-cherry) 0 97%, transparent 100%)
+    0 0 / 116px 36px repeat-x;
+}
+
+/* Soft-pink strip sits below the large wave. */
+.home-scallop-small{
+  top:126px!important;
+  height:18px!important;
+  z-index:9!important;
+  background:var(--jph-soft-pink)!important;
+}
+/* SMALL scallop hanging from the pink strip. */
+.home-scallop-small::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:-16px;
+  height:18px;
+  background:
+    radial-gradient(circle 15px at 15px 0,
+      var(--jph-soft-pink) 0 97%, transparent 100%)
+    0 0 / 30px 18px repeat-x;
+}
+
+.home-playhouse-badge{top:158px!important}
+
+@media(max-width:700px){
+  .home-wave-big{
+    top:72px!important;
+    height:24px!important;
+  }
+  .home-wave-big::after{
+    bottom:-28px;
+    height:30px;
+    background:
+      radial-gradient(ellipse 44px 28px at 44px 0,
+        var(--jph-cherry) 0 97%, transparent 100%)
+      0 0 / 88px 30px repeat-x;
+  }
+  .home-scallop-small{
+    top:116px!important;
+    height:14px!important;
+  }
+  .home-scallop-small::after{
+    bottom:-13px;
+    height:15px;
+    background:
+      radial-gradient(circle 12px at 12px 0,
+        var(--jph-soft-pink) 0 97%, transparent 100%)
+      0 0 / 24px 15px repeat-x;
+  }
+  .home-playhouse-badge{top:145px!important}
+}
+
+/* =========================================================
+   V21.10 — RED BAND STRAIGHT, PINK SCALLOP BELOW
+   Requested layout: maroon nav -> straight cherry strip ->
+   soft-pink strip -> pink scallop -> hero image.
+   ========================================================= */
+.home-wave-big{
+  top:72px!important;
+  height:30px!important;
+  background:var(--jph-cherry)!important;
+  border-radius:0!important;
+}
+.home-wave-big::after{
+  display:none!important;
+  content:none!important;
+}
+.home-scallop-small{
+  top:102px!important;
+  height:18px!important;
+  background:var(--jph-soft-pink)!important;
+}
+.home-scallop-small::after{
+  display:block!important;
+  content:""!important;
+  bottom:-16px!important;
+  height:18px!important;
+  background:
+    radial-gradient(circle 15px at 15px 0,
+      var(--jph-soft-pink) 0 97%, transparent 100%)
+    0 0 / 30px 18px repeat-x!important;
+}
+.home-playhouse-badge{top:136px!important}
+
+@media(max-width:700px){
+  .home-wave-big{
+    top:72px!important;
+    height:24px!important;
+  }
+  .home-scallop-small{
+    top:96px!important;
+    height:14px!important;
+  }
+  .home-scallop-small::after{
+    bottom:-13px!important;
+    height:15px!important;
+    background:
+      radial-gradient(circle 12px at 12px 0,
+        var(--jph-soft-pink) 0 97%, transparent 100%)
+      0 0 / 24px 15px repeat-x!important;
+  }
+  .home-playhouse-badge{top:125px!important}
+}

@@ -13,14 +13,26 @@ function shopSlug(r){return String(r.Slug||'').trim()||slugify(r['Product Name']
 function shopShareUrl(r){const base=(C.baseUrl||location.origin+location.pathname.replace(/\/[^/]*$/,'')).replace(/\/$/,'');return String(r['Share URL']||'').trim()||`${base}/shop/share/${shopSlug(r)}/`}
 function setting(k,fb=''){const r=visible(data.Settings).find(x=>x.Key===k);return r?.Value||fb}
 function renderHome(){
-  $('#homeTitle').textContent=setting('hero_title','Hi, Jeadore ♡');
+  const rawTitle=setting('hero_title','Hi, Jeadore ♡');
+  const cleanTitle=String(rawTitle||'').replace(/\s*[♡♥❤]\s*$/,'').trim()||'Hi, Jeadore';
+  const hasHeart=/[♡♥❤]\s*$/.test(String(rawTitle||''));
+  $('#homeTitle').innerHTML=`<span class="home-title-text">${escape(cleanTitle)}</span>${hasHeart?'<span class="home-title-heart" aria-hidden="true">♡</span>':''}`;
   $('#homeDescription').textContent=setting('hero_description','You’ve entered Jeniffer Nora’s universe.');
   $('#homeLabel').textContent=setting('hero_label','Welcome to the universe');
   const staticHero=img(setting('hero_image'));
   const desktopGif=setting('hero_gif_desktop','assets/images/hero/jeniffer-home-desktop.gif');
-  const mobileGif=setting('hero_gif_mobile','assets/images/hero/jeniffer-home-mobile.gif');
-  const gif=window.matchMedia('(max-width: 700px)').matches?mobileGif:desktopGif;
+  const isMobile=window.matchMedia('(max-width: 700px)').matches;
+  // V21.7: mobile intentionally keeps the same LANDSCAPE hero asset as desktop.
+  const mobileGif=desktopGif;
+  const gif=desktopGif;
   $('#homeBackground').style.backgroundImage=`url("${img(gif)}"), url("${staticHero}")`;
+  document.body.classList.remove('hero-mobile-fit','hero-mobile-cover');
+  if(isMobile){
+    const probe=new Image();
+    probe.onload=()=>{document.body.classList.remove('hero-mobile-fit');document.body.classList.add('hero-mobile-cover')};
+    probe.onerror=()=>{document.body.classList.remove('hero-mobile-cover');document.body.classList.add('hero-mobile-fit')};
+    probe.src=desktopGif;
+  }
 }
 let _heroMobileState=window.matchMedia('(max-width: 700px)').matches;
 window.addEventListener('resize',()=>{
