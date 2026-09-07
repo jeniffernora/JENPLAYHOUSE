@@ -373,6 +373,57 @@
 
         </section>
 
+        <!-- =========================================
+             HOME PREVIEW — UPDATES / NEWS / SCHEDULE
+        ========================================== -->
+        <section class="home-preview-section" aria-label="Latest from Jeniffer Nora">
+            <div class="home-preview-grid">
+                <div class="home-preview-panel home-preview-updates">
+                    <div class="home-preview-heading">
+                        <div>
+                            <p class="section-label">From Jen & J-Team</p>
+                            <h2>Updates</h2>
+                        </div>
+                        <a href="#updates" class="home-preview-link">View all →</a>
+                    </div>
+                    <div class="home-update-tabs" id="homeUpdateTabs" aria-label="Home update filters">
+                        <button type="button" class="home-update-tab active" data-home-update-filter="all">All</button>
+                        <button type="button" class="home-update-tab" data-home-update-filter="artist">Artist</button>
+                        <button type="button" class="home-update-tab" data-home-update-filter="j-team">J-Team</button>
+                    </div>
+                    <div id="homeUpdateProfiles" class="home-update-profiles" aria-label="Update profiles"></div>
+                    <div class="home-updates-subheading">
+                        <span id="homeUpdatesLabel">Latest Updates</span>
+                    </div>
+                    <div id="homeUpdatesPreview" class="home-updates-preview"></div>
+                </div>
+
+                <div class="home-preview-side">
+                    <div class="home-preview-panel">
+                        <div class="home-preview-heading">
+                            <div>
+                                <p class="section-label">Latest Stories</p>
+                                <h2>News</h2>
+                            </div>
+                            <a href="#news" class="home-preview-link">View all →</a>
+                        </div>
+                        <div id="homeNewsPreview" class="home-news-preview"></div>
+                    </div>
+
+                    <div class="home-preview-panel">
+                        <div class="home-preview-heading">
+                            <div>
+                                <p class="section-label">Coming Up</p>
+                                <h2>Schedule</h2>
+                            </div>
+                            <a href="#schedule" class="home-preview-link">View all →</a>
+                        </div>
+                        <div id="homeSchedulePreview" class="home-schedule-preview"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
 
 
         <!-- =========================================
@@ -523,7 +574,6 @@
                         <h2>Updates</h2>
                         <p>Little messages, photos, videos, voice notes, notices, and schedule moments.</p>
                     </div>
-                    <a class="team-login-link" href="admin.html">J-Team Login</a>
                 </div>
 
                 <div class="updates-tabs" id="updatesTabs">
@@ -535,10 +585,31 @@
                     <button class="update-tab" type="button" data-update-filter="schedule">Schedule</button>
                 </div>
 
-                <div class="updates-authors" id="updatesAuthors"></div>
-                <div class="jteam-member-filters" id="jteamMemberFilters" hidden></div>
-                <div class="updates-feed" id="updatesFeed">
-                    <p class="loading-text">Loading updates...</p>
+                <div class="updates-community-block">
+                    <div class="updates-community-title">
+                        <div>
+                            <p class="section-label" id="updatesCommunityEyebrow">Community</p>
+                            <h3 id="updatesCommunityTitle">Artist & Team</h3>
+                        </div>
+                        <p id="updatesCommunityCopy">Choose Jeniffer or a J-Team member to see their updates.</p>
+                    </div>
+                    <div class="updates-authors" id="updatesAuthors"></div>
+                    <div class="jteam-member-filters" id="jteamMemberFilters" hidden></div>
+                </div>
+
+                <div class="updates-feed-block">
+                    <div class="updates-feed-title">
+                        <p class="section-label">Latest Posts</p>
+                        <h3 id="updatesFeedTitle">All Updates</h3>
+                    </div>
+                    <div class="updates-feed" id="updatesFeed">
+                        <p class="loading-text">Loading updates...</p>
+                    </div>
+                </div>
+
+                <div class="updates-login-footer">
+                    <span>J-Team member?</span>
+                    <a class="team-login-link" href="admin.html">J-Team Login</a>
                 </div>
             </div>
         </section>
@@ -786,78 +857,32 @@
 
 
 
-            <article
-                class="lyric-card"
-                id="lyricCard"
-            >
-
-                <div
-                    class="lyric-background"
-                    id="lyricBackground"
-                ></div>
-
-
+            <article class="lyric-card lyric-card-v20" id="lyricCard">
+                <div class="lyric-background" id="lyricBackground"></div>
                 <div class="lyric-overlay"></div>
-
-
-                <div class="lyric-content">
-
-
-                    <div class="lyric-top">
-
-                        <span>
-                            Now Playing
-                        </span>
-
-                        <span>
-                            ♡
-                        </span>
-
+                <div class="lyric-content lyric-content-v20">
+                    <div class="lyric-card-song-head">
+                        <img id="lyricCardCover" class="lyric-card-cover" src="" alt="Song cover">
+                        <div class="lyric-card-song-copy">
+                            <h3 id="playerSongTitle">Song Title</h3>
+                            <p id="playerRoleplayArtist">Jeniffer Nora</p>
+                            <small id="playerOriginalCredit">Original song by Original Artist</small>
+                        </div>
                     </div>
-
-
-                    <p
-                        class="lyric-quote"
-                        id="lyricQuote"
-                    ></p>
-
-
-                    <div class="lyric-song-information">
-
-                        <p class="lyric-label">
-                            Jeniffer Nora’s Universe
-                        </p>
-
-
-                        <h3 id="playerSongTitle">
-                            Song Title
-                        </h3>
-
-
-                        <p id="playerRoleplayArtist">
-                            Jeniffer Nora
-                        </p>
-
-
-                        <div class="lyric-divider"></div>
-
-
-                        <p id="playerOriginalCredit">
-                            Original song by Original Artist
-                        </p>
-
-
-                        <small>
-                            Fictional Artist · For Roleplay Purposes Only
-                        </small>
-
+                    <p class="lyric-quote" id="lyricQuote"></p>
+                    <div class="lyric-card-brand">
+                        <strong>Jeniffer Nora</strong>
+                        <small>Fictional artist · For roleplay purpose</small>
                     </div>
-
                 </div>
-
             </article>
 
-
+            <section class="lyric-builder-panel">
+                <p class="section-label">Choose Your Lyrics</p>
+                <p class="lyric-builder-note">Highlight any lyric lines below. Your highlighted text will instantly appear on the Jeniffer Nora lyric card.</p>
+                <div id="lyricChoices" class="lyric-choices lyric-full-copy"></div>
+                <div class="lyric-selection-status" id="lyricSelectionStatus">Highlight the lyrics you want to use.</div>
+            </section>
 
             <div
                 class="youtube-player-container"
@@ -904,7 +929,7 @@
                     id="shareSongButton"
                     type="button"
                 >
-                    Share
+                    Share Lyric Card
                 </button>
 
             </div>
@@ -1454,8 +1479,6 @@
 
         </p>
 
-
-        <a href="admin.html" class="cms-footer-button">J-Team Login</a>
 
         <p class="footer-year">
 
