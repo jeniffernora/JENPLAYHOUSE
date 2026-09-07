@@ -897,3 +897,411 @@ footer{padding:24px 6vw 20px!important;border-top:1px solid rgba(69,5,5,.12)}
 .full-lyrics-copy *::selection{background:rgba(92,10,10,.22)}
 .lyric-selection-status{margin-top:8px;font-size:11px;line-height:1.4;opacity:.72}
 @media(max-width:650px){.full-lyrics-copy{padding:11px;font-size:12px;line-height:1.55}.lyric-selection-status{font-size:10px;margin-top:6px}}
+
+
+/* =========================================================
+   V21 — JEN PLAY HOUSE VISUAL REFRESH
+   Palette: maroon / cherry / pink / cream / lavender
+   Desktop + mobile hero GIF support is handled in script.js.
+   ========================================================= */
+:root{
+  --jph-maroon:#7A0F24;
+  --jph-cherry:#C92F45;
+  --jph-soft-pink:#F7C6D0;
+  --jph-blush:#FBE3E8;
+  --jph-cream:#F8F0E6;
+  --jph-ivory:#FFF9F4;
+  --jph-rose:#B86A78;
+  --jph-espresso:#2A1718;
+  --jph-lavender:#D9D3FF;
+}
+body{background:var(--jph-cream);color:var(--jph-maroon)}
+.navbar{
+  background:rgba(122,15,36,.95);
+  color:var(--jph-ivory);
+  border-bottom:1px solid rgba(255,249,244,.2);
+  box-shadow:0 8px 26px rgba(42,23,24,.08);
+}
+.brand-name{font-family:Georgia,serif;font-size:21px;letter-spacing:.08em}
+.brand-note{color:var(--jph-soft-pink);opacity:.9}
+.navigation{color:var(--jph-ivory)}
+.cart-nav-button{border-color:rgba(255,249,244,.6)}
+.menu-button span{background:var(--jph-ivory)}
+.home-section{background:var(--jph-maroon)}
+.home-background{
+  transform:scale(1.002);
+  background-position:center 28%;
+  background-repeat:no-repeat;
+  background-size:cover;
+}
+.home-overlay{
+  background:linear-gradient(180deg,rgba(42,23,24,.18) 0%,rgba(74,6,23,.24) 48%,rgba(42,23,24,.5) 100%);
+}
+.home-scallop{
+  position:absolute;
+  z-index:3;
+  top:74px;
+  left:0;
+  width:100%;
+  height:30px;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 15px 0,var(--jph-soft-pink) 15px,transparent 15.5px) 0 0/30px 30px repeat-x;
+  filter:drop-shadow(0 3px 0 rgba(122,15,36,.2));
+}
+.home-playhouse-badge{
+  position:absolute;
+  z-index:4;
+  top:124px;
+  left:30px;
+  padding:9px 13px;
+  border:1px solid rgba(255,249,244,.65);
+  border-radius:999px;
+  background:rgba(122,15,36,.7);
+  backdrop-filter:blur(6px);
+  color:var(--jph-ivory);
+  font-size:9px;
+  letter-spacing:2px;
+}
+.home-label{color:var(--jph-soft-pink);font-weight:700}
+.home-content h1{text-shadow:0 2px 18px rgba(42,23,24,.24)}
+.home-description{color:var(--jph-ivory)}
+.button-light{background:var(--jph-soft-pink);border-color:var(--jph-soft-pink);color:var(--jph-maroon)}
+.button-outline{background:rgba(122,15,36,.28);border-color:rgba(255,249,244,.8);color:var(--jph-ivory);backdrop-filter:blur(5px)}
+.scroll-down{color:var(--jph-soft-pink)}
+.home-preview-section,.section{background:var(--jph-cream);color:var(--jph-maroon)}
+.home-preview-panel{border-top-color:rgba(122,15,36,.25)}
+.home-preview-heading h2,.section-heading h2{color:var(--jph-maroon)}
+.home-preview-link,.home-card-link{color:var(--jph-cherry)}
+.music-tab.active,.shop-tab.active{background:var(--jph-maroon);color:var(--jph-ivory)}
+.music-tab,.shop-tab{border-color:rgba(122,15,36,.35)}
+.signup-section{background:var(--jph-maroon);color:var(--jph-ivory)}
+footer{background:var(--jph-maroon);color:var(--jph-ivory)}
+.footer-disclaimer{color:var(--jph-blush)}
+
+@media (min-width:901px){
+  .home-section{min-height:100vh}
+  .home-content{max-width:980px;padding:90px 48px 60px}
+  #homeTitle.avermont-title{font-size:clamp(78px,9vw,150px)!important;line-height:.9!important}
+  .home-description{font-size:22px!important}
+  .home-buttons .button{padding:14px 22px;font-size:11px}
+}
+
+@media (max-width:850px){
+  .navigation{background:var(--jph-maroon);color:var(--jph-ivory)}
+}
+@media (max-width:700px){
+  .home-background{background-position:center 24%}
+  .home-scallop{top:62px;height:20px;background-size:20px 20px;background-image:radial-gradient(circle at 10px 0,var(--jph-soft-pink) 10px,transparent 10.5px)}
+  .home-playhouse-badge{top:96px;left:14px;padding:7px 10px;font-size:7px;letter-spacing:1.4px}
+  .home-content{padding:56px 16px 28px!important}
+  #homeTitle.avermont-title{font-size:clamp(48px,13vw,76px)!important}
+  .home-description{font-size:15px!important}
+  .home-buttons{gap:7px;flex-wrap:wrap}
+  .home-buttons .button{padding:10px 13px;font-size:8px}
+}
+
+/* =========================================================
+   V21.1 — DOUBLE WAVE + FULL PALETTE + LIVE NEWS
+   Big rounded wave first, then a smaller scallop trim.
+   ========================================================= */
+
+/* Hero is intentionally taller on desktop so Jeniffer's image has room. */
+@media (min-width:901px){
+  .home-section{min-height:112vh!important;}
+  .home-background{background-position:center 34%!important;}
+  .home-content{padding-top:128px!important;}
+}
+
+/* Two-layer decorative awning under the fixed header. */
+.home-wave-big,
+.home-scallop-small{
+  position:absolute;
+  left:0;
+  width:100%;
+  pointer-events:none;
+  z-index:4;
+}
+.home-wave-big{
+  top:74px;
+  height:58px;
+  background-color:var(--jph-cherry);
+  background-image:radial-gradient(ellipse 70px 44px at 70px 0,var(--jph-cherry) 68px,transparent 69px);
+  background-size:140px 58px;
+  background-repeat:repeat-x;
+  filter:drop-shadow(0 4px 0 rgba(122,15,36,.12));
+}
+.home-scallop-small{
+  top:116px;
+  height:34px;
+  background-image:radial-gradient(circle at 17px 0,var(--jph-soft-pink) 17px,transparent 17.8px);
+  background-size:34px 34px;
+  background-repeat:repeat-x;
+  filter:drop-shadow(0 3px 0 rgba(122,15,36,.10));
+}
+.home-scallop{display:none!important}
+.home-playhouse-badge{top:164px!important}
+
+/* Tiny decorative marks — intentionally subtle over the hero photo. */
+.home-hero-doodles span{position:absolute;z-index:4;color:var(--jph-soft-pink);text-shadow:0 2px 12px rgba(42,23,24,.24);pointer-events:none}
+.doodle-heart{right:7vw;top:23%;font-size:34px;transform:rotate(9deg)}
+.doodle-star{left:6vw;top:33%;font-size:30px}
+.doodle-ribbon{right:13vw;bottom:18%;font-size:36px;color:var(--jph-blush)!important}
+.doodle-cherry{left:8vw;bottom:17%;font-size:16px;letter-spacing:-2px;color:var(--jph-cherry)!important}
+
+/* Use the whole palette throughout the site, not only maroon + cream. */
+.home-preview-section{background:linear-gradient(180deg,var(--jph-blush) 0%,var(--jph-cream) 100%)!important}
+.home-preview-panel{background:rgba(255,249,244,.62);border-top:1px solid rgba(122,15,36,.25);padding:26px;border-radius:24px}
+.home-preview-updates{box-shadow:inset 0 0 0 1px rgba(247,198,208,.5)}
+.music-section{background:var(--jph-cream)!important}
+.updates-section{background:var(--jph-ivory)!important}
+.schedule-section{background:linear-gradient(180deg,var(--jph-soft-pink),var(--jph-blush))!important}
+.news-section{background:var(--jph-blush)!important}
+.team-section{background:linear-gradient(180deg,var(--jph-ivory),rgba(217,211,255,.52))!important}
+.shop-section{background:linear-gradient(180deg,var(--jph-cream),var(--jph-ivory))!important}
+.signup-section{background:linear-gradient(135deg,var(--jph-maroon),var(--jph-cherry))!important}
+
+.home-update-tab{background:var(--jph-soft-pink)!important;color:var(--jph-maroon)!important}
+.home-update-tab.active{background:var(--jph-maroon)!important;color:var(--jph-ivory)!important}
+.home-update-card,.update-post,.news-card,.product-card,.team-card,.album-card,.single-card{border-color:rgba(122,15,36,.16)!important}
+.update-post{background:var(--jph-ivory)!important}
+.update-tab.active{background:var(--jph-maroon)!important;color:var(--jph-ivory)!important}
+.update-tab{background:var(--jph-blush)!important}
+.news-card img{border-radius:18px 18px 6px 6px}
+.news-card{background:rgba(255,249,244,.55);padding:14px;border-radius:20px;border-top:0!important;box-shadow:0 14px 34px rgba(122,15,36,.06)}
+
+/* More rounded/candy-like buttons without turning every card into an AI pill. */
+.button,.music-tab,.shop-tab,.home-update-tab,.update-tab,.cart-nav-button{border-radius:999px}
+
+@media(max-width:700px){
+  .home-section{min-height:100svh!important}
+  .home-background{background-position:center 28%!important}
+  .home-wave-big{top:62px;height:42px;background-size:96px 42px;background-image:radial-gradient(ellipse 48px 34px at 48px 0,var(--jph-cherry) 47px,transparent 48px)}
+  .home-scallop-small{top:93px;height:24px;background-size:24px 24px;background-image:radial-gradient(circle at 12px 0,var(--jph-soft-pink) 12px,transparent 12.7px)}
+  .home-playhouse-badge{top:126px!important}
+  .doodle-heart{font-size:22px;right:7vw;top:24%}
+  .doodle-star{font-size:18px;left:5vw;top:36%}
+  .doodle-ribbon{font-size:24px;right:9vw;bottom:15%}
+  .doodle-cherry{font-size:12px;left:6vw;bottom:15%}
+  .home-preview-panel{padding:14px;border-radius:16px}
+}
+
+/* =========================================================
+   V21.2 — LARGE DESKTOP SCALE FIX
+   Keep mobile/tablet compact; make wide desktop feel intentional.
+   ========================================================= */
+@media (min-width: 1440px){
+  .home-preview-section{
+    padding:86px 3vw 96px!important;
+  }
+  .home-preview-grid{
+    width:94vw!important;
+    max-width:none!important;
+    grid-template-columns:minmax(0,1.72fr) minmax(520px,.92fr)!important;
+    gap:46px!important;
+  }
+  .home-preview-side{gap:34px!important}
+  .home-preview-panel{padding:30px!important;border-radius:26px!important}
+  .home-preview-heading{margin-bottom:24px!important}
+  .home-preview-heading h2{font-size:52px!important;line-height:.95!important}
+  .home-preview-link,.home-card-link{font-size:12px!important;letter-spacing:1px!important}
+
+  .home-update-tabs{gap:12px!important;margin-bottom:24px!important}
+  .home-update-tab{padding:11px 22px!important;font-size:13px!important}
+  .home-update-profiles{gap:22px!important;padding-bottom:20px!important;margin-bottom:18px!important}
+  .home-profile-bubble{min-width:78px!important;font-size:11px!important;gap:7px!important}
+  .home-profile-bubble img,.home-profile-mark{width:64px!important;height:64px!important}
+  .home-profile-bubble i{width:15px!important;height:15px!important;right:5px!important;top:46px!important;font-size:9px!important}
+  .home-updates-subheading{font-size:22px!important;margin-bottom:15px!important}
+  .home-updates-preview{max-width:none!important}
+  .home-update-card{padding:28px!important;min-height:240px!important}
+  .home-update-head>img{width:60px!important;height:60px!important;flex-basis:60px!important}
+  .home-update-head strong{font-size:20px!important}
+  .home-update-head span{font-size:11px!important}
+  .home-update-card p{font-size:24px!important;line-height:1.45!important;margin:16px 0 20px!important}
+
+  .home-news-preview{gap:16px!important}
+  .home-news-card{grid-template-columns:132px 1fr!important;gap:18px!important;padding-bottom:16px!important}
+  .home-news-card img{width:132px!important;height:92px!important}
+  .home-news-card span{font-size:11px!important}
+  .home-news-card strong{font-size:21px!important;line-height:1.25!important}
+
+  .home-schedule-row{grid-template-columns:140px 1fr!important;gap:18px!important;padding:16px 0!important}
+  .home-schedule-row span,.home-schedule-row small{font-size:11px!important}
+  .home-schedule-row strong{font-size:17px!important;line-height:1.35!important}
+}
+
+@media (min-width: 1800px){
+  .home-preview-grid{width:92vw!important;grid-template-columns:minmax(0,1.78fr) minmax(570px,.95fr)!important;gap:54px!important}
+  .home-preview-heading h2{font-size:58px!important}
+  .home-profile-bubble img,.home-profile-mark{width:70px!important;height:70px!important}
+  .home-profile-bubble{min-width:84px!important;font-size:12px!important}
+  .home-profile-bubble i{top:51px!important}
+  .home-update-card p{font-size:26px!important}
+  .home-news-card strong{font-size:23px!important}
+  .home-schedule-row strong{font-size:18px!important}
+}
+
+/* =========================================================
+   V21.3 — RESTORE PRE-V21 HERO COMPOSITION
+   Keep JEN PLAY HOUSE palette + double wave, but return the
+   hero proportions/content placement to the earlier layout.
+   ========================================================= */
+@media (min-width: 851px){
+  .home-section{
+    min-height:100vh!important;
+    height:auto!important;
+  }
+  .home-background{
+    background-position:center center!important;
+  }
+  .home-content{
+    max-width:760px!important;
+    width:auto!important;
+    padding:40px!important;
+  }
+  .home-content .home-label{
+    font-size:9px!important;
+    margin:0!important;
+  }
+  .home-description{
+    font-size:20px!important;
+  }
+  .home-playhouse-badge{
+    top:126px!important;
+  }
+  .home-wave-big{
+    top:62px!important;
+  }
+  .home-scallop-small{
+    top:93px!important;
+  }
+}
+
+@media (min-width: 1440px){
+  .home-section{min-height:100vh!important}
+  .home-background{background-position:center center!important}
+  .home-content{max-width:820px!important;padding:42px!important}
+}
+
+/* =========================================================
+   V21.4 — HERO POSITION + BALANCED PLAYHOUSE PALETTE
+   Final pre-Git visual pass.
+   ========================================================= */
+:root{
+  --jph-deep-berry:#821936;
+  --jph-cherry:#C92F45;
+  --jph-soft-pink:#F7C6D0;
+  --jph-blush:#FBE3E8;
+  --jph-cream:#F8F0E6;
+  --jph-ivory:#FFF9F4;
+  --jph-rose:#B86A78;
+  --jph-lavender:#D9D3FF;
+  --jph-plum-text:#68142C;
+}
+
+/* Remove the old brown cast from the site's UI. */
+body{background:var(--jph-cream)!important;color:var(--jph-plum-text)!important}
+.navbar{background:rgba(130,25,54,.94)!important}
+.brand-name,.navigation{color:var(--jph-ivory)!important}
+.brand-note{color:var(--jph-soft-pink)!important;text-transform:none!important;letter-spacing:.06em!important}
+
+/* Hero: show more of Jeniffer, move the picture down, and centre the copy. */
+@media (min-width:851px){
+  .home-section{min-height:100vh!important;background:var(--jph-blush)!important}
+  .home-background{
+    background-size:100% auto!important;
+    background-position:center 64%!important;
+    background-repeat:no-repeat!important;
+    background-color:#CDB7D7!important;
+    transform:none!important;
+  }
+  .home-content{
+    position:absolute!important;
+    left:50%!important;
+    top:59%!important;
+    transform:translate(-50%,-50%)!important;
+    width:min(860px,78vw)!important;
+    max-width:none!important;
+    padding:24px!important;
+    text-align:center!important;
+  }
+  #homeTitle.avermont-title{
+    font-size:clamp(68px,7.6vw,128px)!important;
+    line-height:.92!important;
+    margin:7px 0 8px!important;
+  }
+  .home-label{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    font-size:8px!important;
+    line-height:1!important;
+    letter-spacing:.08em!important;
+    text-transform:none!important;
+    margin:0!important;
+  }
+  .home-description{font-size:18px!important;margin:8px 0 14px!important}
+  .home-buttons{justify-content:center!important}
+}
+
+/* Keep phone framing independent from the desktop hero. */
+@media(max-width:850px){
+  .home-background{background-size:cover!important;background-position:center 34%!important}
+  .home-content{text-align:center!important}
+  .home-label{font-size:8px!important;text-transform:none!important;letter-spacing:.08em!important}
+}
+
+/* Double awning: rounder and less red-heavy. */
+.home-wave-big{
+  background-color:var(--jph-soft-pink)!important;
+  background-image:radial-gradient(ellipse 76px 48px at 76px 0,var(--jph-soft-pink) 74px,transparent 75px)!important;
+  background-size:152px 62px!important;
+  filter:drop-shadow(0 4px 0 rgba(130,25,54,.08))!important;
+}
+.home-scallop-small{
+  background-image:radial-gradient(circle at 18px 0,var(--jph-blush) 18px,transparent 18.8px)!important;
+  background-size:36px 36px!important;
+  filter:drop-shadow(0 2px 0 rgba(130,25,54,.06))!important;
+}
+
+/* Palette distribution: cream + pink + lavender should be as visible as red. */
+.home-preview-section{background:linear-gradient(180deg,var(--jph-ivory) 0%,var(--jph-blush) 100%)!important}
+.home-preview-panel{background:rgba(255,249,244,.78)!important;border-color:rgba(184,106,120,.28)!important}
+.music-section{background:var(--jph-cream)!important}
+.updates-section{background:linear-gradient(180deg,var(--jph-ivory),rgba(217,211,255,.22))!important;color:var(--jph-plum-text)!important}
+.news-section{background:linear-gradient(180deg,var(--jph-blush),var(--jph-ivory))!important}
+.schedule-section{background:linear-gradient(180deg,rgba(217,211,255,.55),var(--jph-blush))!important}
+.team-section{background:linear-gradient(180deg,var(--jph-ivory),rgba(217,211,255,.58))!important}
+.shop-section{background:linear-gradient(180deg,var(--jph-cream),var(--jph-soft-pink))!important}
+.signup-section{background:linear-gradient(135deg,var(--jph-deep-berry),var(--jph-rose))!important}
+footer{background:var(--jph-deep-berry)!important}
+
+/* Replace legacy brown buttons / lines with berry + rose. */
+.music-tab.active,.shop-tab.active,.update-tab.active,.home-update-tab.active,
+.card-actions button,.card-actions a,.checkout-button,.complete-payment-button,
+#closeSuccessButton,.signup-form button{
+  background:var(--jph-deep-berry)!important;
+  border-color:var(--jph-deep-berry)!important;
+  color:var(--jph-ivory)!important;
+}
+.music-tab,.shop-tab,.update-tab,.home-update-tab,
+.card-actions button,.card-actions a,.music-player-actions>*{
+  border-color:rgba(130,25,54,.24)!important;
+}
+
+/* Small lower/secondary labels stay subtle and normal-case, not shouty caps. */
+.home-label,.brand-note,.card-meta,.section-label{
+  text-transform:none!important;
+}
+
+@media(max-width:700px){
+  .home-wave-big{
+    background-image:radial-gradient(ellipse 52px 36px at 52px 0,var(--jph-soft-pink) 51px,transparent 52px)!important;
+    background-size:104px 44px!important;
+  }
+  .home-scallop-small{
+    background-image:radial-gradient(circle at 12px 0,var(--jph-blush) 12px,transparent 12.7px)!important;
+    background-size:24px 24px!important;
+  }
+}

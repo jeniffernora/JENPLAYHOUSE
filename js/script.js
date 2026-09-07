@@ -12,7 +12,60 @@ function youtubeUrlFor(r){const direct=String(r['YouTube URL']||'').trim();if(di
 function shopSlug(r){return String(r.Slug||'').trim()||slugify(r['Product Name'])}
 function shopShareUrl(r){const base=(C.baseUrl||location.origin+location.pathname.replace(/\/[^/]*$/,'')).replace(/\/$/,'');return String(r['Share URL']||'').trim()||`${base}/shop/share/${shopSlug(r)}/`}
 function setting(k,fb=''){const r=visible(data.Settings).find(x=>x.Key===k);return r?.Value||fb}
-function renderHome(){ $('#homeTitle').textContent=setting('hero_title','Hi, Jeadore ♡'); $('#homeDescription').textContent=setting('hero_description','You’ve entered Jeniffer Nora’s universe.'); $('#homeLabel').textContent=setting('hero_label','Welcome to the universe'); $('#homeBackground').style.backgroundImage=`url("${img(setting('hero_image'))}")`;}
+function renderHome(){
+  $('#homeTitle').textContent=setting('hero_title','Hi, Jeadore ♡');
+  $('#homeDescription').textContent=setting('hero_description','You’ve entered Jeniffer Nora’s universe.');
+  $('#homeLabel').textContent=setting('hero_label','Welcome to the universe');
+  const staticHero=img(setting('hero_image'));
+  const desktopGif=setting('hero_gif_desktop','assets/images/hero/jeniffer-home-desktop.gif');
+  const mobileGif=setting('hero_gif_mobile','assets/images/hero/jeniffer-home-mobile.gif');
+  const gif=window.matchMedia('(max-width: 700px)').matches?mobileGif:desktopGif;
+  $('#homeBackground').style.backgroundImage=`url("${img(gif)}"), url("${staticHero}")`;
+}
+let _heroMobileState=window.matchMedia('(max-width: 700px)').matches;
+window.addEventListener('resize',()=>{
+  const next=window.matchMedia('(max-width: 700px)').matches;
+  if(next!==_heroMobileState){_heroMobileState=next;renderHome();}
+});
+
+
+function parseCsv(text){
+  const rows=[];let row=[],cell='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i],n=text[i+1];if(q){if(c==='"'&&n==='"'){cell+='"';i++;}else if(c==='"'){q=false;}else cell+=c;}else{if(c==='"')q=true;else if(c===','){row.push(cell);cell='';}else if(c==='\n'){row.push(cell.replace(/\r$/,''));rows.push(row);row=[];cell='';}else cell+=c;}}
+  if(cell.length||row.length){row.push(cell.replace(/\r$/,''));rows.push(row)}
+  return rows;
+}
+async function fetchLiveSheetRows(sheetName){
+  const sheetId=String(C.liveSheetId||'').trim();
+  if(!sheetId||!sheetName)return null;
+  const sheet=encodeURIComponent(sheetName);
+  const url=`https://docs.google.com/spreadsheets/d/${encodeURIComponent(sheetId)}/gviz/tq?tqx=out:csv&sheet=${sheet}&_=${Date.now()}`;
+  const r=await fetch(url,{cache:'no-store'});
+  if(!r.ok)throw new Error(`HTTP ${r.status}`);
+  const table=parseCsv(await r.text());
+  if(table.length<2)return [];
+  const headers=table[0].map(x=>String(x||'').trim());
+  return table.slice(1)
+    .filter(cols=>cols.some(v=>String(v||'').trim()))
+    .map(cols=>Object.fromEntries(headers.map((h,i)=>[h,String(cols[i]??'').trim()])));
+}
+async function loadLiveSheetData(){
+  const tasks=[];
+  const newsName=C.newsSheetName||'News';
+  tasks.push((async()=>{
+    try{const rows=await fetchLiveSheetRows(newsName);if(rows&&rows.length)data.News=rows;}
+    catch(e){console.warn('Live News sheet unavailable; using bundled CMS fallback.',e)}
+  })());
+  const musicSheets=C.liveMusicSheets||{Albums:'Albums','Korean Albums':'Korean Albums',Singles:'Singles'};
+  for(const [key,sheetName] of Object.entries(musicSheets)){
+    tasks.push((async()=>{
+      try{const rows=await fetchLiveSheetRows(sheetName);if(rows&&rows.length)data[key]=rows;}
+      catch(e){console.warn(`Live ${sheetName} sheet unavailable; using bundled CMS fallback.`,e)}
+    })());
+  }
+  await Promise.all(tasks);
+}
+
 function roleplay(r){return (r['Roleplay Artist']||'Jeniffer Nora')+(r['Featured Artist']?` feat. ${r['Featured Artist']}`:'')}
 function lyricLines(r){return []}
 function fullLyrics(r){return String(r['Full Lyrics']||'').trim()}
@@ -201,4 +254,4 @@ function bind(){document.addEventListener('click',e=>{const album=e.target.close
 async function buildLyricCardBlob(){if(!currentSong)return null;const quote=selectedLyricText.trim();if(!quote){alert('Highlight the lyric lines you want to use first.');return null;}const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1080;const ctx=canvas.getContext('2d');ctx.fillStyle='#efbcc8';ctx.fillRect(0,0,1080,1080);const bg=currentSong['Lyric Background Image']||currentSong['Cover URL or Path'];try{const background=await loadCanvasImage(bg);ctx.globalAlpha=.18;const scale=Math.max(1080/background.width,1080/background.height),w=background.width*scale,h=background.height*scale;ctx.drawImage(background,(1080-w)/2,(1080-h)/2,w,h);ctx.globalAlpha=1}catch(e){}ctx.fillStyle='rgba(255,255,255,.28)';ctx.fillRect(58,58,964,964);try{const cover=await loadCanvasImage(currentSong['Cover URL or Path']);ctx.drawImage(cover,100,105,105,105)}catch(e){}ctx.fillStyle='#4b1d22';ctx.font='700 38px Arial';ctx.fillText(currentSong['Song Title']||'',235,142);ctx.font='30px Arial';ctx.fillText('Jeniffer Nora',235,184);ctx.font='20px Arial';ctx.globalAlpha=.75;ctx.fillText(originalCredit(currentSong)?`Original song by ${originalCredit(currentSong)}`:'Original credit unavailable',235,215);ctx.globalAlpha=1;ctx.font='700 58px Arial';const lines=wrapCanvasText(ctx,quote,850).slice(0,9);let y=365;for(const line of lines){ctx.fillText(line,100,y);y+=67}ctx.font='700 34px Arial';ctx.fillText('Jeniffer Nora',100,940);ctx.font='18px Arial';ctx.globalAlpha=.65;ctx.fillText('Fictional artist · For roleplay purpose',100,978);ctx.globalAlpha=1;return {blob:await canvasToBlob(canvas),canvas}}
 $('#saveLyricCard').onclick=async()=>{const card=await buildLyricCardBlob();if(!card)return;const link=document.createElement('a');link.download=`${slugify(currentSong['Song Title']||'jeniffer-lyric')}-lyric.png`;link.href=URL.createObjectURL(card.blob);link.click();setTimeout(()=>URL.revokeObjectURL(link.href),2000)};
 $('#shareSongButton').onclick=async()=>{const card=await buildLyricCardBlob();if(!card)return;const file=new File([card.blob],`${slugify(currentSong['Song Title']||'jeniffer-lyric')}-jeniffer-nora.png`,{type:'image/png'});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:`${currentSong['Song Title']} · Jeniffer Nora`});return}catch(e){if(e&&e.name==='AbortError')return}}const link=document.createElement('a');link.download=file.name;link.href=URL.createObjectURL(card.blob);link.click();setTimeout(()=>URL.revokeObjectURL(link.href),2000);alert('Lyric card saved as an image. You can attach it to X or another app.');};}
-setupExtraUI();renderAll();bind();setupAdmin();setupSectionRouting();handleDeepLinks();})();
+(async()=>{await loadLiveSheetData();setupExtraUI();renderAll();bind();setupAdmin();setupSectionRouting();handleDeepLinks();})();})();

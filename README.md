@@ -1,10 +1,19 @@
-# Jeniffer Nora Website V20.5 — Home Updates Preview
+# Jeniffer Nora Website V21.5 — Live Sheet Data
 
-Changes from V20.4:
-- Home left Updates panel now behaves like a mini Updates hub.
-- Added All / Artist / J-Team tabs on Home.
-- Added Jeniffer + J-Team profile bubbles.
-- J-Team Home tab supports filtering by Helena, Ranu, Nona, Manu, Gadis, Atharya, Niki, and Ed when present in Users data.
-- News stays top-right and Schedule stays bottom-right on desktop.
-- Desktop Home Updates is larger and easier to read; mobile remains compact.
-- Full Updates page from V20.4 is preserved.
+Built from V21.4.
+
+## What changed
+- News now reads live from the Google Sheet `News` tab.
+- Albums, Korean Albums, and Singles now read live from Google Sheets before the page renders.
+- `Full Lyrics` therefore updates from the Sheet without regenerating `js/cms-data.js` or pushing GitHub.
+- New singles / metadata changes in those music tabs can also appear without a Git push.
+- `js/cms-data.js` remains as an offline/fallback snapshot if Google Sheets cannot be reached.
+- V21.4 hero, palette, Home preview, Updates, Cloudinary admin, and direct lyric highlighting are preserved.
+
+## Live Sheet
+Sheet ID: `1OO_r1XUYJoqrm-zLJFHz-oB1k5RX_76KgBDoxQ06MhY`
+
+The Google Sheet must be viewable by the website/browser for live CSV reads to work.
+
+## Git rule
+Do not commit the CMS `.xlsx` file or private Users data to the public repository. Push only the website files/assets.

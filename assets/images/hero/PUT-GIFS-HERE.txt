@@ -1,0 +1,6 @@
+JEN PLAY HOUSE HERO GIF FILES
+
+Desktop: jeniffer-home-desktop.gif (recommended 1920x1080 px)
+Mobile: jeniffer-home-mobile.gif (recommended 1080x1920 px)
+
+If either GIF is missing, the website falls back to the existing hero_image from CMS Settings.
