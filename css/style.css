@@ -1780,3 +1780,151 @@ footer{background:var(--jph-deep-berry)!important}
   }
   .home-playhouse-badge{top:125px!important}
 }
+
+/* =========================================================
+   V21.11 — FINAL HERO + MOBILE + HOME UPDATES LAYOUT FIX
+   Requested fixes:
+   - Desktop hero copy must be precisely centered.
+   - Kicker stays above title; heart is small and inline.
+   - Mobile hero keeps the SAME landscape 16:9 image, with no
+     empty maroon area below the image.
+   - Mobile team/profile bubbles may wrap to additional rows.
+   - Home Latest Updates card spans the full available width.
+   ========================================================= */
+
+/* Full-width landscape Latest Update preview on Home. */
+.home-updates-preview{
+  grid-template-columns:1fr!important;
+  width:100%!important;
+  max-width:none!important;
+}
+.home-update-card{
+  width:100%!important;
+  max-width:none!important;
+  min-height:0!important;
+}
+.home-update-card p{max-width:none!important}
+
+/* Precise desktop hero centering — do not inherit old offsets. */
+@media(min-width:701px){
+  .home-content{
+    position:absolute!important;
+    left:50%!important;
+    top:54%!important;
+    transform:translate(-50%,-50%)!important;
+    width:min(980px,92vw)!important;
+    max-width:980px!important;
+    padding:0 24px!important;
+    margin:0!important;
+    text-align:center!important;
+  }
+  .home-label{
+    margin:0 auto 6px!important;
+    text-align:center!important;
+  }
+  #homeTitle.avermont-title{
+    margin:0 auto 10px!important;
+    justify-content:center!important;
+    text-align:center!important;
+    white-space:nowrap!important;
+  }
+  .home-title-heart{
+    font-size:.36em!important;
+    line-height:1!important;
+    transform:translateY(-.01em)!important;
+  }
+}
+
+/* Mobile: landscape hero ends exactly where the 16:9 image ends. */
+@media(max-width:700px){
+  .home-section{
+    min-height:calc(126px + 56.25vw)!important;
+    height:calc(126px + 56.25vw)!important;
+    max-height:none!important;
+    background:var(--jph-cream)!important;
+    overflow:hidden!important;
+  }
+  .home-background,
+  body.hero-mobile-fit .home-background,
+  body.hero-mobile-cover .home-background{
+    inset:0!important;
+    background-size:100% auto!important;
+    background-position:center 126px!important;
+    background-repeat:no-repeat!important;
+  }
+  .home-content{
+    position:absolute!important;
+    left:50%!important;
+    top:calc(126px + 28.125vw)!important;
+    transform:translate(-50%,-50%)!important;
+    width:96%!important;
+    max-width:none!important;
+    padding:0 10px!important;
+    margin:0!important;
+    text-align:center!important;
+  }
+  .home-label{
+    display:block!important;
+    width:100%!important;
+    margin:0 auto 4px!important;
+    text-align:center!important;
+    font-size:8px!important;
+    letter-spacing:.12em!important;
+    text-transform:none!important;
+  }
+  #homeTitle.avermont-title{
+    margin:0 auto 7px!important;
+    justify-content:center!important;
+    text-align:center!important;
+    white-space:nowrap!important;
+    font-size:clamp(38px,10.8vw,54px)!important;
+    line-height:.92!important;
+  }
+  .home-title-heart{
+    font-size:.34em!important;
+    line-height:1!important;
+    transform:translateY(-.01em)!important;
+  }
+  .home-description{
+    margin:3px auto 10px!important;
+    max-width:94vw!important;
+    font-size:13px!important;
+    line-height:1.25!important;
+  }
+  .home-buttons{
+    justify-content:center!important;
+    gap:7px!important;
+    flex-wrap:nowrap!important;
+  }
+  .home-buttons .button{padding:8px 11px!important;font-size:8px!important}
+  .scroll-down{bottom:7px!important}
+
+  /* Allow team/profile bubbles to wrap naturally instead of overflowing. */
+  .home-update-profiles,
+  .updates-authors,
+  .jteam-member-filters{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    overflow:visible!important;
+    white-space:normal!important;
+  }
+  .home-update-profiles{gap:12px 14px!important}
+  .home-profile-bubble{min-width:52px!important}
+
+  /* Full-width horizontal-style Latest Update card on mobile. */
+  .home-updates-preview{width:100%!important;max-width:none!important}
+  .home-update-card{
+    width:100%!important;
+    padding:16px!important;
+    min-height:0!important;
+  }
+  .home-update-head{margin-bottom:10px!important}
+  .home-update-head>img{width:42px!important;height:42px!important;flex-basis:42px!important}
+  .home-update-head strong{font-size:15px!important}
+  .home-update-head span{font-size:9px!important}
+  .home-update-card p{
+    font-size:17px!important;
+    line-height:1.35!important;
+    margin:10px 0 14px!important;
+  }
+}
