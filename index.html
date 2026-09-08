@@ -602,6 +602,237 @@
       }
     </style>
 
+
+    <!-- Talk With Us home entry -->
+    <style>
+      .home-update-tabs{
+        display:flex;
+        align-items:center;
+        flex-wrap:wrap;
+        gap:10px;
+      }
+      .home-talk-link{
+        margin-left:auto;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        min-height:44px;
+        padding:0 18px;
+        border:1px solid rgba(122,15,36,.18);
+        border-radius:999px;
+        color:#7A0F24;
+        text-decoration:none;
+        font-size:.9rem;
+        letter-spacing:.02em;
+        background:rgba(255,249,244,.72);
+        transition:transform .18s ease, background .18s ease;
+      }
+      .home-talk-link:hover{
+        transform:translateY(-1px);
+        background:#FBE3E8;
+      }
+      @media (max-width:700px){
+        .home-talk-link{
+          margin-left:0;
+          width:100%;
+          min-height:42px;
+        }
+      }
+    </style>
+
+
+    <!-- Talk With Us v1.1 home polish -->
+    <style>
+      .home-updates-actions{
+        display:flex;
+        align-items:center;
+        gap:18px;
+        margin-left:auto;
+      }
+      .home-talk-top{
+        color:#7A0F24;
+        text-decoration:none;
+        font-size:.88rem;
+        letter-spacing:.02em;
+        white-space:nowrap;
+      }
+      .home-talk-top:hover{
+        text-decoration:underline;
+        text-underline-offset:4px;
+      }
+      .home-talk-subcaption{
+        margin:6px 0 0;
+        max-width:620px;
+        color:#9A6671;
+        font-size:.9rem;
+        line-height:1.45;
+      }
+      @media (max-width:700px){
+        .home-updates-actions{
+          gap:10px;
+          margin-left:0;
+          width:100%;
+          justify-content:flex-start;
+          flex-wrap:wrap;
+        }
+        .home-talk-top{
+          font-size:.84rem;
+        }
+      }
+    </style>
+
+
+    <!-- Talk With Us top-right visibility fix -->
+    <style>
+      .home-preview-updates{
+        position:relative;
+      }
+      .home-updates-top-actions{
+        position:absolute;
+        top:38px;
+        right:38px;
+        display:flex;
+        align-items:center;
+        gap:18px;
+        z-index:5;
+      }
+      .home-updates-top-actions a{
+        display:inline-flex !important;
+        align-items:center;
+        justify-content:center;
+        text-decoration:none;
+        white-space:nowrap;
+      }
+      .home-talk-top{
+        color:#7A0F24 !important;
+        border:1px solid rgba(122,15,36,.22);
+        border-radius:999px;
+        min-height:38px;
+        padding:0 15px;
+        background:#FFF9F4;
+        font-size:.86rem;
+      }
+      .home-view-all-top{
+        color:#C92F45 !important;
+        font-size:.86rem;
+        letter-spacing:.03em;
+      }
+      @media (max-width:800px){
+        .home-updates-top-actions{
+          position:static;
+          margin:14px 0 8px;
+          justify-content:flex-start;
+          flex-wrap:wrap;
+        }
+      }
+    </style>
+
+
+    <!-- Talk With Us dedicated CTA -->
+    <style>
+      .home-talk-cta{
+        margin-top:24px;
+        padding:22px 24px;
+        border:1px solid rgba(122,15,36,.16);
+        border-radius:22px;
+        background:
+          linear-gradient(135deg,rgba(251,227,232,.72),rgba(255,249,244,.94));
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:24px;
+      }
+      .home-talk-cta-copy{
+        min-width:0;
+      }
+      .home-talk-cta-eyebrow{
+        display:block;
+        margin-bottom:6px;
+        color:#C92F45;
+        font-size:.68rem;
+        text-transform:uppercase;
+        letter-spacing:.22em;
+      }
+      .home-talk-cta h3{
+        margin:0 0 6px;
+        color:#7A0F24;
+        font-family:Georgia,"Times New Roman",serif;
+        font-size:1.65rem;
+        font-weight:500;
+      }
+      .home-talk-cta p{
+        margin:0;
+        color:#9A6671;
+        font-size:.9rem;
+        line-height:1.45;
+        max-width:650px;
+      }
+      .home-talk-cta-button{
+        flex:0 0 auto;
+        min-height:44px;
+        padding:0 18px;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        border-radius:999px;
+        border:1px solid rgba(122,15,36,.22);
+        background:#7A0F24;
+        color:#FFF9F4 !important;
+        text-decoration:none;
+        font-size:.86rem;
+        letter-spacing:.02em;
+        white-space:nowrap;
+      }
+      .home-talk-cta-button:hover{
+        background:#C92F45;
+      }
+      @media (max-width:700px){
+        .home-talk-cta{
+          align-items:flex-start;
+          flex-direction:column;
+          padding:20px;
+        }
+        .home-talk-cta-button{
+          width:100%;
+        }
+      }
+    </style>
+
+
+    <!-- V1.7 Talk With Us filter pill -->
+    <style>
+      .home-talk-pill{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        min-height:42px;
+        padding:0 16px;
+        border-radius:999px;
+        border:1px solid rgba(122,15,36,.24);
+        background:#FFF9F4;
+        color:#7A0F24 !important;
+        text-decoration:none;
+        font-size:.88rem;
+        line-height:1;
+        white-space:nowrap;
+        box-shadow:0 4px 12px rgba(122,15,36,.04);
+        transition:background .18s ease, transform .18s ease, color .18s ease;
+      }
+      .home-talk-pill:hover{
+        background:#FBE3E8;
+        color:#C92F45 !important;
+        transform:translateY(-1px);
+      }
+      .home-talk-cta{display:none !important;}
+      @media(max-width:700px){
+        .home-talk-pill{
+          min-height:40px;
+          padding:0 14px;
+          font-size:.84rem;
+        }
+      }
+    </style>
+
 </head>
 
 
@@ -783,7 +1014,12 @@
                     <div class="home-preview-heading">
                         <div>
                             <p class="section-label">From Jen & J-Team</p>
-                            <h2>Updates</h2>
+                            <h2>Keeping Up With Us</h2>
+                        <div class="home-updates-top-actions">
+                          
+                          <a class="home-view-all-top" href="updates.html">VIEW ALL →</a>
+                        </div>
+                        <p class="home-talk-subcaption">Updates from Jen & J-Team, plus little conversations you can catch up on anytime.</p><div class="home-updates-actions"></div>
                         </div>
                         <a href="#updates" class="home-preview-link">View all →</a>
                     </div>
@@ -791,6 +1027,7 @@
                         <button type="button" class="home-update-tab active" data-home-update-filter="all">All</button>
                         <button type="button" class="home-update-tab" data-home-update-filter="artist">Artist</button>
                         <button type="button" class="home-update-tab" data-home-update-filter="j-team">J-Team</button>
+                        <a class="home-talk-pill" href="talk.html">Talk With Us →</a>
                     </div>
                     <div id="homeUpdateProfiles" class="home-update-profiles" aria-label="Update profiles"></div>
                     <div class="home-updates-subheading">
@@ -823,7 +1060,9 @@
                     </div>
                 </div>
             </div>
-        </section>
+        
+                    
+</section>
 
 
 
