@@ -212,6 +212,396 @@
 
     </style>
 
+
+    <!-- V21.14 Updates profile + verified alignment patch -->
+    <style>
+      /* Keep the profile rail stable and intentional. */
+      #updatesAuthors,
+      #jteamMemberFilters {
+        align-items: flex-start;
+      }
+
+      .update-author-bubble,
+      .jteam-member-bubble {
+        text-align: center;
+      }
+
+      .update-author-name,
+      .jteam-member-name {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 4px !important;
+        line-height: 1.15 !important;
+        white-space: nowrap;
+      }
+
+      /* One verified treatment everywhere — no tilted/baseline badge. */
+      .verified-badge {
+        box-sizing: border-box;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 16px !important;
+        height: 16px !important;
+        min-width: 16px !important;
+        border-radius: 50% !important;
+        margin-left: 2px !important;
+        padding: 0 !important;
+        position: static !important;
+        inset: auto !important;
+        transform: none !important;
+        vertical-align: middle !important;
+        line-height: 16px !important;
+        font-size: 10px !important;
+        font-style: normal !important;
+        flex: 0 0 16px !important;
+      }
+
+      .update-post-author strong {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+        line-height: 1.15 !important;
+      }
+
+      /* J / All bubble used on the All tab. */
+      .update-author-all-mark {
+        width: 58px;
+        height: 58px;
+        border: 4px solid #202020;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 29px;
+        font-weight: 700;
+        line-height: 1;
+        background: #fffaf6;
+        color: #171717;
+        box-sizing: border-box;
+      }
+
+      .update-author-all {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+      }
+    </style>
+
+
+    <!-- V21.15 Locked Updates UI alignment -->
+    <style>
+      #updatesAuthors,
+      #jteamMemberFilters{
+        display:flex;
+        flex-wrap:wrap;
+        align-items:flex-start;
+        gap:14px 16px;
+      }
+
+      .update-author-bubble,
+      .jteam-member-bubble{
+        display:inline-flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:flex-start;
+        text-align:center;
+      }
+
+      .update-author-name,
+      .jteam-member-name,
+      .update-post-author strong{
+        display:inline-flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        gap:4px !important;
+        line-height:1.15 !important;
+      }
+
+      .verified-badge{
+        display:inline-flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        width:15px !important;
+        height:15px !important;
+        min-width:15px !important;
+        flex:0 0 15px !important;
+        margin-left:2px !important;
+        padding:0 !important;
+        position:static !important;
+        inset:auto !important;
+        top:auto !important;
+        right:auto !important;
+        bottom:auto !important;
+        left:auto !important;
+        transform:none !important;
+        vertical-align:middle !important;
+        line-height:15px !important;
+        font-size:9px !important;
+        font-style:normal !important;
+      }
+
+      .update-author-all-mark{
+        width:58px;
+        height:58px;
+        border:4px solid #202020;
+        border-radius:50%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        box-sizing:border-box;
+        background:#fffaf6;
+        color:#171717;
+        font-family:Georgia,"Times New Roman",serif;
+        font-size:29px;
+        font-weight:700;
+        line-height:1;
+      }
+    </style>
+
+
+    <!-- V21.16 J-Team J / All alignment only -->
+    <style>
+      #jteamMemberFilters .jteam-member-all,
+      #jteamMemberFilters [data-jteam-member="all"],
+      #jteamMemberFilters [data-member-filter="all"],
+      #jteamMemberFilters [data-jteam-filter="all"] {
+        display: inline-flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        text-align: center !important;
+        gap: 6px !important;
+      }
+
+      #jteamMemberFilters .jteam-member-all-mark,
+      #jteamMemberFilters .jteam-all-mark,
+      #jteamMemberFilters [data-jteam-member="all"] > span:first-child,
+      #jteamMemberFilters [data-member-filter="all"] > span:first-child,
+      #jteamMemberFilters [data-jteam-filter="all"] > span:first-child {
+        width: 58px !important;
+        height: 58px !important;
+        min-width: 58px !important;
+        min-height: 58px !important;
+        box-sizing: border-box !important;
+
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        border: 4px solid #202020 !important;
+        border-radius: 50% !important;
+        background: #fffaf6 !important;
+        color: #171717 !important;
+
+        font-family: Georgia, "Times New Roman", serif !important;
+        font-size: 29px !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+        position: static !important;
+        inset: auto !important;
+        transform: none !important;
+      }
+
+      #jteamMemberFilters .jteam-member-all .jteam-member-name,
+      #jteamMemberFilters [data-jteam-member="all"] .jteam-member-name,
+      #jteamMemberFilters [data-member-filter="all"] .jteam-member-name,
+      #jteamMemberFilters [data-jteam-filter="all"] .jteam-member-name {
+        margin: 0 !important;
+        transform: none !important;
+        position: static !important;
+        line-height: 1.1 !important;
+      }
+    </style>
+
+
+    <!-- V21.17 exact J-Team All bubble selector fix -->
+    <style>
+      #jteamMemberFilters [data-jteam-author="all"]{
+        display:inline-flex !important;
+        flex-direction:column !important;
+        align-items:center !important;
+        justify-content:flex-start !important;
+        text-align:center !important;
+        gap:6px !important;
+      }
+
+      #jteamMemberFilters [data-jteam-author="all"] .jteam-all-avatar{
+        width:58px !important;
+        height:58px !important;
+        min-width:58px !important;
+        min-height:58px !important;
+        box-sizing:border-box !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        border:4px solid #202020 !important;
+        border-radius:50% !important;
+        background:#fffaf6 !important;
+        color:#171717 !important;
+        font-family:Georgia,"Times New Roman",serif !important;
+        font-size:29px !important;
+        font-weight:700 !important;
+        line-height:1 !important;
+        margin:0 !important;
+        padding:0 !important;
+        position:static !important;
+        inset:auto !important;
+        transform:none !important;
+      }
+
+      #jteamMemberFilters [data-jteam-author="all"] .jteam-member-name{
+        display:inline-flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        margin:0 !important;
+        padding:0 !important;
+        position:static !important;
+        transform:none !important;
+        line-height:1.1 !important;
+      }
+    </style>
+
+
+    <!-- V21.19 LOCKED Updates UI -->
+    <style>
+      /* Profile rails */
+      #updatesAuthors,
+      #jteamMemberFilters{
+        display:flex !important;
+        flex-wrap:wrap !important;
+        align-items:flex-start !important;
+        gap:14px 16px !important;
+      }
+
+      .update-author-bubble,
+      .jteam-member-bubble{
+        display:inline-flex !important;
+        flex-direction:column !important;
+        align-items:center !important;
+        justify-content:flex-start !important;
+        text-align:center !important;
+        gap:6px !important;
+      }
+
+      /* J / All bubble — same treatment in ALL and J-TEAM */
+      .update-author-all-mark,
+      #jteamMemberFilters [data-jteam-author="all"] .jteam-all-avatar{
+        width:58px !important;
+        height:58px !important;
+        min-width:58px !important;
+        min-height:58px !important;
+        box-sizing:border-box !important;
+
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+
+        border:4px solid #202020 !important;
+        border-radius:50% !important;
+        background:#fffaf6 !important;
+        color:#171717 !important;
+
+        font-family:Georgia,"Times New Roman",serif !important;
+        font-size:29px !important;
+        font-weight:700 !important;
+        line-height:1 !important;
+
+        margin:0 !important;
+        padding:0 !important;
+        position:static !important;
+        inset:auto !important;
+        transform:none !important;
+      }
+
+      .update-author-all,
+      #jteamMemberFilters [data-jteam-author="all"]{
+        display:inline-flex !important;
+        flex-direction:column !important;
+        align-items:center !important;
+        justify-content:flex-start !important;
+        text-align:center !important;
+        gap:6px !important;
+      }
+
+      /* Profile names + verified */
+      .update-author-name,
+      .jteam-member-name{
+        display:inline-flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        gap:4px !important;
+        line-height:1.15 !important;
+        white-space:nowrap !important;
+        margin:0 !important;
+        transform:none !important;
+        position:static !important;
+      }
+
+      .verified-badge{
+        display:inline-flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        width:15px !important;
+        height:15px !important;
+        min-width:15px !important;
+        flex:0 0 15px !important;
+        margin-left:2px !important;
+        padding:0 !important;
+        position:static !important;
+        inset:auto !important;
+        transform:none !important;
+        vertical-align:middle !important;
+        line-height:15px !important;
+        font-size:9px !important;
+        font-style:normal !important;
+      }
+
+      /* Update card author layout */
+      .update-post-head{
+        display:flex !important;
+        align-items:center !important;
+        gap:12px !important;
+      }
+
+      .update-post-author{
+        display:flex !important;
+        flex-direction:column !important;
+        align-items:flex-start !important;
+        justify-content:center !important;
+        text-align:left !important;
+        min-width:0 !important;
+        flex:1 1 auto !important;
+      }
+
+      .update-post-author strong{
+        display:inline-flex !important;
+        align-items:center !important;
+        justify-content:flex-start !important;
+        align-self:flex-start !important;
+        width:auto !important;
+        max-width:100% !important;
+        margin:0 !important;
+        text-align:left !important;
+        gap:4px !important;
+        line-height:1.15 !important;
+      }
+
+      .update-post-author > span{
+        display:block !important;
+        align-self:flex-start !important;
+        width:auto !important;
+        margin-top:3px !important;
+        text-align:left !important;
+      }
+    </style>
+
 </head>
 
 
@@ -1506,6 +1896,7 @@
     <script src="js/config.js"></script>
     <script src="js/cms-data.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/update-card-export.js"></script>
 
 </body>
 
