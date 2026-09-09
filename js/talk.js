@@ -1,4 +1,20 @@
 (()=>{
+
+  if(!window.talkImageRetryInstalled){
+    window.talkImageRetryInstalled=true;
+    document.addEventListener("error",e=>{
+      const img=e.target;
+      if(!(img instanceof HTMLImageElement))return;
+      if(img.dataset.talkRetryDone==="1")return;
+      const src=img.currentSrc||img.src;
+      if(!src)return;
+      img.dataset.talkRetryDone="1";
+      setTimeout(()=>{
+        img.src=src+(src.includes("?")?"&":"?")+"retry="+Date.now();
+      },450);
+    },true);
+  }
+
 "use strict";
 
 const C=window.JEN_CONFIG||{};

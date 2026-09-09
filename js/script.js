@@ -1,3 +1,20 @@
+
+function installImageRetryFallback(){
+  document.addEventListener('error',e=>{
+    const img=e.target;
+    if(!(img instanceof HTMLImageElement))return;
+    if(img.dataset.retryDone==='1')return;
+    const src=img.currentSrc||img.src;
+    if(!src)return;
+    img.dataset.retryDone='1';
+    setTimeout(()=>{
+      const sep=src.includes('?')?'&':'?';
+      img.src=src+sep+'retry='+Date.now();
+    },450);
+  },true);
+}
+installImageRetryFallback();
+
 (()=>{"use strict";
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const C=window.JEN_CONFIG||{}, base=window.JEN_CMS_DATA||{};
@@ -68,7 +85,7 @@ async function fetchLiveSheetRows(sheetName,{fresh=false}={}){
   if(!sheetId||!sheetName)return null;
 
   const key=`jen-live:${sheetId}:${sheetName}`;
-  const ttl=/Users/i.test(sheetName)?300000:30000;
+  const ttl=/Users/i.test(sheetName)?300000:45000;
 
   if(!fresh){
     try{
@@ -79,7 +96,10 @@ async function fetchLiveSheetRows(sheetName,{fresh=false}={}){
 
   const sheet=encodeURIComponent(sheetName);
   const url=`https://docs.google.com/spreadsheets/d/${encodeURIComponent(sheetId)}/gviz/tq?tqx=out:csv&sheet=${sheet}`;
-  const r=await fetch(url,{cache:fresh?'no-store':'default'});
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),8000);
+  const r=await fetch(url,{cache:fresh?'no-store':'default',signal:controller.signal});
+  clearTimeout(timer);
   if(!r.ok)throw new Error(`HTTP ${r.status}`);
   const table=parseCsv(await r.text());
   if(table.length<2)return [];

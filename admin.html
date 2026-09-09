@@ -93,7 +93,7 @@ html,body{max-width:100%;overflow-x:hidden}
     </div></section><section class="admin-card mobile-user-tools-card" id="mobileUserToolsCard" hidden>
       <p class="section-label">User Tools</p>
       <div class="mobile-user-tools" id="mobileUserTools"></div>
-    </section></main><script src="js/config.js?v=1.16.32-revision-2-9"></script><script src="js/cms-data.js"></script><script>
+    </section></main><script src="js/config.js?v=1.16.33-stability"></script><script src="js/cms-data.js"></script><script>
 const C=window.JEN_CONFIG||{},D=window.JEN_CMS_DATA||{};
 const sel=document.getElementById('authorSelect');
 const status=document.getElementById('loginStatus');
@@ -183,7 +183,7 @@ function setLoggedIn(user){
 async function login(email,silent=false){
   email=String(email||'').trim();
   if(!email){ if(!silent) status.textContent='Enter an email first.'; return false; }
-  if(!C.appsScriptUrl){ setLoggedOut('Apps Script URL is missing in js/config.js.'); return false; }
+  if(!C.appsScriptUrl){ setLoggedOut('Apps Script URL is missing in js/config.js?v=1.16.33-stability.'); return false; }
   if(!silent) status.textContent='Checking account…';
   try{
     const r=await fetch(C.appsScriptUrl+'?action=login&email='+encodeURIComponent(email),{cache:'no-store'});
@@ -268,7 +268,7 @@ document.getElementById('publishButton').onclick=async()=>{
     status.textContent=rules.min===rules.max?`${postType} needs exactly ${rules.min} media file.`:`${postType} needs ${rules.min}–${rules.max} media files.`;return;
   }
   if(files.some(f=>!matchesKind(f,rules.kind))){status.textContent=`Please choose ${rules.kind} files for ${postType}.`;return;}
-  if(!C.appsScriptUrl){status.textContent='Apps Script URL is missing in js/config.js.';return;}
+  if(!C.appsScriptUrl){status.textContent='Apps Script URL is missing in js/config.js?v=1.16.33-stability.';return;}
 
   const button=document.getElementById('publishButton');
   button.disabled=true;
