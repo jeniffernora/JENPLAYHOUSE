@@ -1621,6 +1621,175 @@
 }
 </style>
 
+
+<style id="stable-brand-subtitle-v1169">
+/* STABLE HEADER BRAND ONLY.
+   Built from v1.16.4 approved mobile layout.
+   No hero, strip, scallop, content, buttons, or section layout changes. */
+
+.navbar .brand-note{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  justify-content:center !important;
+  gap:3px !important;
+  white-space:nowrap !important;
+  line-height:1 !important;
+}
+
+.navbar .brand-name{
+  display:block !important;
+  font-family:Georgia, "Times New Roman", serif !important;
+  font-size:18px !important;
+  font-weight:600 !important;
+  line-height:1 !important;
+  letter-spacing:.01em !important;
+  text-transform:uppercase !important;
+}
+
+.navbar .brand-subtitle{
+  display:block !important;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif !important;
+  font-size:8px !important;
+  font-weight:600 !important;
+  line-height:1 !important;
+  letter-spacing:.13em !important;
+  text-transform:uppercase !important;
+  opacity:.82 !important;
+}
+
+@media(max-width:700px){
+  .navbar .brand-note{
+    gap:4px !important;
+  }
+
+  .navbar .brand-name{
+    font-size:16px !important;
+  }
+
+  .navbar .brand-subtitle{
+    font-size:7px !important;
+    letter-spacing:.11em !important;
+  }
+}
+
+@media(max-width:390px){
+  .navbar .brand-name{
+    font-size:15px !important;
+  }
+
+  .navbar .brand-subtitle{
+    font-size:6.5px !important;
+  }
+}
+</style>
+
+
+<style id="mobile-hero-fit-stickers-v11610">
+/* MOBILE ONLY.
+   Desktop is intentionally untouched/locked. */
+
+@media (max-width:700px){
+
+  /* Fit the hero GIF/photo better vertically without changing the hero's approved layout. */
+  .home-background{
+    background-size:cover !important;
+    background-position:center 14% !important;
+  }
+
+  /* Keep overlay aligned with the hero image. */
+  .home-overlay{
+    inset:0 !important;
+  }
+
+  /* Spread the decorative sticker container across the hero. */
+  .home-hero-doodles{
+    position:absolute !important;
+    inset:0 !important;
+    pointer-events:none !important;
+  }
+
+  /* Ribbon / bow: upper-left-ish, away from title center */
+  .home-hero-doodles .doodle-ribbon,
+  .home-hero-doodles .ribbon,
+  .home-hero-doodles .bow{
+    position:absolute !important;
+    top:14% !important;
+    left:18% !important;
+    right:auto !important;
+    transform:none !important;
+    font-size:16px !important;
+  }
+
+  /* Blink/star: upper-right-ish */
+  .home-hero-doodles .doodle-star,
+  .home-hero-doodles .star,
+  .home-hero-doodles .blink{
+    position:absolute !important;
+    top:20% !important;
+    right:18% !important;
+    left:auto !important;
+    transform:none !important;
+    font-size:14px !important;
+  }
+
+  /* Cherry/dots: lower-right of title area, not stacked on other stickers */
+  .home-hero-doodles .doodle-cherry,
+  .home-hero-doodles .cherry{
+    position:absolute !important;
+    top:31% !important;
+    right:28% !important;
+    left:auto !important;
+    transform:none !important;
+    font-size:10px !important;
+    letter-spacing:1px !important;
+  }
+
+  /* Heart: lower-left of title area */
+  .home-hero-doodles .doodle-heart,
+  .home-hero-doodles .heart{
+    position:absolute !important;
+    top:34% !important;
+    left:28% !important;
+    right:auto !important;
+    transform:none !important;
+    font-size:12px !important;
+  }
+}
+
+@media (max-width:390px){
+  .home-background{
+    background-position:center 12% !important;
+  }
+
+  .home-hero-doodles .doodle-ribbon,
+  .home-hero-doodles .ribbon,
+  .home-hero-doodles .bow{
+    left:16% !important;
+    font-size:15px !important;
+  }
+
+  .home-hero-doodles .doodle-star,
+  .home-hero-doodles .star,
+  .home-hero-doodles .blink{
+    right:16% !important;
+    font-size:13px !important;
+  }
+
+  .home-hero-doodles .doodle-cherry,
+  .home-hero-doodles .cherry{
+    right:25% !important;
+    font-size:9px !important;
+  }
+
+  .home-hero-doodles .doodle-heart,
+  .home-hero-doodles .heart{
+    left:25% !important;
+    font-size:11px !important;
+  }
+}
+</style>
+
 </head>
 
 
@@ -1641,8 +1810,9 @@
             
 
             <span class="brand-note">
-                Jen Play House
-            </span>
+    <span class="brand-name">JEN PLAY HOUSE</span>
+    <span class="brand-subtitle">FICTIONAL ROLEPLAY ARTIST</span>
+</span>
 
         </a>
 
