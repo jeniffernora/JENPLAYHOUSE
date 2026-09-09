@@ -1,7 +1,99 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>J-Team Login | Jeniffer Nora</title><link rel="stylesheet" href="css/style.css"><style>
 body{background:#f7f7f5;color:#171717}.admin-wrap{width:min(900px,calc(100% - 32px));margin:0 auto;padding:70px 0}.admin-card{background:#fff;border:1px solid #e4e4df;border-radius:24px;padding:28px;margin-bottom:18px}.admin-card h1,.admin-card h2{font-family:Georgia,serif}.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.admin-field{display:flex;flex-direction:column;gap:7px}.admin-field.full{grid-column:1/-1}.admin-field input,.admin-field select,.admin-field textarea{padding:13px;border:1px solid #ddd;border-radius:12px;background:#fff;font:inherit}.admin-field textarea{min-height:150px}.admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.admin-actions button,.admin-actions a{border:0;border-radius:999px;padding:12px 18px;background:#171717;color:#fff;text-decoration:none;cursor:pointer}.admin-actions .ghost{background:#eee;color:#222}.admin-note{font-size:12px;line-height:1.6;color:#777}.admin-status{padding:12px 14px;border-radius:12px;background:#f1f1ee;font-size:12px;margin-top:12px}@media(max-width:650px){.admin-grid{grid-template-columns:1fr}.admin-field.full{grid-column:auto}}
-</style></head><body><main class="admin-wrap"><a href="index.html#updates">← Back to Updates</a><section class="admin-card"><p class="section-label">J-Team Portal</p><h1>Login</h1><p class="admin-note">Connected portal. Login uses the registered email in the <strong>Users</strong> sheet. Connected portal. Login uses the registered email in the <strong>Users</strong> sheet. Media uploads use Cloudinary; post data is saved to Google Sheet.</p><div class="admin-grid"><label class="admin-field full"><span>Email</span><input id="loginEmail" type="email" placeholder="you@example.com"></label></div><div class="admin-actions"><button id="loginButton">Continue</button></div><div class="admin-status" id="loginStatus">Backend not connected yet.</div></section><section class="admin-card" id="composerCard" hidden><p class="section-label">Create Update</p><h2>New Post</h2><div class="admin-grid"><label class="admin-field"><span>Posting as</span><select id="authorSelect"></select></label><label class="admin-field"><span>Post Type</span><select id="postType"><option>Text</option><option>Photo</option><option>Carousel</option><option>Video</option><option>Voice Note</option><option>Notice</option><option>Schedule</option></select></label><label class="admin-field"><span>Category</span><select id="postCategory"><option>Artist</option><option>J-Team</option><option>Media</option><option>Notice</option><option>Schedule</option></select></label><label class="admin-field"><span>Status</span><select id="postStatus"><option>Draft</option><option>Posted</option></select></label><label class="admin-field full"><span>Caption</span><textarea id="postText" placeholder="Write an update..."></textarea></label><label class="admin-field full"><span>Media files (up to 4)</span><input id="mediaFile" type="file" accept="image/*,video/*,audio/*" multiple><small class="admin-note" id="mediaHint">Photo: 1 image · Carousel: 2–4 images · Video: 1 video · Voice Note: 1 audio file</small></label></div><div class="admin-actions"><button id="publishButton">Save Update</button><button class="ghost" id="xPreviewButton">Preview X Template</button></div><p class="admin-note">Text, photo, carousel (up to 4), video, and voice-note posts upload directly to Cloudinary. Post data is saved to Google Sheet.</p></section></main><script src="js/config.js"></script><script src="js/cms-data.js"></script><script>
+</style>
+<style id="admin-mobile-v11632">
+*{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+@media(max-width:700px){
+  .admin-wrap{
+    width:calc(100% - 24px) !important;
+    max-width:100% !important;
+    padding:24px 0 110px !important;
+  }
+  .admin-card{
+    width:100% !important;
+    max-width:100% !important;
+    padding:18px !important;
+    border-radius:20px !important;
+  }
+  .admin-grid{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:14px !important;
+  }
+  .admin-field,
+  .admin-field.full{
+    width:100% !important;
+    min-width:0 !important;
+    grid-column:auto !important;
+  }
+  .admin-field input,
+  .admin-field select,
+  .admin-field textarea{
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    font-size:16px !important;
+    padding:13px 14px !important;
+  }
+  .admin-field textarea{
+    min-height:150px !important;
+    resize:vertical !important;
+  }
+  .admin-actions{
+    width:100% !important;
+    display:flex !important;
+    flex-direction:column !important;
+    gap:10px !important;
+  }
+  .admin-actions button,
+  .admin-actions a{
+    width:100% !important;
+    min-height:44px !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+  }
+  .admin-status{
+    overflow-wrap:anywhere !important;
+  }
+  .mobile-user-tools{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:10px !important;
+    margin:14px 0 0 !important;
+  }
+  .mobile-user-tools a{
+    min-height:42px !important;
+    padding:10px 12px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    border-radius:999px !important;
+    text-decoration:none !important;
+    color:#7A0F24 !important;
+    border:1px solid rgba(122,15,36,.16) !important;
+    background:linear-gradient(180deg,#FFFDFD,#F7D1DA) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 5px 12px rgba(122,15,36,.10) !important;
+    font-size:12px !important;
+    font-weight:700 !important;
+  }
+}
+@media(min-width:701px){
+  .mobile-user-tools{display:none !important}
+}
+</style>
+
+</head><body><main class="admin-wrap"><a href="index.html#updates">← Back to Updates</a><section class="admin-card"><p class="section-label">J-Team Portal</p><h1>Login</h1><p class="admin-note">Connected portal. Login uses the registered email in the <strong>Users</strong> sheet. Connected portal. Login uses the registered email in the <strong>Users</strong> sheet. Media uploads use Cloudinary; post data is saved to Google Sheet.</p><div class="admin-grid"><label class="admin-field full"><span>Email</span><input id="loginEmail" type="email" placeholder="you@example.com"></label></div><div class="admin-actions"><button id="loginButton">Continue</button></div><div class="admin-status" id="loginStatus">Backend not connected yet.</div></section><section class="admin-card" id="composerCard" hidden><p class="section-label">Create Update</p><h2>New Post</h2><div class="admin-grid"><label class="admin-field"><span>Posting as</span><select id="authorSelect"></select></label><label class="admin-field"><span>Post Type</span><select id="postType"><option>Text</option><option>Photo</option><option>Carousel</option><option>Video</option><option>Voice Note</option><option>Notice</option><option>Schedule</option></select></label><label class="admin-field"><span>Category</span><select id="postCategory"><option>Artist</option><option>J-Team</option><option>Media</option><option>Notice</option><option>Schedule</option></select></label><label class="admin-field"><span>Status</span><select id="postStatus"><option>Draft</option><option>Posted</option></select></label><label class="admin-field full"><span>Caption</span><textarea id="postText" placeholder="Write an update..."></textarea></label><label class="admin-field full"><span>Media files (up to 4)</span><input id="mediaFile" type="file" accept="image/*,video/*,audio/*" multiple><small class="admin-note" id="mediaHint">Photo: 1 image · Carousel: 2–4 images · Video: 1 video · Voice Note: 1 audio file</small></label></div><div class="admin-actions"><button id="publishButton">Save Update</button><button class="ghost" id="xPreviewButton">Preview X Template</button></div><p class="admin-note">Text, photo, carousel (up to 4), video, and voice-note posts upload directly to Cloudinary. Post data is saved to Google Sheet.</p>
+    <div id="usherUpdateManager" hidden style="margin-top:22px">
+      <p class="section-label">Usher Tools</p>
+      <h3 style="font-family:Georgia,serif;margin:6px 0 12px">Manage Updates</h3>
+      <div id="usherUpdateList" class="admin-note">Loading updates…</div>
+    </div></section><section class="admin-card mobile-user-tools-card" id="mobileUserToolsCard" hidden>
+      <p class="section-label">User Tools</p>
+      <div class="mobile-user-tools" id="mobileUserTools"></div>
+    </section></main><script src="js/config.js?v=1.16.32-revision-2-9"></script><script src="js/cms-data.js"></script><script>
 const C=window.JEN_CONFIG||{},D=window.JEN_CMS_DATA||{};
 const sel=document.getElementById('authorSelect');
 const status=document.getElementById('loginStatus');
@@ -37,15 +129,30 @@ function clearSession(){
 function setLoggedOut(message){
   currentUser=null;
   composer.hidden=true;
+  hideMobileUserTools();
   sel.innerHTML='';
   loginCard.hidden=false;
   emailInput.disabled=false;
   loginButton.disabled=false;
   status.textContent=message||'Login required.';
 }
+function renderMobileUserTools(user){
+  const card=document.getElementById('mobileUserToolsCard');
+  const box=document.getElementById('mobileUserTools');
+  if(!card||!box||!user)return;
+  const uid=encodeURIComponent(user['User ID']||'');
+  box.innerHTML=`<a href="index.html#updates">My Updates</a><a href="talk.html?with=${uid}">My Chat</a>`;
+  card.hidden=false;
+}
+function hideMobileUserTools(){
+  const card=document.getElementById('mobileUserToolsCard');
+  if(card)card.hidden=true;
+}
+
 function setLoggedIn(user){
   currentUser=user;
   saveSession(user);
+  renderMobileUserTools(user);
   composer.hidden=false;
   loginCard.hidden=false;
   emailInput.value=user.Email||'';
@@ -63,6 +170,7 @@ function setLoggedIn(user){
     sel.insertAdjacentHTML('beforeend',`<option value="${user['User ID']}">${user.Name}</option>`);
   }
 
+  renderUsherUpdateManager();
   status.innerHTML=`Logged in as <strong>${user.Name}</strong> · ${user.Role} <button id="logoutButton" type="button" style="margin-left:10px;border:0;border-radius:999px;padding:7px 12px;cursor:pointer">Logout</button>`;
   document.getElementById('logoutButton').onclick=()=>{
     clearSession();
@@ -103,9 +211,10 @@ emailInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault()
   try{
     const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');
     if(saved && saved.Email){
-      status.textContent='Restoring session…';
-      const ok=await login(saved.Email,true);
-      if(!ok) setLoggedOut('Your session expired. Please login again.');
+      // Fast restore first; validate silently in the background.
+      setLoggedIn(saved);
+      status.textContent='Connected · refreshing account…';
+      login(saved.Email,true).catch(()=>{});
     }
   }catch(e){ clearSession(); }
 })();
@@ -196,6 +305,49 @@ document.getElementById('publishButton').onclick=async()=>{
   }catch(e){console.error(e);status.textContent=e.message||'Could not upload/save this post.';}
   finally{button.disabled=false;button.textContent=oldLabel;}
 };
+
+
+function isUsherAdmin(user){
+  return /usher|owner|manager/i.test(String(user?.Role||''));
+}
+async function fetchLiveUpdatesAdmin(){
+  if(!C.liveSheetId)return [];
+  const u=`https://docs.google.com/spreadsheets/d/${encodeURIComponent(C.liveSheetId)}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent('Updates')}`;
+  const r=await fetch(u,{cache:'no-store'});
+  const text=await r.text();
+  const rows=[];let row=[],cell='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i],n=text[i+1];if(q){if(c==='"'&&n==='"'){cell+='"';i++;}else if(c==='"'){q=false}else cell+=c}else{if(c==='"')q=true;else if(c===','){row.push(cell);cell=''}else if(c==='\n'){row.push(cell.replace(/\r$/,''));rows.push(row);row=[];cell=''}else cell+=c}}
+  if(cell.length||row.length){row.push(cell.replace(/\r$/,''));rows.push(row)}
+  if(rows.length<2)return [];
+  const h=rows[0].map(x=>String(x||'').trim());
+  return rows.slice(1).filter(r=>r.some(Boolean)).map(r=>Object.fromEntries(h.map((k,i)=>[k,String(r[i]||'').trim()])));
+}
+async function renderUsherUpdateManager(){
+  const wrap=document.getElementById('usherUpdateManager');
+  const list=document.getElementById('usherUpdateList');
+  if(!wrap||!list||!currentUser||!isUsherAdmin(currentUser)){ if(wrap)wrap.hidden=true; return; }
+  wrap.hidden=false;
+  try{
+    const rows=(await fetchLiveUpdatesAdmin()).sort((a,b)=>String(b['Update ID']||'').localeCompare(String(a['Update ID']||''))).slice(0,20);
+    list.innerHTML=rows.length?rows.map(r=>`<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid #eee"><span><strong>${r['Update ID']||''}</strong> · ${(r.Text||r['Post Type']||'Update').slice(0,70)}</span><button type="button" data-delete-update="${r['Update ID']}" style="border:0;border-radius:999px;padding:8px 12px;background:#F7C6D0;color:#7A0F24;cursor:pointer">Delete</button></div>`).join(''):'No updates found.';
+  }catch(e){ list.textContent='Could not load Updates.'; }
+}
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-delete-update]');
+  if(!b)return;
+  if(!currentUser||!isUsherAdmin(currentUser))return;
+  const id=b.dataset.deleteUpdate;
+  if(!confirm(`Delete ${id}?`))return;
+  const body=new URLSearchParams({action:'deleteUpdate',email:currentUser.Email||'',updateId:id});
+  b.disabled=true;
+  try{
+    const r=await fetch(C.appsScriptUrl+'?action=deleteUpdate',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:body.toString(),cache:'no-store'});
+    const j=await r.json();
+    if(!j.success)throw new Error(j.message||'Delete failed');
+    await renderUsherUpdateManager();
+  }catch(err){alert(err.message||'Could not delete update.');}
+  finally{b.disabled=false}
+});
 
 document.getElementById('xPreviewButton').onclick=()=>{
   if(!currentUser){status.textContent='Login first.';return}

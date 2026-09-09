@@ -798,7 +798,7 @@ function renderRoom(u){
         <div class="message-bubble">${messageContent(m)}</div>
         <span class="message-time">${esc(clean(m.Time)||clean(m.Date))}</span>
         <div class="message-actions">
-          <button class="share-message" type="button" data-share-message="${esc(m["Message ID"]||String(i))}">Share image ↗</button>
+          ${canShareTalkImage(loggedInUser)?`<button class="share-message" type="button" data-share-message="${esc(m["Message ID"]||String(i))}">Share image ↗</button>`:""}
           ${canDeleteTalkMessage(m)?`<button class="delete-message" type="button" data-delete-message="${esc(m["Message ID"]||String(i))}">Delete</button>`:""}
         </div>
       </div>
@@ -959,7 +959,6 @@ async function shareMessage(m,u){
   c.width=W;
   c.height=H;
   const ctx=c.getContext("2d");
-  const saveStatus=await getChatSaveStatus();
   const roomTheme=talkThemeForUser(u);
 
   const cream="#FFF9F4";
@@ -1009,8 +1008,7 @@ async function shareMessage(m,u){
   glow.addColorStop(1,"rgba(255,255,255,0)");
   ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
 
-  // iPhone-like status bar for the saved chat only.
-  drawIOSStatusBar(ctx,saveStatus,W);
+  // Clean share image: no phone status bar/signal/battery.
 
   // FRAME
   ctx.strokeStyle="rgba(42,23,24,.82)";
@@ -1362,6 +1360,10 @@ function bind(){
 
     const share=e.target.closest("[data-share-message]");
     if(share&&currentUser){
+      if(!canShareTalkImage(loggedInUser)){
+        alert("Share Image is available to Usher accounts only.");
+        return;
+      }
       const own=sortMessages(messages.filter(m=>clean(m["Author ID"])===clean(currentUser["User ID"])));
       const m=own.find((x,i)=>clean(x["Message ID"]||String(i))===clean(share.dataset.shareMessage));
       if(m)shareMessage(m,currentUser).catch(err=>{console.error(err);alert("Could not export this chat image.")});

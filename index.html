@@ -3582,6 +3582,227 @@ footer *{
 }
 </style>
 
+
+<style id="schedule-bottom-iphone-hero-v11623">
+/* =========================================================
+   v1.16.23 — TWO TARGETED FIXES ONLY
+   Base: v1.16.22 (LOCKED)
+
+   A) Schedule: footer must stay at the BOTTOM of viewport/page
+   B) iPhone: hero GIF must not crop
+   ========================================================= */
+
+
+/* ---------------------------------------------------------
+   A) SCHEDULE FOOTER
+   The footer is global/outside #schedule, so styling
+   #schedule footer could never move it.
+   A body state class is used only while #schedule is active.
+   --------------------------------------------------------- */
+body.schedule-page-active{
+  min-height:100vh !important;
+  min-height:100dvh !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+
+body.schedule-page-active > header{
+  flex:0 0 auto !important;
+}
+
+body.schedule-page-active > main{
+  flex:1 0 auto !important;
+  width:100% !important;
+}
+
+body.schedule-page-active > footer{
+  flex:0 0 auto !important;
+  margin-top:auto !important;
+
+  position:relative !important;
+  top:auto !important;
+  right:auto !important;
+  bottom:auto !important;
+  left:auto !important;
+  transform:none !important;
+}
+
+/* Do not force the Schedule section itself upward or taller.
+   The extra viewport space remains ABOVE the footer. */
+body.schedule-page-active #schedule{
+  min-height:0 !important;
+}
+
+
+/* ---------------------------------------------------------
+   B) IPHONE / iOS HERO GIF
+   Do NOT use cover+large scale on narrow iPhones because
+   that crops the source. Stretch the existing GIF gently
+   through the hero box and bleed a little beyond top/bottom.
+   Desktop and normal mobile remain exactly as locked.
+   --------------------------------------------------------- */
+@supports (-webkit-touch-callout:none){
+  @media (max-width:430px){
+
+    .home-section{
+      overflow:hidden !important;
+    }
+
+    .home-background{
+      top:-12px !important;
+      right:0 !important;
+      bottom:-12px !important;
+      left:0 !important;
+
+      width:auto !important;
+      height:auto !important;
+
+      background-size:100% 100% !important;
+      background-position:center center !important;
+      background-repeat:no-repeat !important;
+
+      transform:none !important;
+      transform-origin:center center !important;
+    }
+
+    .home-overlay{
+      top:-12px !important;
+      right:0 !important;
+      bottom:-12px !important;
+      left:0 !important;
+
+      width:auto !important;
+      height:auto !important;
+
+      transform:none !important;
+    }
+
+    /* Keep the already-approved sticker layout;
+       only cancel the old whole-container iPhone shift. */
+    .home-hero-doodles{
+      transform:none !important;
+    }
+  }
+}
+</style>
+
+
+<style id="revision-2-9-v11632">
+/* =========================================================
+   v1.16.32 — scoped fixes only
+   ========================================================= */
+
+/* 4. Schedule footer: footer must sit after the full viewport/content */
+html:has(body.schedule-page-active),
+body.schedule-page-active{
+  min-height:100%;
+}
+body.schedule-page-active{
+  min-height:100vh !important;
+  min-height:100dvh !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+body.schedule-page-active > main{
+  flex:1 0 auto !important;
+  display:flex !important;
+  flex-direction:column !important;
+  width:100% !important;
+}
+body.schedule-page-active #schedule{
+  display:flex !important;
+  flex:1 0 auto !important;
+  flex-direction:column !important;
+  min-height:calc(100dvh - 210px) !important;
+}
+body.schedule-page-active > footer{
+  flex:0 0 auto !important;
+  margin-top:auto !important;
+  position:static !important;
+  transform:none !important;
+}
+
+/* 5. News popup mobile: never crop */
+#newsModal{
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  -webkit-overflow-scrolling:touch !important;
+  padding:24px !important;
+  box-sizing:border-box !important;
+}
+#newsModal .content-modal-card{
+  position:relative !important;
+  width:min(920px,100%) !important;
+  max-width:100% !important;
+  height:auto !important;
+  max-height:none !important;
+  margin:0 auto !important;
+  box-sizing:border-box !important;
+}
+#newsModalImage{
+  display:block !important;
+  width:100% !important;
+  height:auto !important;
+  max-height:70vh !important;
+  object-fit:contain !important;
+}
+#closeNewsModal{
+  position:sticky !important;
+  top:10px !important;
+  margin-left:auto !important;
+  z-index:20 !important;
+  width:38px !important;
+  height:38px !important;
+  min-width:38px !important;
+  min-height:38px !important;
+  padding:0 !important;
+  border-radius:50% !important;
+  border:1px solid rgba(122,15,36,.18) !important;
+  color:#7A0F24 !important;
+  background:linear-gradient(180deg,#FFFDFD 0%,#FFF5F7 48%,#F2CCD6 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.98),
+    inset 0 -1px 0 rgba(122,15,36,.08),
+    0 6px 13px rgba(122,15,36,.15) !important;
+}
+#closeNewsModal::before{
+  content:"" !important;
+  position:absolute !important;
+  left:6px !important;
+  right:6px !important;
+  top:3px !important;
+  height:42% !important;
+  border-radius:999px !important;
+  background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.25)) !important;
+  pointer-events:none !important;
+}
+
+@media(max-width:700px){
+  #newsModal{
+    padding:
+      max(12px,env(safe-area-inset-top))
+      10px
+      max(18px,env(safe-area-inset-bottom)) !important;
+  }
+  #newsModal .content-modal-card{
+    width:100% !important;
+    padding:18px !important;
+    margin:0 !important;
+  }
+  #newsModalImage{
+    max-height:62vh !important;
+  }
+  #newsModalTitle{
+    font-size:clamp(34px,10vw,52px) !important;
+    line-height:1.02 !important;
+  }
+  #newsModalBody,
+  #newsModalDescription{
+    overflow-wrap:anywhere !important;
+  }
+}
+</style>
+
 </head>
 
 
@@ -4918,6 +5139,21 @@ footer *{
  }catch(e){console.warn("Gallery preview failed",e)}
 })();
 </script>
+
+<script id="schedule-page-state-v11623">
+(function () {
+  function syncSchedulePageState() {
+    document.body.classList.toggle(
+      "schedule-page-active",
+      window.location.hash === "#schedule"
+    );
+  }
+
+  syncSchedulePageState();
+  window.addEventListener("hashchange", syncSchedulePageState);
+})();
+</script>
+
 </body>
 
 </html>
