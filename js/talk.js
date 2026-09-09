@@ -456,9 +456,9 @@ function sameTalkMessage(row, expected){
     && (!expected.mediaUrl || mediaUrl(row)===clean(expected.mediaUrl));
 }
 
-async function waitForSavedTalkMessage(expected, attempts=7){
+async function waitForSavedTalkMessage(expected, attempts=10){
   for(let i=0;i<attempts;i++){
-    await sleep(i===0?700:1100);
+    await sleep(i===0?1000:1400);
     try{
       const rows=await fetchSheet(C.talkMessagesSheetName||"Talk Messages");
       if((rows||[]).some(row=>sameTalkMessage(row,expected))){
@@ -473,21 +473,53 @@ async function waitForSavedTalkMessage(expected, attempts=7){
 }
 
 async function fireTalkPostNoCors(params){
-  const body=new URLSearchParams(params);
+  if(!C.appsScriptUrl){
+    throw new Error("Apps Script URL is missing.");
+  }
+
   const action=clean(params&&params.action);
   const postUrl=action
     ? C.appsScriptUrl + (C.appsScriptUrl.includes("?") ? "&" : "?") + "action=" + encodeURIComponent(action)
     : C.appsScriptUrl;
 
-  await fetch(postUrl,{
-    method:"POST",
-    mode:"no-cors",
-    headers:{
-      "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"
-    },
-    body:body.toString(),
-    cache:"no-store"
+  // Mobile-safe fallback:
+  // submit a normal HTML form into a hidden iframe.
+  // This avoids fetch/CORS/redirect quirks seen on iPhone/Android browsers.
+  const iframeName="talkPostSink_"+Date.now()+"_"+Math.random().toString(36).slice(2);
+  const iframe=document.createElement("iframe");
+  iframe.name=iframeName;
+  iframe.hidden=true;
+  iframe.setAttribute("aria-hidden","true");
+
+  const form=document.createElement("form");
+  form.method="POST";
+  form.action=postUrl;
+  form.target=iframeName;
+  form.hidden=true;
+  form.acceptCharset="UTF-8";
+
+  Object.entries(params||{}).forEach(([key,value])=>{
+    const input=document.createElement("input");
+    input.type="hidden";
+    input.name=key;
+    input.value=value==null?"":String(value);
+    form.appendChild(input);
   });
+
+  document.body.appendChild(iframe);
+  document.body.appendChild(form);
+
+  try{
+    form.submit();
+    // Give Safari/Chrome mobile enough time to actually dispatch the POST
+    // before verification starts.
+    await sleep(1200);
+  }finally{
+    setTimeout(()=>{
+      try{ form.remove(); }catch(e){}
+      try{ iframe.remove(); }catch(e){}
+    },5000);
+  }
 }
 
 async function submitTalkMessage(){
@@ -584,7 +616,7 @@ async function submitTalkMessage(){
 
       // Apps Script can occasionally surface its redirect as a GET response
       // after a media POST. Retry as a simple no-CORS POST and verify from Sheet.
-      status.textContent="Verifying message save…";
+      status.textContent="Finishing message save…";
       try{
         await fireTalkPostNoCors(savePayload);
       }catch(e){
