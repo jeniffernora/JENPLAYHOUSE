@@ -5,9 +5,11 @@ window.JEN_CONFIG = {
   cmsStorageKey: "jeniffer-nora-cms-overrides-v1",
   taxRate: 0.11,
   shippingFee: 25000,
-  appsScriptUrl: "https://script.google.com/macros/s/AKfycbzr0DLu26T8vfCJpWAffBGedD2wDPDrq-ONn4Uf2eQ90nYuQwmCybX8eCsTOZNMf-oZ/exec",
+  appsScriptUrl: "https://script.google.com/macros/s/AKfycbyi-gOEgMzjIgmz8j8LzeOFR9L2xhrjs-8e4VWAgYaK3wmloAt8HtRr6HA1lgFF2pS2Qw/exec",
   updatesSheetName: "Updates",
   usersSheetName: "Users",
+  talkMessagesSheetName: "Talk Messages",
+  gallerySheetName: "Gallery",
   liveSheetId: "1OO_r1XUYJoqrm-zLJFHz-oB1k5RX_76KgBDoxQ06MhY",
   newsSheetName: "News",
   liveMusicSheets: {
