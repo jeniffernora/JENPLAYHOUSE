@@ -1556,6 +1556,71 @@
 }
 </style>
 
+
+<style id="safe-mobile-header-seam">
+/* FINISHING ONLY.
+   Does not reposition header, strips, scallop, hero, or content. */
+
+@media (max-width:700px){
+
+  /* Same brand wording as desktop concept, simply scaled for mobile. */
+  .navbar .brand-note{
+    display:block !important;
+    font-family:Georgia, "Times New Roman", serif !important;
+    font-size:15px !important;
+    font-weight:500 !important;
+    line-height:1 !important;
+    letter-spacing:0 !important;
+    text-transform:none !important;
+    white-space:nowrap !important;
+  }
+
+  /* Cover only the tiny visual seam beneath the scallop.
+     No margin/transform/top positioning is changed. */
+  .home-scallop-small{
+    box-shadow:0 3px 0 0 #F7C6D0 !important;
+  }
+}
+
+@media (max-width:390px){
+  .navbar .brand-note{
+    font-size:14px !important;
+  }
+}
+</style>
+
+
+<style id="mobile-stack-up">
+/* MOBILE ONLY — keep the red strip, just move the whole decorative stack upward. */
+@media (max-width:700px){
+
+  /* red/cherry strip */
+  .home-wave-big{
+    transform:translateY(-10px) !important;
+  }
+
+  /* pink scallop follows the strip upward */
+  .home-scallop-small{
+    transform:translateY(-10px) !important;
+  }
+
+  /* hero image/background rises by the same amount */
+  .home-background{
+    transform:translateY(-10px) !important;
+  }
+
+  /* overlay must stay aligned with the photo */
+  .home-overlay{
+    transform:translateY(-10px) !important;
+  }
+
+  /* keep decorative doodles aligned with the raised hero image */
+  .home-hero-doodles{
+    transform:translateY(-10px) !important;
+  }
+}
+</style>
+
 </head>
 
 
@@ -1576,7 +1641,7 @@
             
 
             <span class="brand-note">
-                Jeniffer Nora · Fictional Artist · Roleplay Purpose
+                Jen Play House
             </span>
 
         </a>
