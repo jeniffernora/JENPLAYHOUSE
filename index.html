@@ -1847,6 +1847,1001 @@ footer *{
 }
 </style>
 
+
+<style id="glossy-controls-v11615">
+/* =========================================================
+   v1.16.15 — GLOSSY CONTROLS ONLY
+   Base: v1.16.14 (LOCKED)
+   No layout/section/content changes.
+   Palette:
+   Maroon #7A0F24 | Cherry #C92F45 | Soft Pink #F7C6D0
+   Blush #FBE3E8 | Cream #F8F0E6 | Ivory #FFF9F4
+   Rose #B86A78 | Lavender #D9D3FF | Espresso #2A1718
+   ========================================================= */
+
+/* ---------- shared compact glossy behavior ---------- */
+#homeUpdateTabs .home-update-tab,
+#homeUpdateTabs .home-talk-pill,
+#updatesTabs .update-tab,
+.music-player-actions > button,
+.music-player-actions > a,
+.album-list button,
+.album-list a,
+.shop-grid button,
+.shop-grid a,
+.checkout-button,
+.complete-payment-button {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 34px !important;
+  height: auto !important;
+
+  padding: 8px 14px !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+
+  border-radius: 999px !important;
+  box-sizing: border-box !important;
+
+  font: inherit !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 1.1 !important;
+  letter-spacing: .015em !important;
+  text-align: center !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+
+  cursor: pointer !important;
+  transition:
+    transform .16s ease,
+    box-shadow .16s ease,
+    filter .16s ease !important;
+}
+
+#homeUpdateTabs .home-update-tab::before,
+#homeUpdateTabs .home-talk-pill::before,
+#updatesTabs .update-tab::before,
+.music-player-actions > button::before,
+.music-player-actions > a::before,
+.album-list button::before,
+.album-list a::before,
+.shop-grid button::before,
+.shop-grid a::before,
+.checkout-button::before,
+.complete-payment-button::before {
+  content: "" !important;
+  position: absolute !important;
+  z-index: -1 !important;
+  left: 7% !important;
+  right: 7% !important;
+  top: 2px !important;
+  height: 46% !important;
+  border-radius: 999px !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,.90) 0%,
+    rgba(255,255,255,.38) 58%,
+    rgba(255,255,255,0) 100%
+  ) !important;
+  pointer-events: none !important;
+}
+
+#homeUpdateTabs .home-update-tab:hover,
+#homeUpdateTabs .home-talk-pill:hover,
+#updatesTabs .update-tab:hover,
+.music-player-actions > button:hover,
+.music-player-actions > a:hover,
+.album-list button:hover,
+.album-list a:hover,
+.shop-grid button:hover,
+.shop-grid a:hover,
+.checkout-button:hover,
+.complete-payment-button:hover {
+  transform: translateY(-1px) !important;
+  filter: saturate(1.03) brightness(1.015) !important;
+}
+
+#homeUpdateTabs .home-update-tab:active,
+#homeUpdateTabs .home-talk-pill:active,
+#updatesTabs .update-tab:active,
+.music-player-actions > button:active,
+.music-player-actions > a:active,
+.album-list button:active,
+.album-list a:active,
+.shop-grid button:active,
+.shop-grid a:active,
+.checkout-button:active,
+.complete-payment-button:active {
+  transform: translateY(0) scale(.98) !important;
+}
+
+
+/* =========================================================
+   HAMBURGER / THREE-LINE MENU
+   ========================================================= */
+.menu-button {
+  width: 42px !important;
+  height: 36px !important;
+  min-width: 42px !important;
+  padding: 8px 10px !important;
+
+  border: 1px solid rgba(122,15,36,.16) !important;
+  border-radius: 14px !important;
+
+  background:
+    linear-gradient(180deg, #FFF9F4 0%, #FBE3E8 48%, #D9D3FF 100%) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.96),
+    inset 0 -1px 0 rgba(122,15,36,.08),
+    0 5px 13px rgba(42,23,24,.12) !important;
+
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.menu-button::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 6px !important;
+  right: 6px !important;
+  top: 2px !important;
+  height: 43% !important;
+  border-radius: 11px !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,.92),
+    rgba(255,255,255,.28)
+  ) !important;
+  pointer-events: none !important;
+}
+
+.menu-button span {
+  position: relative !important;
+  z-index: 1 !important;
+  background: #7A0F24 !important;
+  border-radius: 999px !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.30) !important;
+}
+
+
+/* =========================================================
+   MUSIC
+   ========================================================= */
+
+/* View Tracklist / album action buttons — lavender */
+.album-list button,
+.album-list a {
+  color: #2A1718 !important;
+  border: 1px solid rgba(122,15,36,.13) !important;
+  background:
+    linear-gradient(180deg, #F3F0FF 0%, #D9D3FF 54%, #C9C1F4 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.90),
+    inset 0 -1px 0 rgba(42,23,24,.06),
+    0 5px 13px rgba(89,72,145,.15) !important;
+}
+
+/* Save Lyric Card — soft pink */
+#saveLyricCard {
+  color: #7A0F24 !important;
+  border: 1px solid rgba(201,47,69,.16) !important;
+  background:
+    linear-gradient(180deg, #FFF4F7 0%, #F7C6D0 52%, #EDB3C1 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.94),
+    inset 0 -1px 0 rgba(122,15,36,.07),
+    0 5px 13px rgba(184,106,120,.16) !important;
+}
+
+/* Open YouTube — warm cream / ivory */
+#openYouTubeButton {
+  color: #7A0F24 !important;
+  border: 1px solid rgba(184,106,120,.18) !important;
+  background:
+    linear-gradient(180deg, #FFFDF9 0%, #F8F0E6 55%, #F1E4D8 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.98),
+    inset 0 -1px 0 rgba(122,15,36,.06),
+    0 5px 13px rgba(122,15,36,.10) !important;
+}
+
+/* Share Lyric Card — blush / rose */
+#shareSongButton {
+  color: #2A1718 !important;
+  border: 1px solid rgba(184,106,120,.18) !important;
+  background:
+    linear-gradient(180deg, #FFF5F6 0%, #FBE3E8 52%, #EFCBD3 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.94),
+    inset 0 -1px 0 rgba(122,15,36,.06),
+    0 5px 13px rgba(184,106,120,.14) !important;
+}
+
+
+/* =========================================================
+   UPDATES FILTERS — varied palette, not all maroon
+   ========================================================= */
+#homeUpdateTabs .home-update-tab,
+#updatesTabs .update-tab {
+  color: #2A1718 !important;
+  border: 1px solid rgba(122,15,36,.12) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.92),
+    inset 0 -1px 0 rgba(42,23,24,.05),
+    0 5px 12px rgba(42,23,24,.10) !important;
+}
+
+/* pink */
+#homeUpdateTabs .home-update-tab:nth-child(1),
+#updatesTabs .update-tab:nth-child(1),
+#updatesTabs .update-tab:nth-child(5) {
+  background: linear-gradient(180deg, #FFF3F6, #F7C6D0 55%, #ECB4C0) !important;
+}
+
+/* lavender */
+#homeUpdateTabs .home-update-tab:nth-child(2),
+#updatesTabs .update-tab:nth-child(2),
+#updatesTabs .update-tab:nth-child(6) {
+  background: linear-gradient(180deg, #F5F2FF, #D9D3FF 55%, #C8BFF4) !important;
+}
+
+/* cream */
+#homeUpdateTabs .home-update-tab:nth-child(3),
+#updatesTabs .update-tab:nth-child(3) {
+  background: linear-gradient(180deg, #FFFDF9, #F8F0E6 55%, #F0E2D5) !important;
+}
+
+/* blush */
+#updatesTabs .update-tab:nth-child(4) {
+  background: linear-gradient(180deg, #FFF7F8, #FBE3E8 55%, #EFCFD6) !important;
+}
+
+/* Talk With Us — pale lavender/pink */
+#homeUpdateTabs .home-talk-pill {
+  color: #7A0F24 !important;
+  border: 1px solid rgba(122,15,36,.13) !important;
+  background:
+    linear-gradient(135deg, #FFF5F8 0%, #F7C6D0 48%, #D9D3FF 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.92),
+    inset 0 -1px 0 rgba(122,15,36,.06),
+    0 5px 12px rgba(89,72,145,.12) !important;
+}
+
+/* active state keeps palette, adds stronger glossy ring */
+#homeUpdateTabs .home-update-tab.active,
+#updatesTabs .update-tab.active {
+  color: #7A0F24 !important;
+  border-color: rgba(201,47,69,.28) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.96),
+    inset 0 -1px 0 rgba(122,15,36,.08),
+    0 0 0 2px rgba(255,249,244,.72),
+    0 6px 14px rgba(184,106,120,.18) !important;
+}
+
+
+/* =========================================================
+   SHOP PRODUCT ACTIONS
+   First action = pink, second action = lavender.
+   Only controls inside #shopProductList are affected.
+   ========================================================= */
+#shopProductList button,
+#shopProductList a {
+  color: #2A1718 !important;
+  border: 1px solid rgba(122,15,36,.13) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.92),
+    inset 0 -1px 0 rgba(42,23,24,.05),
+    0 5px 12px rgba(42,23,24,.10) !important;
+}
+
+#shopProductList button:nth-of-type(odd),
+#shopProductList a:nth-of-type(odd) {
+  background:
+    linear-gradient(180deg, #FFF4F7 0%, #F7C6D0 54%, #EDB5C1 100%) !important;
+  color: #7A0F24 !important;
+}
+
+#shopProductList button:nth-of-type(even),
+#shopProductList a:nth-of-type(even) {
+  background:
+    linear-gradient(180deg, #F5F2FF 0%, #D9D3FF 54%, #C9C1F4 100%) !important;
+  color: #2A1718 !important;
+}
+
+
+/* =========================================================
+   CART / CHECKOUT
+   ========================================================= */
+
+/* Checkout — lavender */
+.checkout-button {
+  color: #2A1718 !important;
+  border: 1px solid rgba(89,72,145,.16) !important;
+  background:
+    linear-gradient(180deg, #F7F5FF 0%, #D9D3FF 54%, #C7BEF2 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.94),
+    inset 0 -1px 0 rgba(42,23,24,.06),
+    0 6px 14px rgba(89,72,145,.15) !important;
+}
+
+/* Checkout X — compact glossy blush circle */
+#closeCheckoutButton {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  border-radius: 50% !important;
+  border: 1px solid rgba(201,47,69,.16) !important;
+  color: #7A0F24 !important;
+
+  background:
+    linear-gradient(180deg, #FFF9FB 0%, #FBE3E8 52%, #F3CCD5 100%) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.96),
+    inset 0 -1px 0 rgba(122,15,36,.07),
+    0 5px 12px rgba(184,106,120,.14) !important;
+
+  font-size: 20px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+}
+
+#closeCheckoutButton:hover {
+  transform: translateY(-1px) !important;
+}
+
+/* Complete Fictional Payment — cherry/pink glass, not maroon */
+.complete-payment-button {
+  color: #FFF9F4 !important;
+  border: 1px solid rgba(201,47,69,.35) !important;
+  background:
+    linear-gradient(180deg, #E7697C 0%, #C92F45 55%, #B86A78 120%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.44),
+    inset 0 -1px 0 rgba(42,23,24,.10),
+    0 6px 15px rgba(201,47,69,.18) !important;
+}
+
+
+/* =========================================================
+   MOBILE — keep controls fitted to text, never oversized
+   ========================================================= */
+@media (max-width:700px) {
+  #homeUpdateTabs .home-update-tab,
+  #homeUpdateTabs .home-talk-pill,
+  #updatesTabs .update-tab,
+  .music-player-actions > button,
+  .music-player-actions > a,
+  .album-list button,
+  .album-list a,
+  .shop-grid button,
+  .shop-grid a,
+  .checkout-button,
+  .complete-payment-button {
+    min-height: 32px !important;
+    padding: 7px 12px !important;
+    font-size: 10px !important;
+  }
+
+  /* long labels may wrap only when the screen actually requires it */
+  .complete-payment-button,
+  .music-player-actions > button,
+  .music-player-actions > a {
+    white-space: normal !important;
+  }
+
+  .music-player-actions,
+  #homeUpdateTabs,
+  #updatesTabs,
+  .shop-grid {
+    align-items: flex-start !important;
+  }
+
+  .menu-button {
+    width: 40px !important;
+    height: 34px !important;
+    min-width: 40px !important;
+    padding: 8px 9px !important;
+    border-radius: 13px !important;
+  }
+
+  #closeCheckoutButton {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    padding: 0 !important;
+    font-size: 19px !important;
+  }
+}
+
+@media (max-width:390px) {
+  #homeUpdateTabs .home-update-tab,
+  #homeUpdateTabs .home-talk-pill,
+  #updatesTabs .update-tab,
+  .music-player-actions > button,
+  .music-player-actions > a,
+  .album-list button,
+  .album-list a,
+  .shop-grid button,
+  .shop-grid a,
+  .checkout-button,
+  .complete-payment-button {
+    padding: 7px 11px !important;
+    font-size: 9.5px !important;
+  }
+}
+</style>
+
+
+<style id="updates-palette-match-v11616">
+/* v1.16.16 — ONLY recolor the Home Updates filter row
+   Match the approved reference:
+   active = glossy maroon
+   Artist = soft pink
+   J-Team = dusty pink
+   Talk With Us = pale blush/ivory
+   Everything else from v1.16.15 remains untouched. */
+
+#homeUpdateTabs .home-update-tab,
+#homeUpdateTabs .home-talk-pill{
+  color:#7A0F24 !important;
+  border:1px solid rgba(122,15,36,.18) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.94),
+    inset 0 -1px 0 rgba(122,15,36,.07),
+    0 5px 12px rgba(122,15,36,.12) !important;
+}
+
+/* ALL / first pill — pale pink by default */
+#homeUpdateTabs .home-update-tab:nth-child(1){
+  background:
+    linear-gradient(180deg,#FFF7FA 0%,#F7D1DA 44%,#F2BBC8 100%) !important;
+}
+
+/* ARTIST */
+#homeUpdateTabs .home-update-tab:nth-child(2){
+  background:
+    linear-gradient(180deg,#FFF5F8 0%,#F9CDD8 45%,#F1B7C5 100%) !important;
+}
+
+/* J-TEAM */
+#homeUpdateTabs .home-update-tab:nth-child(3){
+  background:
+    linear-gradient(180deg,#FFF5F7 0%,#F5C8D2 42%,#EFB4C2 100%) !important;
+}
+
+/* TALK WITH US */
+#homeUpdateTabs .home-talk-pill{
+  background:
+    linear-gradient(180deg,#FFFDFD 0%,#FFF7F8 48%,#F8E9EC 100%) !important;
+  border-color:rgba(201,47,69,.20) !important;
+}
+
+/* Whichever filter is active becomes the deep glossy maroon shown in the reference. */
+#homeUpdateTabs .home-update-tab.active{
+  color:#FFF9F4 !important;
+  border-color:#7A0F24 !important;
+  background:
+    linear-gradient(
+      180deg,
+      #C84E6C 0%,
+      #A20E3F 42%,
+      #7A0F24 78%,
+      #650A1D 100%
+    ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.46),
+    inset 0 -2px 0 rgba(65,0,18,.24),
+    0 6px 13px rgba(122,15,36,.24) !important;
+}
+
+/* Stronger shine on active maroon pill. */
+#homeUpdateTabs .home-update-tab.active::before{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.62) 0%,
+      rgba(255,255,255,.18) 66%,
+      rgba(255,255,255,0) 100%
+    ) !important;
+}
+
+/* Keep the compact, fit-to-text sizing already approved. */
+#homeUpdateTabs .home-update-tab,
+#homeUpdateTabs .home-talk-pill{
+  width:auto !important;
+  min-width:0 !important;
+  padding-left:17px !important;
+  padding-right:17px !important;
+}
+
+@media(max-width:700px){
+  #homeUpdateTabs .home-update-tab,
+  #homeUpdateTabs .home-talk-pill{
+    padding-left:14px !important;
+    padding-right:14px !important;
+  }
+}
+</style>
+
+
+<style id="all-buttons-palette-match-v11617">
+/* =========================================================
+   v1.16.17 — ALL TARGETED BUTTONS, ONE APPROVED PALETTE
+   Base: v1.16.16
+   Palette reference:
+   - Primary / active = glossy maroon
+   - Secondary A = glossy soft pink
+   - Secondary B = glossy dusty pink
+   - Secondary C = glossy pale blush / ivory
+   No lavender.
+   No unrelated color changes.
+   ========================================================= */
+
+/* ---------- palette tokens ---------- */
+:root{
+  --jp-maroon-top:#C84E6C;
+  --jp-maroon-mid:#A20E3F;
+  --jp-maroon-deep:#7A0F24;
+  --jp-maroon-dark:#650A1D;
+
+  --jp-softpink-top:#FFF6F8;
+  --jp-softpink-mid:#F7D1DA;
+  --jp-softpink-bot:#EFB4C2;
+
+  --jp-dustypink-top:#FFF5F7;
+  --jp-dustypink-mid:#F2C0CC;
+  --jp-dustypink-bot:#DFA0AF;
+
+  --jp-pale-top:#FFFDFD;
+  --jp-pale-mid:#FFF5F7;
+  --jp-pale-bot:#F6E5E9;
+
+  --jp-ink:#7A0F24;
+  --jp-dark:#2A1718;
+  --jp-ivory:#FFF9F4;
+}
+
+/* ---------- shared compact glossy look ---------- */
+#homeUpdateTabs .home-update-tab,
+#homeUpdateTabs .home-talk-pill,
+#updatesTabs .update-tab,
+.music-player-actions > button,
+.music-player-actions > a,
+.album-list button,
+.album-list a,
+#shopProductList button,
+#shopProductList a,
+.checkout-button,
+.complete-payment-button,
+#closeCheckoutButton,
+.menu-button {
+  position:relative !important;
+  overflow:hidden !important;
+  box-sizing:border-box !important;
+  transition:transform .16s ease, box-shadow .16s ease, filter .16s ease !important;
+}
+
+/* text-fit buttons */
+#homeUpdateTabs .home-update-tab,
+#homeUpdateTabs .home-talk-pill,
+#updatesTabs .update-tab,
+.music-player-actions > button,
+.music-player-actions > a,
+.album-list button,
+.album-list a,
+#shopProductList button,
+#shopProductList a,
+.checkout-button,
+.complete-payment-button {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:auto !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  min-height:34px !important;
+  height:auto !important;
+  padding:8px 15px !important;
+  border-radius:999px !important;
+  font-size:11px !important;
+  font-weight:700 !important;
+  line-height:1.1 !important;
+  white-space:nowrap !important;
+  text-decoration:none !important;
+}
+
+/* universal glass shine */
+#homeUpdateTabs .home-update-tab::before,
+#homeUpdateTabs .home-talk-pill::before,
+#updatesTabs .update-tab::before,
+.music-player-actions > button::before,
+.music-player-actions > a::before,
+.album-list button::before,
+.album-list a::before,
+#shopProductList button::before,
+#shopProductList a::before,
+.checkout-button::before,
+.complete-payment-button::before,
+#closeCheckoutButton::before,
+.menu-button::before {
+  content:"" !important;
+  position:absolute !important;
+  left:7% !important;
+  right:7% !important;
+  top:2px !important;
+  height:46% !important;
+  border-radius:999px !important;
+  background:linear-gradient(
+    180deg,
+    rgba(255,255,255,.92) 0%,
+    rgba(255,255,255,.30) 68%,
+    rgba(255,255,255,0) 100%
+  ) !important;
+  pointer-events:none !important;
+}
+
+#homeUpdateTabs .home-update-tab:hover,
+#homeUpdateTabs .home-talk-pill:hover,
+#updatesTabs .update-tab:hover,
+.music-player-actions > button:hover,
+.music-player-actions > a:hover,
+.album-list button:hover,
+.album-list a:hover,
+#shopProductList button:hover,
+#shopProductList a:hover,
+.checkout-button:hover,
+.complete-payment-button:hover,
+#closeCheckoutButton:hover,
+.menu-button:hover{
+  transform:translateY(-1px) !important;
+  filter:brightness(1.015) !important;
+}
+
+
+/* =========================================================
+   HAMBURGER — pale blush glossy, lines maroon
+   ========================================================= */
+.menu-button{
+  width:42px !important;
+  min-width:42px !important;
+  height:36px !important;
+  padding:8px 10px !important;
+  border-radius:14px !important;
+  border:1px solid rgba(122,15,36,.18) !important;
+  background:linear-gradient(
+    180deg,
+    var(--jp-pale-top) 0%,
+    var(--jp-pale-mid) 50%,
+    var(--jp-pale-bot) 100%
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.96),
+    inset 0 -1px 0 rgba(122,15,36,.08),
+    0 5px 12px rgba(122,15,36,.12) !important;
+}
+.menu-button span{
+  position:relative !important;
+  z-index:1 !important;
+  background:var(--jp-maroon-deep) !important;
+  border-radius:999px !important;
+}
+
+
+/* =========================================================
+   MUSIC — same palette family only
+   ========================================================= */
+
+/* View Tracklist = soft pink */
+.album-list button,
+.album-list a{
+  color:var(--jp-ink) !important;
+  border:1px solid rgba(122,15,36,.16) !important;
+  background:linear-gradient(
+    180deg,
+    var(--jp-softpink-top) 0%,
+    var(--jp-softpink-mid) 52%,
+    var(--jp-softpink-bot) 100%
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.94),
+    inset 0 -1px 0 rgba(122,15,36,.07),
+    0 5px 12px rgba(184,106,120,.14) !important;
+}
+
+/* Save Lyric Card = dusty pink */
+#saveLyricCard{
+  color:var(--jp-ink) !important;
+  border:1px solid rgba(122,15,36,.17) !important;
+  background:linear-gradient(
+    180deg,
+    var(--jp-dustypink-top) 0%,
+    var(--jp-dustypink-mid) 52%,
+    var(--jp-dustypink-bot) 100%
+  ) !important;
+}
+
+/* Open YouTube = pale blush */
+#openYouTubeButton{
+  color:var(--jp-ink) !important;
+  border:1px solid rgba(122,15,36,.14) !important;
+  background:linear-gradient(
+    180deg,
+    var(--jp-pale-top) 0%,
+    var(--jp-pale-mid) 52%,
+    var(--jp-pale-bot) 100%
+  ) !important;
+}
+
+/* Share Lyrics Card = soft pink */
+#shareSongButton{
+  color:var(--jp-ink) !important;
+  border:1px solid rgba(122,15,36,.16) !important;
+  background:linear-gradient(
+    180deg,
+    var(--jp-softpink-top) 0%,
+    var(--jp-softpink-mid) 52%,
+    var(--jp-softpink-bot) 100%
+  ) !important;
+}
+
+
+/* =========================================================
+   UPDATES — exact reference direction
+   ========================================================= */
+#homeUpdateTabs .home-update-tab,
+#updatesTabs .update-tab{
+  color:var(--jp-ink) !important;
+  border:1px solid rgba(122,15,36,.16) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.94),
+    inset 0 -1px 0 rgba(122,15,36,.07),
+    0 5px 12px rgba(122,15,36,.12) !important;
+}
+
+/* default cycling: soft pink / dusty pink / pale blush */
+#homeUpdateTabs .home-update-tab:nth-child(1),
+#updatesTabs .update-tab:nth-child(1),
+#updatesTabs .update-tab:nth-child(4){
+  background:linear-gradient(
+    180deg,
+    var(--jp-softpink-top),
+    var(--jp-softpink-mid) 52%,
+    var(--jp-softpink-bot)
+  ) !important;
+}
+#homeUpdateTabs .home-update-tab:nth-child(2),
+#updatesTabs .update-tab:nth-child(2),
+#updatesTabs .update-tab:nth-child(5){
+  background:linear-gradient(
+    180deg,
+    var(--jp-dustypink-top),
+    var(--jp-dustypink-mid) 52%,
+    var(--jp-dustypink-bot)
+  ) !important;
+}
+#homeUpdateTabs .home-update-tab:nth-child(3),
+#updatesTabs .update-tab:nth-child(3),
+#updatesTabs .update-tab:nth-child(6){
+  background:linear-gradient(
+    180deg,
+    var(--jp-pale-top),
+    var(--jp-pale-mid) 52%,
+    var(--jp-pale-bot)
+  ) !important;
+}
+
+/* active = maroon */
+#homeUpdateTabs .home-update-tab.active,
+#updatesTabs .update-tab.active{
+  color:var(--jp-ivory) !important;
+  border-color:var(--jp-maroon-deep) !important;
+  background:linear-gradient(
+    180deg,
+    var(--jp-maroon-top) 0%,
+    var(--jp-maroon-mid) 42%,
+    var(--jp-maroon-deep) 78%,
+    var(--jp-maroon-dark) 100%
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.46),
+    inset 0 -2px 0 rgba(65,0,18,.24),
+    0 6px 13px rgba(122,15,36,.24) !important;
+}
+
+/* Talk With Us = pale */
+#homeUpdateTabs .home-talk-pill{
+  color:var(--jp-ink) !important;
+  border:1px solid rgba(122,15,36,.14) !important;
+  background:linear-gradient(
+    180deg,
+    var(--jp-pale-top) 0%,
+    var(--jp-pale-mid) 52%,
+    var(--jp-pale-bot) 100%
+  ) !important;
+}
+
+
+/* =========================================================
+   SHOP — same palette family
+   ========================================================= */
+
+/* Add to Bag = soft pink */
+#shopProductList button:nth-of-type(odd),
+#shopProductList a:nth-of-type(odd){
+  color:var(--jp-ink) !important;
+  border:1px solid rgba(122,15,36,.16) !important;
+  background:linear-gradient(
+    180deg,
+    var(--jp-softpink-top),
+    var(--jp-softpink-mid) 52%,
+    var(--jp-softpink-bot)
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.94),
+    inset 0 -1px 0 rgba(122,15,36,.07),
+    0 5px 12px rgba(184,106,120,.14) !important;
+}
+
+/* Share = pale blush */
+#shopProductList button:nth-of-type(even),
+#shopProductList a:nth-of-type(even){
+  color:var(--jp-ink) !important;
+  border:1px solid rgba(122,15,36,.14) !important;
+  background:linear-gradient(
+    180deg,
+    var(--jp-pale-top),
+    var(--jp-pale-mid) 52%,
+    var(--jp-pale-bot)
+  ) !important;
+}
+
+
+/* =========================================================
+   CART / CHECKOUT
+   ========================================================= */
+
+/* Checkout = dusty pink */
+.checkout-button{
+  color:var(--jp-ink) !important;
+  border:1px solid rgba(122,15,36,.17) !important;
+  background:linear-gradient(
+    180deg,
+    var(--jp-dustypink-top),
+    var(--jp-dustypink-mid) 52%,
+    var(--jp-dustypink-bot)
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.94),
+    inset 0 -1px 0 rgba(122,15,36,.07),
+    0 6px 14px rgba(184,106,120,.15) !important;
+}
+
+/* X = pale glossy circle */
+#closeCheckoutButton{
+  width:34px !important;
+  min-width:34px !important;
+  height:34px !important;
+  min-height:34px !important;
+  padding:0 !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border-radius:50% !important;
+  color:var(--jp-ink) !important;
+  border:1px solid rgba(122,15,36,.15) !important;
+  background:linear-gradient(
+    180deg,
+    var(--jp-pale-top),
+    var(--jp-pale-mid) 52%,
+    var(--jp-pale-bot)
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.96),
+    inset 0 -1px 0 rgba(122,15,36,.07),
+    0 5px 12px rgba(122,15,36,.12) !important;
+}
+
+/* Complete Fictional Payment = glossy maroon primary */
+.complete-payment-button{
+  color:var(--jp-ivory) !important;
+  border:1px solid var(--jp-maroon-deep) !important;
+  background:linear-gradient(
+    180deg,
+    var(--jp-maroon-top) 0%,
+    var(--jp-maroon-mid) 42%,
+    var(--jp-maroon-deep) 78%,
+    var(--jp-maroon-dark) 100%
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.46),
+    inset 0 -2px 0 rgba(65,0,18,.24),
+    0 6px 14px rgba(122,15,36,.22) !important;
+}
+
+
+/* =========================================================
+   MOBILE — preserve fit-to-text
+   ========================================================= */
+@media(max-width:700px){
+  #homeUpdateTabs .home-update-tab,
+  #homeUpdateTabs .home-talk-pill,
+  #updatesTabs .update-tab,
+  .music-player-actions > button,
+  .music-player-actions > a,
+  .album-list button,
+  .album-list a,
+  #shopProductList button,
+  #shopProductList a,
+  .checkout-button,
+  .complete-payment-button{
+    min-height:32px !important;
+    padding:7px 12px !important;
+    font-size:10px !important;
+  }
+
+  .complete-payment-button,
+  .music-player-actions > button,
+  .music-player-actions > a{
+    white-space:normal !important;
+  }
+
+  .menu-button{
+    width:40px !important;
+    min-width:40px !important;
+    height:34px !important;
+    padding:8px 9px !important;
+  }
+
+  #closeCheckoutButton{
+    width:32px !important;
+    min-width:32px !important;
+    height:32px !important;
+    min-height:32px !important;
+  }
+}
+
+@media(max-width:390px){
+  #homeUpdateTabs .home-update-tab,
+  #homeUpdateTabs .home-talk-pill,
+  #updatesTabs .update-tab,
+  .music-player-actions > button,
+  .music-player-actions > a,
+  .album-list button,
+  .album-list a,
+  #shopProductList button,
+  #shopProductList a,
+  .checkout-button,
+  .complete-payment-button{
+    padding:7px 11px !important;
+    font-size:9.5px !important;
+  }
+}
+</style>
+
 </head>
 
 
