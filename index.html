@@ -1433,6 +1433,129 @@
 }
 </style>
 
+
+<style id="hero-gloss-exact">
+/* EXACT HERO BUTTONS ONLY */
+
+/* Shared gloss behavior */
+.button-light,
+.button-outline{
+  position:relative !important;
+  overflow:hidden !important;
+  isolation:isolate !important;
+
+  transition:
+    transform .18s ease,
+    filter .18s ease,
+    box-shadow .18s ease !important;
+}
+
+/* LISTEN NOW — clearly glossy pink */
+.button-light{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.95) 0%,
+      rgba(255,255,255,.48) 32%,
+      rgba(255,255,255,.12) 46%,
+      rgba(255,255,255,0) 52%
+    ),
+    linear-gradient(
+      180deg,
+      #ffdbe7 0%,
+      #f6bed1 54%,
+      #eaa7bf 100%
+    ) !important;
+
+  border:1px solid rgba(255,255,255,.72) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -1px 0 rgba(122,15,36,.11),
+    0 7px 16px rgba(59,14,38,.22),
+    0 0 0 1px rgba(122,15,36,.06) !important;
+
+  color:#7A0F24 !important;
+  text-shadow:0 1px 0 rgba(255,255,255,.58) !important;
+}
+
+/* VIEW SCHEDULE — glossy glassy plum */
+.button-outline{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.42) 0%,
+      rgba(255,255,255,.16) 34%,
+      rgba(255,255,255,.04) 48%,
+      rgba(255,255,255,0) 54%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(106,54,91,.88) 0%,
+      rgba(82,37,72,.90) 56%,
+      rgba(60,24,54,.94) 100%
+    ) !important;
+
+  border:1px solid rgba(255,255,255,.78) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.45),
+    inset 0 -1px 0 rgba(20,0,14,.32),
+    0 7px 16px rgba(20,0,14,.28),
+    0 0 0 1px rgba(255,255,255,.08) !important;
+
+  color:#fff !important;
+  text-shadow:0 1px 1px rgba(20,0,14,.28) !important;
+}
+
+/* Upper highlight streak — this is what makes the gloss obvious */
+.button-light::after,
+.button-outline::after{
+  content:"";
+  position:absolute;
+  left:10%;
+  right:10%;
+  top:3px;
+  height:38%;
+  border-radius:999px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.94) 0%,
+      rgba(255,255,255,.46) 60%,
+      rgba(255,255,255,0) 100%
+    );
+
+  pointer-events:none;
+  z-index:0;
+}
+
+.button-light:hover,
+.button-outline:hover{
+  transform:translateY(-1px) !important;
+  filter:brightness(1.045) saturate(1.03) !important;
+}
+
+/* KEEP EXISTING MOBILE SIZE/LAYOUT.
+   Only reduce shadow intensity slightly on small screens. */
+@media(max-width:700px){
+  .button-light{
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,1),
+      inset 0 -1px 0 rgba(122,15,36,.10),
+      0 5px 12px rgba(59,14,38,.18) !important;
+  }
+
+  .button-outline{
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.42),
+      inset 0 -1px 0 rgba(20,0,14,.28),
+      0 5px 12px rgba(20,0,14,.22) !important;
+  }
+}
+</style>
+
 </head>
 
 
