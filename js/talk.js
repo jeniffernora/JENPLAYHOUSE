@@ -8,7 +8,19 @@ let data=JSON.parse(JSON.stringify(bundled||{}));
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const img=v=>String(v||"").trim()||"assets/images/jeniffer.jpg";
-const clean=v=>String(v??"").trim();
+const clean=v=>{
+  if(v===null||v===undefined)return"";
+  if(typeof v==="object"){
+    if("v" in v)return clean(v.v);
+    if("value" in v)return clean(v.value);
+    if("text" in v)return clean(v.text);
+    if("label" in v)return clean(v.label);
+    if("name" in v)return clean(v.name);
+    if("displayName" in v)return clean(v.displayName);
+    return"";
+  }
+  return String(v).trim();
+};
 const visible=rows=>(rows||[]).filter(r=>!["hidden","draft","archived"].includes(clean(r.Status).toLowerCase()));
 
 try{
@@ -99,7 +111,26 @@ function sampleMessages(users){
   });
 }
 
-function authorName(u){return clean(u["Display Name"]||u.Name)||"Jeniffer Nora"}
+function authorName(u){
+  if(!u)return"Jeniffer Nora";
+
+  const candidates=[
+    u["Display Name"],
+    u["Name"],
+    u["Artist Name"],
+    u["Username"],
+    u["User Name"],
+    u["displayName"],
+    u["name"]
+  ];
+
+  for(const value of candidates){
+    const text=clean(value);
+    if(text && text!=="[object Object]")return text;
+  }
+
+  return"Jeniffer Nora";
+}
 function authorRole(u){
   const r=clean(u.Role||u.Position);
   if(/artist/i.test(r)||/^JN-/i.test(clean(u["User ID"])))return"Artist";
@@ -377,10 +408,18 @@ async function postTalkAction(params){
   }
 
   const body=new URLSearchParams(params);
+  const action=clean(params&&params.action);
+  const postUrl=action
+    ? C.appsScriptUrl + (C.appsScriptUrl.includes("?") ? "&" : "?") + "action=" + encodeURIComponent(action)
+    : C.appsScriptUrl;
 
-  const response=await fetch(C.appsScriptUrl,{
+  const response=await fetch(postUrl,{
     method:"POST",
-    body
+    headers:{
+      "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"
+    },
+    body:body.toString(),
+    cache:"no-store"
   });
 
   const raw=await response.text();
@@ -435,10 +474,19 @@ async function waitForSavedTalkMessage(expected, attempts=7){
 
 async function fireTalkPostNoCors(params){
   const body=new URLSearchParams(params);
-  await fetch(C.appsScriptUrl,{
+  const action=clean(params&&params.action);
+  const postUrl=action
+    ? C.appsScriptUrl + (C.appsScriptUrl.includes("?") ? "&" : "?") + "action=" + encodeURIComponent(action)
+    : C.appsScriptUrl;
+
+  await fetch(postUrl,{
     method:"POST",
     mode:"no-cors",
-    body
+    headers:{
+      "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"
+    },
+    body:body.toString(),
+    cache:"no-store"
   });
 }
 
@@ -530,7 +578,7 @@ async function submitTalkMessage(){
       await postTalkAction(savePayload);
     }catch(saveError){
       const msg=String(saveError?.message||saveError||"");
-      const redirectish=/unknown get action|did not return json|failed to fetch|network/i.test(msg);
+      const redirectish=/unknown (?:get|post) action|did not return json|failed to fetch|network/i.test(msg);
 
       if(!redirectish)throw saveError;
 
@@ -657,7 +705,49 @@ function messageContent(m){
   return `<div class="message-caption">${esc(text||"…")}</div>`;
 }
 
+
+function talkThemeForUser(u){
+  const name=authorName(u).toLowerCase().replace(/\s+/g," ").trim();
+
+  const FEMALE=new Set([
+    "jeniffer",
+    "jeniffer nora",
+    "helena",
+    "ranu",
+    "nona",
+    "gadis"
+  ]);
+
+  const MALE=new Set([
+    "manu",
+    "atharya",
+    "niki",
+    "ed"
+  ]);
+
+  if(FEMALE.has(name))return"female";
+  if(MALE.has(name))return"male";
+
+  const id=clean(u&&u["User ID"]).toLowerCase();
+
+  const femaleIds=["jeniffer","helena","ranu","nona","gadis"];
+  const maleIds=["manu","atharya","niki","ed"];
+
+  if(femaleIds.some(key=>id.includes(key)))return"female";
+  if(maleIds.some(key=>id.includes(key)))return"male";
+
+  return"female";
+}
+
+function applyTalkTheme(u){
+  const room=document.querySelector(".talk-room");
+  if(!room)return;
+  room.classList.remove("theme-female","theme-male");
+  room.classList.add(`theme-${talkThemeForUser(u)}`);
+}
+
 function renderRoom(u){
+  applyTalkTheme(u);
   currentUser=u;
   document.body.classList.add("room-open");
   $("#talkRoom").setAttribute("aria-hidden","false");
@@ -736,12 +826,109 @@ function wrap(ctx,text,maxW){
   return lines;
 }
 
+
+async function getChatSaveStatus(){
+  const now=new Date();
+
+  const time=now.toLocaleTimeString("en-US",{
+    hour:"numeric",
+    minute:"2-digit",
+    hour12:true
+  });
+
+  let batteryLevel=null;
+  let charging=false;
+
+  try{
+    if(navigator.getBattery){
+      const battery=await navigator.getBattery();
+      batteryLevel=Math.round((battery.level||0)*100);
+      charging=!!battery.charging;
+    }
+  }catch(e){
+    console.warn("Battery API unavailable",e);
+  }
+
+  if(batteryLevel===null || !Number.isFinite(batteryLevel)){
+    batteryLevel=78;
+  }
+
+  return {time,batteryLevel,charging};
+}
+
+function drawIOSStatusBar(ctx,status,W){
+  const ink="#2A1718";
+
+  ctx.save();
+  ctx.fillStyle=ink;
+  ctx.textBaseline="middle";
+
+  // realtime local time from the user's device
+  ctx.font='700 26px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
+  ctx.textAlign="left";
+  ctx.fillText(status.time,72,62);
+
+  // cellular signal
+  const sx=W-252;
+  const sy=62;
+  ctx.fillStyle=ink;
+  [8,13,18,23].forEach((h,i)=>{
+    ctx.beginPath();
+    ctx.roundRect(sx+i*13,sy-h/2,7,h,2);
+    ctx.fill();
+  });
+
+  // Wi-Fi icon
+  const wx=W-176;
+  ctx.strokeStyle=ink;
+  ctx.lineWidth=4;
+  ctx.lineCap="round";
+
+  ctx.beginPath();
+  ctx.arc(wx,sy+2,24,Math.PI*1.18,Math.PI*1.82);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(wx,sy+4,15,Math.PI*1.18,Math.PI*1.82);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(wx,sy+6,6,Math.PI*1.18,Math.PI*1.82);
+  ctx.stroke();
+
+  // battery percentage
+  ctx.fillStyle=ink;
+  ctx.font='600 21px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
+  ctx.textAlign="right";
+  ctx.fillText(`${status.batteryLevel}%`,W-83,62);
+
+  // battery shell
+  const bx=W-70, by=49, bw=34, bh=22;
+  ctx.lineWidth=2.5;
+  ctx.strokeStyle=ink;
+  rounded(ctx,bx,by,bw,bh,5);
+  ctx.stroke();
+
+  ctx.fillStyle=ink;
+  ctx.fillRect(bx+bw+3,by+7,3,8);
+
+  const innerPad=3;
+  const fillW=(bw-innerPad*2)*Math.max(0,Math.min(1,status.batteryLevel/100));
+  ctx.fillStyle=status.charging ? "#7A0F24" : ink;
+  rounded(ctx,bx+innerPad,by+innerPad,Math.max(2,fillW),bh-innerPad*2,3);
+  ctx.fill();
+
+  ctx.restore();
+}
+
 async function shareMessage(m,u){
   const W=1080,H=1920;
   const c=document.createElement("canvas");
   c.width=W;
   c.height=H;
   const ctx=c.getContext("2d");
+  const saveStatus=await getChatSaveStatus();
+  const roomTheme=talkThemeForUser(u);
 
   const cream="#FFF9F4";
   const warm="#F8F0E6";
@@ -752,25 +939,46 @@ async function shareMessage(m,u){
   const muted="#7B666B";
   const cyan="#44B8DB";
 
-  // LIVE-ROOM-LIKE BACKGROUND
+  // LIVE-ROOM-LIKE BACKGROUND, matching the selected profile theme
   const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,"#FFF8F3");
-  bg.addColorStop(.42,blush);
-  bg.addColorStop(.76,cream);
-  bg.addColorStop(1,warm);
+
+  if(roomTheme==="male"){
+    bg.addColorStop(0,"#F8FBFF");
+    bg.addColorStop(.42,"#DCEAFF");
+    bg.addColorStop(.76,"#F9FBFF");
+    bg.addColorStop(1,warm);
+  }else{
+    bg.addColorStop(0,"#FFF7F6");
+    bg.addColorStop(.42,"#FAD4DE");
+    bg.addColorStop(.76,"#FFF8F3");
+    bg.addColorStop(1,warm);
+  }
+
   ctx.fillStyle=bg;
   ctx.fillRect(0,0,W,H);
 
-  // soft blush glows
   let glow=ctx.createRadialGradient(220,300,0,220,300,430);
-  glow.addColorStop(0,"rgba(247,198,208,.50)");
-  glow.addColorStop(1,"rgba(247,198,208,0)");
+  glow.addColorStop(
+    0,
+    roomTheme==="male"
+      ?"rgba(186,218,255,.48)"
+      :"rgba(255,170,195,.48)"
+  );
+  glow.addColorStop(1,"rgba(255,255,255,0)");
   ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
 
   glow=ctx.createRadialGradient(870,580,0,870,580,420);
-  glow.addColorStop(0,"rgba(201,47,69,.08)");
-  glow.addColorStop(1,"rgba(201,47,69,0)");
+  glow.addColorStop(
+    0,
+    roomTheme==="male"
+      ?"rgba(88,136,205,.10)"
+      :"rgba(201,47,69,.10)"
+  );
+  glow.addColorStop(1,"rgba(255,255,255,0)");
   ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+
+  // iPhone-like status bar for the saved chat only.
+  drawIOSStatusBar(ctx,saveStatus,W);
 
   // FRAME
   ctx.strokeStyle="rgba(42,23,24,.82)";
@@ -786,26 +994,26 @@ async function shareMessage(m,u){
   // HEADER
   ctx.fillStyle=ink;
   ctx.font="700 46px Arial";
-  ctx.fillText("←",76,126);
+  ctx.fillText("←",76,158);
 
   const av=await loadImage(img(u.Photo));
   if(av){
     ctx.save();
     ctx.beginPath();
-    ctx.arc(176,105,43,0,Math.PI*2);
+    ctx.arc(176,137,43,0,Math.PI*2);
     ctx.clip();
-    cover(ctx,av,133,62,86,86);
+    cover(ctx,av,133,94,86,86);
     ctx.restore();
   }
 
   const displayName=authorName(u);
   ctx.fillStyle=ink;
   ctx.font="700 34px Arial";
-  ctx.fillText(displayName,244,104);
+  ctx.fillText(displayName,244,136);
 
   if(verified(u)){
     const nameW=ctx.measureText(displayName).width;
-    const vx=244+nameW+24, vy=93;
+    const vx=244+nameW+24, vy=125;
     ctx.fillStyle=cyan;
     ctx.beginPath();ctx.arc(vx,vy,14,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#fff";
@@ -819,18 +1027,18 @@ async function shareMessage(m,u){
 
   ctx.fillStyle=muted;
   ctx.font="400 21px Arial";
-  ctx.fillText(authorRole(u),244,136);
+  ctx.fillText(authorRole(u),244,168);
 
   ctx.fillStyle=ink;
   ctx.font="700 44px Arial";
-  ctx.fillText("⋮",944,124);
+  ctx.fillText("⋮",944,156);
 
   ctx.strokeStyle="rgba(122,15,36,.16)";
   ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(68,176);ctx.lineTo(W-68,176);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(68,208);ctx.lineTo(W-68,208);ctx.stroke();
 
   // MESSAGE HEADER
-  const avatarX=118, avatarY=286;
+  const avatarX=118, avatarY=318;
   if(av){
     ctx.save();
     ctx.beginPath();ctx.arc(avatarX,avatarY,30,0,Math.PI*2);ctx.clip();
@@ -840,11 +1048,11 @@ async function shareMessage(m,u){
 
   ctx.fillStyle=ink;
   ctx.font="700 24px Arial";
-  ctx.fillText(displayName,160,268);
+  ctx.fillText(displayName,160,300);
 
   const type=messageType(m);
   const bubbleX=160;
-  const bubbleY=294;
+  const bubbleY=326;
   const maxBubbleW=760;
   const padX=28;
   const padY=23;
@@ -859,7 +1067,7 @@ async function shareMessage(m,u){
   const liveLineHeight=52;
 
   if(type==="text"||!type){
-    ctx.font=`400 ${liveFontSize}px Arial`;
+    ctx.font=`400 ${liveFontSize}px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", Arial`;
     textLines=wrap(ctx,messageText(m)||"…",690);
     const widest=Math.max(...textLines.map(line=>ctx.measureText(line).width),80);
     bubbleW=Math.min(maxBubbleW,Math.max(160,Math.ceil(widest)+padX*2));
@@ -887,7 +1095,7 @@ async function shareMessage(m,u){
 
     const cap=messageText(m);
     if(cap){
-      ctx.font="400 31px Arial";
+      ctx.font='400 31px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", Arial';
       captionLines=wrap(ctx,cap,Math.max(260,mediaDrawW-20));
     }
 
@@ -900,14 +1108,22 @@ async function shareMessage(m,u){
 
   // LIVE-LIKE BUBBLE SHADOW
   ctx.save();
-  ctx.shadowColor="rgba(42,23,24,.16)";
+  ctx.shadowColor=roomTheme==="male"?"rgba(65,105,165,.18)":"rgba(169,32,70,.18)";
   ctx.shadowBlur=14;
   ctx.shadowOffsetY=8;
   const bubbleGrad=ctx.createLinearGradient(0,bubbleY,0,bubbleY+bubbleH);
-  bubbleGrad.addColorStop(0,"#FFFDFB");
-  bubbleGrad.addColorStop(.32,"#FFF7F8");
-  bubbleGrad.addColorStop(.72,"#F8CDD6");
-  bubbleGrad.addColorStop(1,bubbleBottom);
+
+  if(roomTheme==="male"){
+    bubbleGrad.addColorStop(0,"#FFFFFF");
+    bubbleGrad.addColorStop(.28,"#F6FAFF");
+    bubbleGrad.addColorStop(.70,"#BFD8FF");
+    bubbleGrad.addColorStop(1,"#8EB8F2");
+  }else{
+    bubbleGrad.addColorStop(0,"#FFFDFB");
+    bubbleGrad.addColorStop(.27,"#FFF5F7");
+    bubbleGrad.addColorStop(.70,"#F7BFD0");
+    bubbleGrad.addColorStop(1,"#EF94AE");
+  }
   ctx.fillStyle=bubbleGrad;
   rounded(ctx,bubbleX,bubbleY,bubbleW,bubbleH,30);
   ctx.fill();
@@ -945,7 +1161,7 @@ async function shareMessage(m,u){
 
     if(captionLines.length){
       ctx.fillStyle=ink;
-      ctx.font="400 31px Arial";
+      ctx.font='400 31px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", Arial';
       const capY=my+mediaDrawH+48;
       captionLines.forEach((line,i)=>{
         ctx.fillText(line,bubbleX+26,capY+i*42);
@@ -967,12 +1183,12 @@ async function shareMessage(m,u){
 
     const txt=messageText(m);
     if(txt){
-      ctx.fillStyle=ink;ctx.font="400 28px Arial";
+      ctx.fillStyle=ink;ctx.font='400 28px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", Arial';
       ctx.fillText(txt,bubbleX+26,bubbleY+150);
     }
   }else{
     ctx.fillStyle=ink;
-    ctx.font=`400 ${liveFontSize}px Arial`;
+    ctx.font=`400 ${liveFontSize}px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", Arial`;
     textLines.forEach((line,i)=>{
       ctx.fillText(line,bubbleX+padX,bubbleY+padY+37+i*liveLineHeight);
     });
