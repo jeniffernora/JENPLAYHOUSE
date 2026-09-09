@@ -1790,6 +1790,53 @@
 }
 </style>
 
+
+
+<style id="mobile-hero-up-v11612">
+/* v1.16.12 — MOBILE HERO ONLY
+   Base: v1.16.11
+   Change: raise the hero image a little more at the top, keep everything else intact.
+*/
+@media (max-width:700px){
+  .home-section{
+    overflow:hidden !important;
+  }
+
+  .home-background{
+    background-size:cover !important;
+    background-position:center 9% !important;
+    transform:translateY(-22px) scale(1.045, 1.10) !important;
+    transform-origin:center center !important;
+    will-change:transform !important;
+    backface-visibility:hidden !important;
+  }
+
+  .home-overlay{
+    transform:translateY(-22px) scaleY(1.10) !important;
+    transform-origin:center center !important;
+  }
+
+  .home-hero-doodles{
+    transform:translateY(-20px) !important;
+  }
+}
+
+@media (max-width:390px){
+  .home-background{
+    background-position:center 8% !important;
+    transform:translateY(-20px) scale(1.04, 1.095) !important;
+  }
+
+  .home-overlay{
+    transform:translateY(-20px) scaleY(1.095) !important;
+  }
+
+  .home-hero-doodles{
+    transform:translateY(-18px) !important;
+  }
+}
+</style>
+
 </head>
 
 
