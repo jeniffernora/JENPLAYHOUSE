@@ -833,6 +833,606 @@
       }
     </style>
 
+
+    <!-- HOME UPDATE PROFILE WRAP FIX -->
+    <style>
+      #homeUpdateProfiles,
+      .home-update-profiles{
+        display:flex !important;
+        flex-wrap:wrap !important;
+        align-items:flex-start !important;
+        justify-content:flex-start !important;
+        gap:18px 24px !important;
+        width:100% !important;
+        max-width:100% !important;
+        overflow:visible !important;
+        white-space:normal !important;
+      }
+
+      #homeUpdateProfiles > *,
+      .home-update-profiles > *{
+        flex:0 0 auto !important;
+      }
+
+      .home-preview-updates,
+      .home-preview-panel{
+        overflow:visible !important;
+      }
+
+      @media (max-width:700px){
+        #homeUpdateProfiles,
+        .home-update-profiles{
+          gap:16px 18px !important;
+        }
+      }
+    </style>
+
+
+<style id="gallery-home-v1">
+.home-gallery{margin-top:26px;padding-top:22px;border-top:1px solid rgba(122,15,36,.12)}
+.home-gallery-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px}
+.home-gallery-kicker{margin:0 0 4px;color:#9A1430;font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+.home-gallery-title{margin:0;color:#7A0F24;font-size:28px;line-height:1}
+.home-gallery-open{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 13px;border:1px solid rgba(122,15,36,.22);border-radius:999px;background:#FFF9F4;color:#7A0F24!important;text-decoration:none;font-size:12px}
+.home-gallery-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.home-gallery-item{display:block;aspect-ratio:1/1;overflow:hidden;border-radius:16px;border:1px solid rgba(42,23,24,.16);background:#FBE3E8}
+.home-gallery-item img{width:100%;height:100%;object-fit:cover;display:block}
+.home-gallery-empty{grid-column:1/-1;padding:20px;text-align:center;color:#8C7379;border:1px dashed rgba(122,15,36,.18);border-radius:16px}
+@media(max-width:700px){.home-gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.home-gallery-title{font-size:23px}.home-gallery-open{font-size:11px;min-height:34px}}
+</style>
+
+
+<style id="glossy-pill-patch">
+/* ===== Home pills glossy patch: desktop + mobile ===== */
+
+/* Match likely button/link classes used in the home updates section */
+.updates-home-section .filter-pill,
+.updates-home-section .talk-pill,
+.updates-home-section .updates-filter,
+.updates-home-section .updates-talk-btn,
+.updates-home-section .pill,
+.updates-home-section .chip,
+.updates-home-section .tab-pill,
+.updates-home-section button,
+.updates-home-section a,
+#updates-preview .filter-pill,
+#updates-preview .talk-pill,
+#updates-preview .updates-filter,
+#updates-preview .updates-talk-btn,
+#updates-preview .pill,
+#updates-preview .chip,
+#updates-preview .tab-pill,
+#updates-preview button,
+#updates-preview a{
+  position: relative !important;
+  overflow: hidden !important;
+  border-radius: 999px !important;
+  isolation: isolate;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+/* base pink pills */
+.updates-home-section .filter-pill,
+.updates-home-section .updates-filter,
+.updates-home-section .pill,
+.updates-home-section .chip,
+.updates-home-section .tab-pill,
+#updates-preview .filter-pill,
+#updates-preview .updates-filter,
+#updates-preview .pill,
+#updates-preview .chip,
+#updates-preview .tab-pill{
+  background: linear-gradient(180deg, #f7cddb 0%, #efbccd 58%, #e7aebe 100%) !important;
+  border: 1px solid #e8b8c7 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.72),
+    inset 0 -1px 0 rgba(167,58,91,.08),
+    0 8px 20px rgba(137,29,61,.08) !important;
+  color: #7f1532 !important;
+}
+
+/* active pill */
+.updates-home-section .filter-pill.active,
+.updates-home-section .filter-pill[aria-selected="true"],
+.updates-home-section .updates-filter.active,
+.updates-home-section .updates-filter[aria-selected="true"],
+.updates-home-section .pill.active,
+.updates-home-section .tab-pill.active,
+#updates-preview .filter-pill.active,
+#updates-preview .filter-pill[aria-selected="true"],
+#updates-preview .updates-filter.active,
+#updates-preview .updates-filter[aria-selected="true"],
+#updates-preview .pill.active,
+#updates-preview .tab-pill.active{
+  background: linear-gradient(180deg, #a31943 0%, #8c1238 60%, #780b2d 100%) !important;
+  border-color: #8e1f43 !important;
+  color: #fff7fb !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -1px 0 rgba(73,3,24,.16),
+    0 10px 20px rgba(122,15,36,.18) !important;
+}
+
+/* outlined talk with us button */
+.updates-home-section .talk-pill,
+.updates-home-section .updates-talk-btn,
+#updates-preview .talk-pill,
+#updates-preview .updates-talk-btn{
+  background: linear-gradient(180deg, rgba(255,248,251,.98) 0%, rgba(250,235,240,.98) 100%) !important;
+  border: 1.5px solid #deb5c1 !important;
+  color: #8a1736 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    0 8px 20px rgba(122,15,36,.07) !important;
+}
+
+/* glossy highlight */
+.updates-home-section .filter-pill::before,
+.updates-home-section .talk-pill::before,
+.updates-home-section .updates-filter::before,
+.updates-home-section .updates-talk-btn::before,
+.updates-home-section .pill::before,
+.updates-home-section .chip::before,
+.updates-home-section .tab-pill::before,
+#updates-preview .filter-pill::before,
+#updates-preview .talk-pill::before,
+#updates-preview .updates-filter::before,
+#updates-preview .updates-talk-btn::before,
+#updates-preview .pill::before,
+#updates-preview .chip::before,
+#updates-preview .tab-pill::before{
+  content:"";
+  position:absolute;
+  left:6%;
+  right:6%;
+  top:2px;
+  height:52%;
+  border-radius:999px;
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255,.62) 0%,
+      rgba(255,255,255,.28) 48%,
+      rgba(255,255,255,0) 100%);
+  pointer-events:none;
+  z-index:0;
+}
+
+.updates-home-section .filter-pill > *,
+.updates-home-section .talk-pill > *,
+.updates-home-section .updates-filter > *,
+.updates-home-section .updates-talk-btn > *,
+.updates-home-section .pill > *,
+.updates-home-section .chip > *,
+.updates-home-section .tab-pill > *,
+#updates-preview .filter-pill > *,
+#updates-preview .talk-pill > *,
+#updates-preview .updates-filter > *,
+#updates-preview .updates-talk-btn > *,
+#updates-preview .pill > *,
+#updates-preview .chip > *,
+#updates-preview .tab-pill > *{
+  position: relative;
+  z-index: 1;
+}
+
+.updates-home-section .filter-pill:hover,
+.updates-home-section .talk-pill:hover,
+.updates-home-section .updates-filter:hover,
+.updates-home-section .updates-talk-btn:hover,
+.updates-home-section .pill:hover,
+.updates-home-section .chip:hover,
+.updates-home-section .tab-pill:hover,
+#updates-preview .filter-pill:hover,
+#updates-preview .talk-pill:hover,
+#updates-preview .updates-filter:hover,
+#updates-preview .updates-talk-btn:hover,
+#updates-preview .pill:hover,
+#updates-preview .chip:hover,
+#updates-preview .tab-pill:hover{
+  transform: translateY(-1px);
+}
+
+/* make row fit and wrap nicely */
+.updates-home-section .filters,
+.updates-home-section .filter-row,
+.updates-home-section .updates-filters,
+#updates-preview .filters,
+#updates-preview .filter-row,
+#updates-preview .updates-filters{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  gap:12px !important;
+  align-items:center !important;
+}
+
+@media (max-width: 768px){
+  .updates-home-section .filter-pill,
+  .updates-home-section .talk-pill,
+  .updates-home-section .updates-filter,
+  .updates-home-section .updates-talk-btn,
+  .updates-home-section .pill,
+  .updates-home-section .chip,
+  .updates-home-section .tab-pill,
+  #updates-preview .filter-pill,
+  #updates-preview .talk-pill,
+  #updates-preview .updates-filter,
+  #updates-preview .updates-talk-btn,
+  #updates-preview .pill,
+  #updates-preview .chip,
+  #updates-preview .tab-pill{
+    min-height: 38px !important;
+    padding: 0 16px !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+  }
+}
+</style>
+
+
+<style id="talk-button-size-fix">
+/* Compact Talk With Us pill */
+.home-talk-pill{
+  min-height:32px !important;
+  height:32px !important;
+  padding:0 13px !important;
+  font-size:11px !important;
+  line-height:1 !important;
+  border-radius:999px !important;
+  white-space:nowrap !important;
+}
+
+@media (max-width:700px){
+  .home-talk-pill{
+    min-height:30px !important;
+    height:30px !important;
+    padding:0 11px !important;
+    font-size:10px !important;
+  }
+}
+
+@media (max-width:430px){
+  .home-talk-pill{
+    min-height:28px !important;
+    height:28px !important;
+    padding:0 10px !important;
+    font-size:9.5px !important;
+  }
+}
+</style>
+
+
+<style id="desktop-only-glossy">
+/* DESKTOP ONLY — MOBILE IS LEFT UNTOUCHED */
+@media (min-width:701px){
+
+  .home-update-tab{
+    position:relative !important;
+    overflow:hidden !important;
+    isolation:isolate !important;
+
+    background:
+      linear-gradient(
+        180deg,
+        #fbd4df 0%,
+        #f3c2cf 48%,
+        #e8adbe 100%
+      ) !important;
+
+    border:1px solid #e3adbd !important;
+    border-radius:999px !important;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.84),
+      inset 0 -1px 0 rgba(122,15,36,.07),
+      0 5px 12px rgba(122,15,36,.08) !important;
+
+    color:#7A0F24 !important;
+  }
+
+  .home-update-tab::before{
+    content:"";
+    position:absolute;
+    left:7%;
+    right:7%;
+    top:2px;
+    height:48%;
+    border-radius:999px;
+
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255,255,255,.82) 0%,
+        rgba(255,255,255,.38) 52%,
+        rgba(255,255,255,0) 100%
+      );
+
+    pointer-events:none;
+    z-index:0;
+  }
+
+  .home-update-tab.active{
+    background:
+      linear-gradient(
+        180deg,
+        #ac234b 0%,
+        #93163d 52%,
+        #790c2f 100%
+      ) !important;
+
+    border-color:#8b1738 !important;
+    color:#fff !important;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.28),
+      inset 0 -1px 0 rgba(60,0,20,.16),
+      0 6px 14px rgba(122,15,36,.16) !important;
+  }
+
+  .home-update-tab.active::before{
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255,255,255,.34) 0%,
+        rgba(255,255,255,.13) 55%,
+        rgba(255,255,255,0) 100%
+      );
+  }
+
+  .home-talk-pill{
+    position:relative !important;
+    overflow:hidden !important;
+    isolation:isolate !important;
+
+    background:
+      linear-gradient(
+        180deg,
+        #fffafd 0%,
+        #f9edf1 56%,
+        #f2dce4 100%
+      ) !important;
+
+    border:1.2px solid #deb1bf !important;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.95),
+      inset 0 -1px 0 rgba(122,15,36,.05),
+      0 5px 11px rgba(122,15,36,.06) !important;
+
+    color:#7A0F24 !important;
+  }
+
+  .home-talk-pill::before{
+    content:"";
+    position:absolute;
+    left:8%;
+    right:8%;
+    top:2px;
+    height:47%;
+    border-radius:999px;
+
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255,255,255,.94) 0%,
+        rgba(255,255,255,.46) 54%,
+        rgba(255,255,255,0) 100%
+      );
+
+    pointer-events:none;
+    z-index:0;
+  }
+
+  .home-update-tab:hover,
+  .home-talk-pill:hover{
+    transform:translateY(-1px);
+  }
+}
+</style>
+
+
+<style id="profile-layout-restore">
+#homeUpdateProfiles,
+.home-update-profiles{
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:wrap !important;
+  align-items:flex-start !important;
+  justify-content:flex-start !important;
+  gap:18px 24px !important;
+  width:100% !important;
+  max-width:100% !important;
+  overflow:visible !important;
+  white-space:normal !important;
+}
+
+#homeUpdateProfiles > *,
+.home-update-profiles > *{
+  flex:0 0 auto !important;
+  width:auto !important;
+  max-width:none !important;
+  min-width:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+}
+
+#homeUpdateProfiles .home-update-profile,
+.home-update-profiles .home-update-profile{
+  grid-column:auto !important;
+  justify-self:auto !important;
+}
+
+@media (min-width:701px){
+  #homeUpdateProfiles,
+  .home-update-profiles{
+    gap:18px 30px !important;
+  }
+}
+
+@media (max-width:700px){
+  #homeUpdateProfiles,
+  .home-update-profiles{
+    flex-direction:row !important;
+    flex-wrap:wrap !important;
+    gap:16px 18px !important;
+  }
+
+  #homeUpdateProfiles > *,
+  .home-update-profiles > *{
+    flex:0 0 auto !important;
+    width:auto !important;
+  }
+}
+
+@media (max-width:430px){
+  #homeUpdateProfiles,
+  .home-update-profiles{
+    gap:14px 15px !important;
+  }
+}
+</style>
+
+
+<style id="final-glossy-v1157">
+/* FINAL glossy treatment — buttons only. Profile layout untouched. */
+
+.home-update-tab,
+.home-talk-pill,
+.home-gallery-open{
+  position:relative !important;
+  overflow:hidden !important;
+  isolation:isolate !important;
+  border-radius:999px !important;
+
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.72) 0%,
+      rgba(255,255,255,.24) 42%,
+      rgba(255,255,255,0) 47%
+    ),
+    linear-gradient(
+      180deg,
+      #f8d2dd 0%,
+      #efbccb 58%,
+      #e6a8ba 100%
+    ) !important;
+
+  border:1px solid rgba(176,76,105,.30) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.92),
+    inset 0 -1px 0 rgba(122,15,36,.10),
+    0 5px 12px rgba(122,15,36,.10) !important;
+
+  color:#7A0F24 !important;
+  text-shadow:0 1px 0 rgba(255,255,255,.46);
+}
+
+.home-update-tab.active{
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.34) 0%,
+      rgba(255,255,255,.10) 39%,
+      rgba(255,255,255,0) 45%
+    ),
+    linear-gradient(
+      180deg,
+      #b22b53 0%,
+      #94163d 56%,
+      #790c2f 100%
+    ) !important;
+
+  border-color:#861532 !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.34),
+    inset 0 -2px 2px rgba(60,0,20,.16),
+    0 6px 14px rgba(122,15,36,.18) !important;
+
+  color:#fff !important;
+  text-shadow:0 1px 1px rgba(70,0,20,.20);
+}
+
+/* Outlined glossy look for Talk / View More */
+.home-talk-pill,
+.home-gallery-open{
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.98) 0%,
+      rgba(255,255,255,.52) 43%,
+      rgba(255,255,255,.08) 48%
+    ),
+    linear-gradient(
+      180deg,
+      #fff9fb 0%,
+      #f7e8ed 60%,
+      #efd8e0 100%
+    ) !important;
+
+  border:1px solid #d9a7b6 !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -1px 0 rgba(122,15,36,.06),
+    0 5px 12px rgba(122,15,36,.08) !important;
+}
+
+.home-update-tab:hover,
+.home-talk-pill:hover,
+.home-gallery-open:hover{
+  filter:brightness(1.035);
+  transform:translateY(-1px);
+}
+
+/* Gallery now sits under News in the right-side Home column. */
+.home-gallery-below-news{
+  margin:16px 0 0 !important;
+  padding:18px 0 0 !important;
+  border-top:1px solid rgba(122,15,36,.12) !important;
+}
+
+.home-gallery-below-news .home-gallery-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:9px !important;
+}
+
+.home-gallery-below-news .home-gallery-item{
+  aspect-ratio:1/1 !important;
+  border-radius:13px !important;
+}
+
+/* Mobile button sizing only — does NOT touch profile container. */
+@media(max-width:700px){
+  .home-update-tab{
+    min-height:30px !important;
+    height:30px !important;
+    padding:0 12px !important;
+    font-size:10px !important;
+  }
+
+  .home-talk-pill{
+    min-height:28px !important;
+    height:28px !important;
+    padding:0 10px !important;
+    font-size:9.5px !important;
+  }
+
+  .home-gallery-open{
+    min-height:30px !important;
+    height:30px !important;
+    padding:0 11px !important;
+    font-size:10px !important;
+  }
+
+  .home-gallery-below-news .home-gallery-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  }
+}
+</style>
+
 </head>
 
 
@@ -1028,6 +1628,7 @@
                         <button type="button" class="home-update-tab" data-home-update-filter="artist">Artist</button>
                         <button type="button" class="home-update-tab" data-home-update-filter="j-team">J-Team</button>
                         <a class="home-talk-pill" href="talk.html">Talk With Us →</a>
+<a class="home-talk-pill" href="gallery.html">View More →</a>
                     </div>
                     <div id="homeUpdateProfiles" class="home-update-profiles" aria-label="Update profiles"></div>
                     <div class="home-updates-subheading">
@@ -1047,6 +1648,21 @@
                         </div>
                         <div id="homeNewsPreview" class="home-news-preview"></div>
                     </div>
+
+<section class="home-gallery home-gallery-below-news">
+  <div class="home-gallery-head">
+    <div>
+      <p class="home-gallery-kicker">From Jen</p>
+      <h3 class="home-gallery-title">Gallery</h3>
+    </div>
+    <a class="home-gallery-open" href="gallery.html">View More →</a>
+  </div>
+  <div class="home-gallery-grid" id="homeGalleryGrid">
+    <div class="home-gallery-empty">Gallery is getting ready ♡</div>
+  </div>
+</section>
+
+
 
                     <div class="home-preview-panel">
                         <div class="home-preview-heading">
@@ -1463,9 +2079,7 @@
             </div>
 
         </section>
-
-
-    </main>
+</main>
 
 
 
@@ -2137,6 +2751,25 @@
     <script src="js/script.js"></script>
     <script src="js/update-card-export.js"></script>
 
+
+<script id="gallery-home-loader">
+(async()=>{
+ const grid=document.getElementById("homeGalleryGrid"); if(!grid)return;
+ const C=window.JEN_CONFIG||window.JENIFFER_CONFIG||window.CONFIG||{};
+ const sid=C.sheetId||C.googleSheetId||C.spreadsheetId||"1OO_r1XUYJoqrm-zLJFHz-oB1k5RX_76KgBDoxQ06MhY";
+ const sn=C.gallerySheetName||"Gallery";
+ const clean=v=>String(v??"").trim();
+ const parse=t=>{const a=t.indexOf("{"),b=t.lastIndexOf("}");if(a<0||b<0)return[];const d=JSON.parse(t.slice(a,b+1));const cols=(d.table?.cols||[]).map(c=>clean(c.label||c.id));return(d.table?.rows||[]).map(r=>{const o={};cols.forEach((c,i)=>o[c]=r.c?.[i]?.v??"");return o})};
+ try{
+  const u=`https://docs.google.com/spreadsheets/d/${encodeURIComponent(sid)}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sn)}`;
+  const rows=parse(await (await fetch(u,{cache:"no-store"})).text())
+   .filter(r=>["","published","active","yes","show"].includes(clean(r.Status||"Published").toLowerCase()))
+   .filter(r=>clean(r["Photo URL"]||r.Photo||r.Image||r.URL))
+   .sort((a,b)=>Number(a.Order||9999)-Number(b.Order||9999)).slice(0,6);
+  if(rows.length)grid.innerHTML=rows.map(r=>{const src=clean(r["Photo URL"]||r.Photo||r.Image||r.URL),title=clean(r.Title||r.Caption||"Gallery");return `<a class="home-gallery-item" href="gallery.html"><img src="${src.replace(/"/g,"&quot;")}" alt="${title.replace(/"/g,"&quot;")}" loading="lazy"></a>`}).join("");
+ }catch(e){console.warn("Gallery preview failed",e)}
+})();
+</script>
 </body>
 
 </html>
