@@ -3858,6 +3858,16 @@ body.section-routing-enabled.view-home #signup{
   }
 }
 </style>
+
+<style id="ov-fix-glossy-footer-v1">
+/* footer stays in normal flow on mobile for schedule/news/updates */
+body.schedule-page-active,body.news-page-active{min-height:auto !important;display:block !important;}
+body.schedule-page-active > main, body.news-page-active > main{min-height:auto !important;display:block !important;padding-bottom:0 !important;}
+body.schedule-page-active > footer, body.news-page-active > footer{position:static !important;margin-top:24px !important;}
+.updates-login-footer, footer{position:static !important;}
+/* glossy shared controls in updates/admin entry */
+.updates-login-footer .login-pill, .updates-login-footer a, .update-delete-usher, .update-share-button{border:1px solid rgba(122,15,36,.18) !important;border-radius:999px !important;background:linear-gradient(180deg,#fffdfd 0%,#f8d5de 42%,#e8a8b7 100%) !important;box-shadow:inset 0 2px 0 rgba(255,255,255,.95), inset 0 -10px 18px rgba(122,15,36,.12), 0 8px 18px rgba(122,15,36,.10) !important;color:#7A0F24 !important;padding:.55rem 1rem !important;}
+</style>
 </head>
 
 
@@ -5198,10 +5208,8 @@ body.section-routing-enabled.view-home #signup{
 <script id="schedule-page-state-v11623">
 (function () {
   function syncSchedulePageState() {
-    document.body.classList.toggle(
-      "schedule-page-active",
-      window.location.hash === "#schedule"
-    );
+    document.body.classList.toggle("schedule-page-active",window.location.hash === "#schedule");
+    document.body.classList.toggle("news-page-active",window.location.hash === "#news");
   }
 
   syncSchedulePageState();

@@ -539,8 +539,9 @@ function renderHomeUpdateProfiles(){
     target.innerHTML=all+team.map(u=>profile(u,homeUpdateAuthor===u['User ID'])).join('');
     return;
   }
+  const all=`<button type="button" class="home-profile-bubble home-profile-all${homeUpdateAuthor==='all'?' active':''}" data-home-update-author="all"><span class="home-profile-mark">★</span><span>All</span></button>`;
   const people=[artist,...team].filter(Boolean);
-  target.innerHTML=people.slice(0,9).map(u=>profile(u,false)).join('');
+  target.innerHTML=all+people.map(u=>profile(u,homeUpdateAuthor===u['User ID'])).join('');
 }
 function renderHomeUpdatesOnly(){
   const target=$('#homeUpdatesPreview'); if(!target)return;
