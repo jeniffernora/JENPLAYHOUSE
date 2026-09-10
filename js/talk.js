@@ -84,7 +84,7 @@ async function loadLive(){
   }catch(e){console.warn("Talk: live Users unavailable",e)}
   try{
     const rows=await fetchSheet(C.talkMessagesSheetName||"Talk Messages");
-    if(rows)data["Talk Messages"]=rows;
+    if(rows&&rows.length)data["Talk Messages"]=rows;
   }catch(e){console.warn("Talk: live Talk Messages unavailable; using fallback.",e)}
 }
 
@@ -806,7 +806,9 @@ function renderRoom(u){
   updateRoomComposerState();
 
   const own=sortMessages(messages.filter(m=>clean(m["Author ID"])===clean(u["User ID"])));
-  $("#roomMessages").innerHTML=own.length?own.map((m,i)=>`
+  const opening=demoMessages.filter(m=>clean(m["Author ID"])===clean(u["User ID"])).slice(0,1);
+  const roomRows=own.length?own:opening;
+  $("#roomMessages").innerHTML=roomRows.length?roomRows.map((m,i)=>`
     <article class="message">
       <img class="message-avatar" src="${esc(img(u.Photo))}" alt="">
       <div class="message-stack">
@@ -814,8 +816,8 @@ function renderRoom(u){
         <div class="message-bubble">${messageContent(m)}</div>
         <span class="message-time">${esc(clean(m.Time)||clean(m.Date))}</span>
         <div class="message-actions">
-          ${canShareTalkImage(loggedInUser)?`<button class="share-message" type="button" data-share-message="${esc(m["Message ID"]||String(i))}">Share image ↗</button>`:""}
-          ${canDeleteTalkMessage(m)?`<button class="delete-message" type="button" data-delete-message="${esc(m["Message ID"]||String(i))}">Delete</button>`:""}
+          ${clean(m.Demo)!=="yes"&&canShareTalkImage(loggedInUser)?`<button class="share-message" type="button" data-share-message="${esc(m["Message ID"]||String(i))}">Share image ↗</button>`:""}
+          ${clean(m.Demo)!=="yes"&&canDeleteTalkMessage(m)?`<button class="delete-message" type="button" data-delete-message="${esc(m["Message ID"]||String(i))}">Delete</button>`:""}
         </div>
       </div>
     </article>

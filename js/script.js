@@ -118,12 +118,28 @@ async function loadLiveSheetData(){
     catch(e){console.warn('Live News sheet unavailable; using bundled CMS fallback.',e)}
   })());
   tasks.push((async()=>{
-    try{const rows=await fetchLiveSheetRows('Updates');if(rows&&rows.length)data.Updates=rows;}
-    catch(e){console.warn('Live Updates sheet unavailable; using bundled CMS fallback.',e)}
-  })());
-  tasks.push((async()=>{
-    try{const rows=await fetchLiveSheetRows('Users');if(rows&&rows.length)data.Users=rows;}
-    catch(e){console.warn('Live Users sheet unavailable; using bundled CMS fallback.',e)}
+    try{
+      const [updatesResult,usersResult]=await Promise.allSettled([
+        fetchLiveSheetRows('Updates',{fresh:true}),
+        fetchLiveSheetRows('Users')
+      ]);
+
+      if(usersResult.status==='fulfilled' && Array.isArray(usersResult.value) && usersResult.value.length){
+        data.Users=usersResult.value;
+      }
+
+      if(updatesResult.status==='fulfilled' && Array.isArray(updatesResult.value) && updatesResult.value.length){
+        const usable=updatesResult.value.filter(r=>
+          String(r['Update ID']||'').trim() ||
+          String(r['Author ID']||'').trim() ||
+          String(r['Text']||'').trim() ||
+          String(r['Post Type']||'').trim()
+        );
+        if(usable.length)data.Updates=usable;
+      }
+    }catch(e){
+      console.warn('Live Updates/Users unavailable; using bundled CMS fallback.',e);
+    }
   })());
   const musicSheets=C.liveMusicSheets||{Albums:'Albums','Korean Albums':'Korean Albums',Singles:'Singles'};
   for(const [key,sheetName] of Object.entries(musicSheets)){
@@ -161,6 +177,25 @@ function findAlbum(name){for(const key of ['Albums','Korean Albums']){const trac
 function openAlbum(name){const tracks=findAlbum(name);if(!tracks.length)return;currentAlbumName=name;const first=tracks[0];$('#albumDetailCover').src=img(first['Cover URL or Path']);$('#albumDetailLabel').textContent=first['Release Label']||'Album';$('#albumDetailTitle').textContent=name;$('#albumTrackList').innerHTML=tracks.map((r,i)=>`<button type="button" class="album-track-row play-song" data-song="${escape(r['Song Title'])}"><span class="track-number">${String(r['Track Number']||i+1).padStart(2,'0')}</span><span class="track-main"><strong>${escape(r['Song Title'])}</strong><small>${escape(roleplay(r))}</small><small class="track-original-credit">${escape(roleplayCreditLine(r))}</small></span><span class="track-action">Lyrics →</span></button>`).join('');$('#albumDetailModal').classList.add('open')}
 function renderSchedule(){const rows=visible(data.Schedule||[]).sort((a,b)=>Number(a.Order)-Number(b.Order));const target=$('#scheduleList');if(!target)return;target.innerHTML=rows.map(r=>`<article class="schedule-row"><div class="schedule-date"><span>${escape(r.Day||'')}</span><strong>${escape(r.Date||'')}</strong></div><div class="schedule-event"><p>${escape(r.Category||'Appearance')}</p><h3>${escape(r['Event Name']||'')}</h3>${r.Details?`<small>${escape(r.Details)}</small>`:''}</div>${r['Link URL']?`<a class="schedule-link" href="${escape(r['Link URL'])}" target="_blank" rel="noopener">${escape(r['Link Text']||'Details')}</a>`:'<span></span>'}</article>`).join('')||'<p>No upcoming schedule.</p>'}
 let cart=[]; function saveCart(){localStorage.setItem('jen-cart',JSON.stringify(cart));renderCart()}; try{cart=JSON.parse(localStorage.getItem('jen-cart')||'[]')}catch(e){}
+function renderTour(){
+  const source=(data.Tour&&data.Tour.length)?data.Tour:(data.Schedule||[]);
+  const rows=visible(source).sort((a,b)=>Number(a.Order)-Number(b.Order));
+  const target=$('#tourList');
+  if(!target)return;
+  target.innerHTML=rows.map(r=>`<article class="tour-row">
+    <div class="tour-date">
+      <span>${escape(r.Day||r.City||'Tour Date')}</span>
+      <strong>${escape(r.Date||'')}</strong>
+    </div>
+    <div class="tour-event">
+      <p>${escape(r.Category||r.Country||'Tour')}</p>
+      <h3>${escape(r['Event Name']||r.Venue||r.Title||'')}</h3>
+      ${(r.Details||r.Location)?`<small>${escape(r.Details||r.Location)}</small>`:''}
+    </div>
+    ${r['Link URL']?`<a class="tour-link" href="${escape(r['Link URL'])}" target="_blank" rel="noopener">${escape(r['Link Text']||'Details')}</a>`:'<span></span>'}
+  </article>`).join('')||'<p class="loading-text">No tour dates yet.</p>';
+}
+
 function renderShop(cat='all'){const rows=visible(data.Shop).filter(r=>cat==='all'||String(r.Category).toLowerCase()===cat|| (cat==='merch'&&!/album/i.test(r.Category)));$('#shopProductList').innerHTML=rows.map(r=>`<article class="product-card" data-product-slug="${escape(shopSlug(r))}"><img class="media-cover" src="${escape(img(r['Image URL or Path']))}" alt="${escape(r['Product Name']||'Product')}" loading="lazy" decoding="async" fetchpriority="low"><p class="card-meta">${escape(r.Category)} · ${String(r.Status||'').toLowerCase()==='preorder'?'PRE-ORDER':`Stock ${escape(r.Stock)}`}</p><h3 class="card-title">${escape(r['Product Name'])}</h3><p>${escape(r.Description)}</p><strong>${money(r.Price)}</strong>${/shirt|t-shirt|long sleeve|hoodie/i.test(r['Product Name'])?`<div class="product-size-selector"><label>Size</label><select class="product-size-select" data-product-size="${escape(r['Product ID'])}"><option>S</option><option selected>M</option><option>L</option><option>XL</option></select></div>`:''}<div class="card-actions"><button class="add-cart" data-product="${escape(r['Product ID'])}">Add to Bag</button><button class="share-product" data-share-product="${escape(r['Product ID'])}">Share</button></div></article>`).join('')||'<p>No products posted.</p>'}
 async function shareProduct(id){const r=(data.Shop||[]).find(x=>x['Product ID']===id);if(!r)return;const url=shopShareUrl(r);const title=r['Product Name']||'Jeniffer Nora Shop';const text=`${title} — Jeniffer Nora`;if(navigator.share){try{await navigator.share({title,text,url});return}catch(e){if(e&&e.name==='AbortError')return}}try{await navigator.clipboard.writeText(url);alert('Product share link copied.')}catch(e){prompt('Copy this product link:',url)}}
 function renderCart(){const box=$('#cartItems');if(!cart.length)box.innerHTML='<p class="empty-cart-message">Your bag is empty.</p>';else box.innerHTML=cart.map((x,i)=>`<div class="cart-item"><img src="${escape(img(x.image))}" loading="lazy" decoding="async"><div class="cart-item-info"><strong>${escape(x.name)}</strong><span class="cart-item-size">${escape(x.size||'')}</span><span>${money(x.price)} × ${x.qty}</span></div><button class="remove-cart" data-i="${i}">×</button></div>`).join(''); const sub=cart.reduce((s,x)=>s+x.price*x.qty,0),tax=Math.round(sub*(C.taxRate||.11)),ship=cart.length?(C.shippingFee||25000):0,total=sub+tax+ship; ['cart','checkout'].forEach(p=>{const a=$(`#${p}Subtotal`),b=$(`#${p}Tax`),c=$(`#${p}Shipping`),d=$(`#${p}Total`);if(a)a.textContent=money(sub);if(b)b.textContent=money(tax);if(c)c.textContent=money(ship);if(d)d.textContent=money(total)});$('#cartCount').textContent=cart.reduce((s,x)=>s+x.qty,0);return {sub,tax,ship,total}}
@@ -173,6 +208,35 @@ function setupExtraUI(){
 if(!$('#lyricChoices')){const actions=$('.music-player-actions');actions?.insertAdjacentHTML('beforebegin',`<section class="lyric-selector"><p class="section-label">Choose Lyric</p><div id="lyricChoices" class="lyric-choices"></div></section>`)}
 if(!$('#albumDetailModal')){document.body.insertAdjacentHTML('beforeend',`<div class="content-modal" id="albumDetailModal"><div class="content-modal-card album-detail-card"><button class="modal-close-button" id="closeAlbumDetail" type="button">×</button><div class="album-detail-head"><img id="albumDetailCover" class="album-detail-cover" src="" alt=""><div><p class="section-label" id="albumDetailLabel">Album</p><h2 id="albumDetailTitle">Album</h2><p>Select a track to open its lyrics and player.</p></div></div><div id="albumTrackList" class="album-track-list"></div></div></div>`)}
 }
+function normalizeUpdateKey(value){
+  return String(value||'').trim().toLowerCase();
+}
+
+function findUpdateAuthor(authorId){
+  const key=normalizeUpdateKey(authorId);
+  return (data.Users||[]).find(u=>
+    normalizeUpdateKey(u['User ID'])===key
+  ) || null;
+}
+
+function safeUpdateText(row){
+  return String(
+    row?.Text ??
+    row?.['Message / Caption'] ??
+    row?.Caption ??
+    row?.Message ??
+    ''
+  ).trim();
+}
+
+function safeUpdateType(row){
+  return String(
+    row?.['Post Type'] ??
+    row?.Type ??
+    'Update'
+  ).trim() || 'Update';
+}
+
 function currentPortalUser(){
   try{return JSON.parse(localStorage.getItem('jeniffer-nora-admin-session-v1')||'null')}catch(e){return null}
 }
@@ -266,7 +330,7 @@ function canvasToBlob(canvas){return new Promise(resolve=>canvas.toBlob(resolve,
 async function buildUpdateShareCard(id){const r=(data.Updates||[]).find(x=>x['Update ID']===id);if(!r)return null;const a=getUpdateAuthor(r['Author ID']);const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;const ctx=canvas.getContext('2d');ctx.fillStyle='#f7f7f5';ctx.fillRect(0,0,1080,1350);ctx.fillStyle='#171717';ctx.font='700 42px Arial';ctx.fillText('Jeniffer Nora',70,78);ctx.strokeStyle='#dfdfda';ctx.lineWidth=2;ctx.strokeRect(48,112,984,1190);try{const avatar=await loadCanvasImage(a.Photo);ctx.save();ctx.beginPath();ctx.arc(118,195,44,0,Math.PI*2);ctx.clip();ctx.drawImage(avatar,74,151,88,88);ctx.restore()}catch(e){}ctx.fillStyle='#171717';ctx.font='700 34px Arial';ctx.fillText(a.Name||'Jeniffer Nora',184,190);if(String(a.Verified||'').toLowerCase()==='yes'){const x=Math.min(930,202+ctx.measureText(a.Name||'Jeniffer Nora').width);ctx.fillStyle='#41b7d8';ctx.beginPath();ctx.arc(x,180,11,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.font='700 14px Arial';ctx.fillText('✓',x-5,185)}ctx.fillStyle='#929292';ctx.font='22px Arial';ctx.fillText(`${a.Position||a.Role||''} · ${r.Date||''} ${r.Time||''}`,184,226);let y=305;ctx.fillStyle='#222';ctx.font='36px Arial';wrapCanvasText(ctx,r.Text||'',880).slice(0,7).forEach(line=>{ctx.fillText(line,82,y);y+=50});const media=[r['Media 1'],r['Media 2'],r['Media 3'],r['Media 4']].filter(Boolean);const type=String(r['Post Type']||'').toLowerCase();if(media.length&&['photo','carousel'].includes(type)){try{const m=await loadCanvasImage(media[0]);const boxY=Math.max(y+25,500),boxH=650,scale=Math.max(900/m.width,boxH/m.height),w=m.width*scale,h=m.height*scale;ctx.save();ctx.beginPath();ctx.rect(90,boxY,900,boxH);ctx.clip();ctx.drawImage(m,90+(900-w)/2,boxY+(boxH-h)/2,w,h);ctx.restore();y=boxY+boxH+40}catch(e){}}else if(type==='video'||type==='voice note'){const boxY=Math.max(y+25,500);ctx.fillStyle='#ececea';ctx.fillRect(90,boxY,900,260);ctx.fillStyle='#171717';ctx.font='700 42px Arial';ctx.fillText(type==='video'?'VIDEO UPDATE':'VOICE NOTE',130,boxY+145);y=boxY+310}ctx.fillStyle='#777';ctx.font='20px Arial';ctx.fillText(`${r.Category||'Update'} · Fictional roleplay artist`,82,1260);ctx.fillStyle='#171717';ctx.font='700 24px Arial';ctx.fillText('Jeniffer Nora',802,1260);return {blob:await canvasToBlob(canvas),canvas,r,a}}
 async function shareUpdateToX(id){const card=await buildUpdateShareCard(id);if(!card||!card.blob)return;const file=new File([card.blob],`jeniffer-nora-${slugify(card.r['Update ID']||'update')}.png`,{type:'image/png'});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Jeniffer Nora'});return}catch(e){if(e&&e.name==='AbortError')return}}const link=document.createElement('a');link.download=file.name;link.href=URL.createObjectURL(card.blob);link.click();setTimeout(()=>URL.revokeObjectURL(link.href),2000);alert('Share card saved as an image. Attach the image when posting to X.')}
 function handleDeepLinks(){const p=new URLSearchParams(location.search);const song=p.get('song');if(song){setView('music',false);setTimeout(()=>openSong(song),50)}const product=p.get('product');if(product){setView('shop',false);setTimeout(()=>{const card=document.querySelector(`[data-product-slug="${CSS.escape(product)}"]`);if(card){card.classList.add('product-shared-focus');card.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>card.classList.remove('product-shared-focus'),2500)}},100)}const update=p.get('update');if(update)setView('updates',false)}
-const routedSections=['home','music','updates','schedule','shop','news','team','signup'];
+const routedSections=['home','music','updates','schedule','tour','shop','news','team','signup'];
 function setView(id,scroll=true){id=routedSections.includes(id)?id:'home';document.body.classList.add('section-routing-enabled');document.body.classList.toggle('view-home',id==='home');routedSections.forEach(key=>{const el=document.getElementById(key);if(el)el.classList.toggle('active-view',key===id)});$$('.navigation a[href^="#"]').forEach(a=>a.classList.toggle('active-nav',a.getAttribute('href')===`#${id}`));$('#navigation')?.classList.remove('open');if(scroll)window.scrollTo({top:0,behavior:'auto'})}
 function setupSectionRouting(){const initial=(location.hash||'#home').slice(1);setView(initial,false);window.addEventListener('hashchange',()=>setView((location.hash||'#home').slice(1),false));document.addEventListener('click',e=>{const homeTab=e.target.closest('[data-home-update-filter]');if(homeTab){homeUpdateFilter=homeTab.dataset.homeUpdateFilter||'all';homeUpdateAuthor='all';$$('.home-update-tab').forEach(x=>x.classList.toggle('active',x===homeTab));renderHomeUpdatesOnly();return;}const homeAuthor=e.target.closest('[data-home-update-author]');if(homeAuthor){homeUpdateAuthor=homeAuthor.dataset.homeUpdateAuthor||'all';renderHomeUpdatesOnly();return;}const a=e.target.closest('a[href^="#"]');if(!a)return;const id=a.getAttribute('href').slice(1);if(routedSections.includes(id)){e.preventDefault();history.pushState(null,'',`#${id}`);setView(id,true)}})}
 let homeUpdateFilter='all';
@@ -321,7 +385,7 @@ function renderHomePreview(){
     scheduleTarget.innerHTML=rows.map(r=>`<article class="home-schedule-row"><div><span>${escape(r.Day||'')}</span><strong>${escape(r.Date||'')}</strong></div><div><small>${escape(r.Category||'Appearance')}</small><strong>${escape(r['Event Name']||'')}</strong></div></article>`).join('')||'<p class="loading-text">No upcoming schedule.</p>';
   }
 }
-function renderAll(){renderHome();renderMusic();renderUpdates();renderSchedule();renderShop();renderNews();renderTeam();renderCart();renderHomePreview();$('#currentYear').textContent=new Date().getFullYear()}
+function renderAll(){renderHome();renderMusic();renderUpdates();renderSchedule();renderTour();renderShop();renderNews();renderTeam();renderCart();renderHomePreview();$('#currentYear').textContent=new Date().getFullYear()}
 function setupAdmin(){}
 
 function captureHighlightedLyrics(){
@@ -373,3 +437,12 @@ $('#shareSongButton').onclick=async()=>{const card=await buildLyricCardBlob();if
     });
   });
 })();
+
+window.addEventListener('jen-live-data-ready',()=>{
+  try{
+    renderUpdates(activeUpdateFilter||'all');
+    renderHomeUpdatesOnly();
+  }catch(e){
+    console.warn('Updates rerender failed',e);
+  }
+});
