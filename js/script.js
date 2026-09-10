@@ -95,7 +95,13 @@ async function fetchLiveSheetRows(sheetName,{fresh=false}={}){
   }
 
   const sheet=encodeURIComponent(sheetName);
-  const url=`https://docs.google.com/spreadsheets/d/${encodeURIComponent(sheetId)}/gviz/tq?tqx=out:csv&sheet=${sheet}`;
+  const cacheBust=fresh?`&_=${Date.now()}`:'';
+  const url=`https://docs.google.com/spreadsheets/d/${encodeURIComponent(sheetId)}/gviz/tq?tqx=out:csv&sheet=${sheet}${cacheBust}`;
+
+  if(fresh){
+    try{sessionStorage.removeItem(key);}catch(e){}
+  }
+
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),8000);
   const r=await fetch(url,{cache:fresh?'no-store':'default',signal:controller.signal});
@@ -327,8 +333,26 @@ async function refreshUpdatesPortal(){
           String(r['Post Type']||'').trim()
         );
 
-        // Replace stale in-memory Updates with the actual current sheet result.
-        data.Updates=usable;
+        // Merge fresh live rows with the bundled/base Updates instead of replacing them.
+        // This preserves the previously existing posts while still pulling newly posted rows.
+        const baseRows=Array.isArray(bundledData.Updates)?bundledData.Updates:[];
+        const currentRows=Array.isArray(data.Updates)?data.Updates:[];
+        const combined=[...baseRows,...currentRows,...usable];
+
+        const byId=new Map();
+        const noId=[];
+
+        combined.forEach((row,idx)=>{
+          const id=String(row['Update ID']||'').trim();
+          if(id){
+            // Later rows win, so fresh live Sheet data overrides bundled copies.
+            byId.set(id,{...row});
+          }else{
+            noId.push({...row,__mergeIndex:idx});
+          }
+        });
+
+        data.Updates=[...byId.values(),...noId.map(({__mergeIndex,...row})=>row)];
         renderUpdates(activeUpdateFilter||'all');
         renderHomeUpdatesOnly();
       }
