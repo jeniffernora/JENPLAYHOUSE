@@ -153,7 +153,7 @@ function renderMobileUserTools(user){
   const box=document.getElementById('mobileUserTools');
   if(!card||!box||!user)return;
   const uid=encodeURIComponent(user['User ID']||'');
-  box.innerHTML=`<a href="index.html#updates">My Updates</a><a href="talk.html?with=${uid}">My Chat</a>`;
+  box.innerHTML=`<a href="index.html?portal=1#updates">My Updates</a><a href="talk.html?with=${uid}">My Chat</a>`;
   card.hidden=false;
 }
 function hideMobileUserTools(){
@@ -203,6 +203,12 @@ async function login(email,silent=false){
     const ok=j.success===true || j.ok===true;
     if(ok){
       const user=normalizeUser(j.user,email);
+      const role=String(user.Role||'').trim().toLowerCase();
+      if(!['usher','admin','manager','owner'].includes(role)){
+        clearSession();
+        setLoggedOut('Access denied. Portal login is only for Usher, Admin, or Owner.');
+        return false;
+      }
       markActiveSession();
       setLoggedIn(user);
       return true;
@@ -224,7 +230,14 @@ emailInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault()
   try{
     const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');
     if(saved && saved.Email){
+      const role=String(saved.Role||'').trim().toLowerCase();
+      if(!['usher','admin','manager','owner'].includes(role)){
+        clearSession();
+        setLoggedOut('Access denied. Portal login is only for Usher, Admin, or Owner.');
+        return;
+      }
       // Fast restore first; validate silently in the background.
+      markActiveSession();
       setLoggedIn(saved);
       status.textContent='Connected · refreshing account…';
       login(saved.Email,true).catch(()=>{});

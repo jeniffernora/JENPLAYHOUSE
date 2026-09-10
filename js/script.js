@@ -312,9 +312,16 @@ function currentPortalUser(){
   }
 }
 
+function isAllowedPortalRole(role){
+  const value=String(role||'').trim().toLowerCase();
+  // Existing backend may store administrative accounts as "Manager".
+  // Treat Manager as the Admin-equivalent role, not as a public/visitor role.
+  return ['usher','admin','manager','owner'].includes(value);
+}
+
 function canManageUpdates(){
   const u=currentPortalUser();
-  return !!u && /^(usher|admin|owner)$/i.test(String(u.Role||'').trim());
+  return !!u && isAllowedPortalRole(u.Role);
 }
 
 function updateShareButton(r){
@@ -499,7 +506,12 @@ async function refreshUpdatesPortal(){
 }
 
 const routedSections=['home','music','updates','schedule','shop','news','team','signup'];
-function setView(id,scroll=true){id=routedSections.includes(id)?id:'home';document.body.classList.add('section-routing-enabled');document.body.classList.toggle('view-home',id==='home');routedSections.forEach(key=>{const el=document.getElementById(key);if(el)el.classList.toggle('active-view',key===id)});$$('.navigation a[href^="#"]').forEach(a=>a.classList.toggle('active-nav',a.getAttribute('href')===`#${id}`));$('#navigation')?.classList.remove('open');if(scroll)window.scrollTo({top:0,behavior:'auto'});if(id==='home'||id==='updates')refreshUpdatesPortal()}
+function setView(id,scroll=true){id=routedSections.includes(id)?id:'home';document.body.classList.add('section-routing-enabled');document.body.classList.toggle('view-home',id==='home');routedSections.forEach(key=>{const el=document.getElementById(key);if(el)el.classList.toggle('active-view',key===id)});$$('.navigation a[href^="#"]').forEach(a=>a.classList.toggle('active-nav',a.getAttribute('href')===`#${id}`));$('#navigation')?.classList.remove('open');if(scroll)window.scrollTo({top:0,behavior:'auto'});if(id==='home'||id==='updates'){
+  refreshUpdatesPortal().finally(()=>{
+    if(id==='updates')renderUpdates(activeUpdateFilter||'all');
+    if(id==='home')renderHomeUpdatesOnly();
+  });
+}}
 function setupSectionRouting(){const initial=(location.hash||'#home').slice(1);setView(initial,false);window.addEventListener('hashchange',()=>setView((location.hash||'#home').slice(1),false));document.addEventListener('click',e=>{const homeTab=e.target.closest('[data-home-update-filter]');if(homeTab){homeUpdateFilter=homeTab.dataset.homeUpdateFilter||'all';homeUpdateAuthor='all';$$('.home-update-tab').forEach(x=>x.classList.toggle('active',x===homeTab));renderHomeUpdatesOnly();return;}const homeAuthor=e.target.closest('[data-home-update-author]');if(homeAuthor){homeUpdateAuthor=homeAuthor.dataset.homeUpdateAuthor||'all';renderHomeUpdatesOnly();return;}const a=e.target.closest('a[href^="#"]');if(!a)return;const id=a.getAttribute('href').slice(1);if(routedSections.includes(id)){e.preventDefault();history.pushState(null,'',`#${id}`);setView(id,true)}})}
 let homeUpdateFilter='all';
 let homeUpdateAuthor='all';
@@ -588,7 +600,10 @@ $('#shareSongButton').onclick=async()=>{const card=await buildLyricCardBlob();if
 window.addEventListener('pageshow',()=>{
   const route=(location.hash||'#home').slice(1);
   if(route==='home'||route==='updates'){
-    refreshUpdatesPortal();
+    refreshUpdatesPortal().finally(()=>{
+      if(route==='updates')renderUpdates(activeUpdateFilter||'all');
+      if(route==='home')renderHomeUpdatesOnly();
+    });
   }
 });
 (async()=>{await loadLiveSheetData();warmCriticalAvatars();setupExtraUI();renderAll();bind();setupAdmin();setupSectionRouting();handleDeepLinks();})();})();
