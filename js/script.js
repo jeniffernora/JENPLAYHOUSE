@@ -382,14 +382,25 @@ function renderUpdates(filter=activeUpdateFilter){
     }else{
       authors.hidden=false;
       const seen=new Set;
-      let list=(data.Users||[]).filter(a=>String(a.Status||'').toLowerCase()==='active'&&String(a.Verified||'').toLowerCase()==='yes'&&rows.some(r=>r['Author ID']===a['User ID']));
-      if(filter==='artist')list=list.filter(a=>String(a['User ID']||'').startsWith('JN-')||/artist/i.test(String(a.Role||a.Position||'')));
-      authors.innerHTML=list.filter(a=>!seen.has(a['User ID'])&&seen.add(a['User ID'])).map(a=>`<button type="button" class="update-author-bubble" data-author-filter="${escape(a['User ID'])}"><img src="${escape(img(a.Photo))}" alt="" loading="lazy" decoding="async"><span class="update-author-name">${escape(a['Display Name']||a.Name)}${updateVerified(a)}</span></button>`).join('');
+      let list=mergedOfficialUsers();
+      if(filter==='artist'){
+        list=list.filter(a=>
+          String(a['User ID']||'').startsWith('JN-') ||
+          /artist/i.test(String(a.Role||a.Position||''))
+        );
+      }
+      authors.innerHTML=list
+        .filter(a=>!seen.has(a['User ID'])&&seen.add(a['User ID']))
+        .map(a=>`<button type="button" class="update-author-bubble" data-author-filter="${escape(a['User ID'])}"><img src="${escape(img(a.Photo))}" alt="" loading="lazy" decoding="async"><span class="update-author-name">${escape(a['Display Name']||a.Name)}${updateVerified(a)}</span></button>`)
+        .join('');
     }
   }
   if(memberFilters){
     if(filter==='j-team'){
-      const members=(data.Users||[]).filter(a=>String(a.Status||'').toLowerCase()==='active'&&String(a['User ID']||'').startsWith('JT-'));
+      const members=mergedOfficialUsers().filter(a=>
+        String(a['User ID']||'').startsWith('JT-') ||
+        !(/artist/i.test(String(a.Role||a.Position||'')) || String(a['User ID']||'').startsWith('JN-'))
+      );
       memberFilters.hidden=false;
       memberFilters.innerHTML=`<button class="jteam-member-filter jteam-member-bubble active" type="button" data-jteam-author="all"><span class="jteam-all-avatar">J</span><span class="jteam-member-name">All</span></button>`+members.map(a=>`<button class="jteam-member-filter jteam-member-bubble" type="button" data-jteam-author="${escape(a['User ID'])}"><img src="${escape(img(a.Photo))}" alt="${escape(a['Display Name']||a.Name||'J-Team')}" loading="lazy" decoding="async"><span class="jteam-member-name">${escape(a['Display Name']||String(a.Name||'').split(/\s+/)[0])}${updateVerified(a)}</span></button>`).join('');
     }else{
@@ -405,8 +416,50 @@ async function buildUpdateShareCard(id){const r=(data.Updates||[]).find(x=>x['Up
 async function shareUpdateToX(id){const card=await buildUpdateShareCard(id);if(!card||!card.blob)return;const file=new File([card.blob],`jeniffer-nora-${slugify(card.r['Update ID']||'update')}.png`,{type:'image/png'});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Jeniffer Nora'});return}catch(e){if(e&&e.name==='AbortError')return}}const link=document.createElement('a');link.download=file.name;link.href=URL.createObjectURL(card.blob);link.click();setTimeout(()=>URL.revokeObjectURL(link.href),2000);alert('Share card saved as an image. Attach the image when posting to X.')}
 function handleDeepLinks(){const p=new URLSearchParams(location.search);const song=p.get('song');if(song){setView('music',false);setTimeout(()=>openSong(song),50)}const product=p.get('product');if(product){setView('shop',false);setTimeout(()=>{const card=document.querySelector(`[data-product-slug="${CSS.escape(product)}"]`);if(card){card.classList.add('product-shared-focus');card.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>card.classList.remove('product-shared-focus'),2500)}},100)}const update=p.get('update');if(update)setView('updates',false)}
 const routedSections=['home','music','updates','schedule','shop','news','team','signup'];
-function setView(id,scroll=true){id=routedSections.includes(id)?id:'home';document.body.classList.add('section-routing-enabled');document.body.classList.toggle('view-home',id==='home');routedSections.forEach(key=>{const el=document.getElementById(key);if(el)el.classList.toggle('active-view',key===id)});$$('.navigation a[href^="#"]').forEach(a=>a.classList.toggle('active-nav',a.getAttribute('href')===`#${id}`));$('#navigation')?.classList.remove('open');if(scroll)window.scrollTo({top:0,behavior:'auto'})}
+function setView(id,scroll=true){id=routedSections.includes(id)?id:'home';document.body.classList.add('section-routing-enabled');document.body.classList.toggle('view-home',id==='home');routedSections.forEach(key=>{const el=document.getElementById(key);if(el)el.classList.toggle('active-view',key===id)});$$('.navigation a[href^="#"]').forEach(a=>a.classList.toggle('active-nav',a.getAttribute('href')===`#${id}`));$('#navigation')?.classList.remove('open');if(scroll)window.scrollTo({top:0,behavior:'auto'});if(id==='home'||id==='updates')refreshUpdatesLive(true)}
 function setupSectionRouting(){const initial=(location.hash||'#home').slice(1);setView(initial,false);window.addEventListener('hashchange',()=>setView((location.hash||'#home').slice(1),false));document.addEventListener('click',e=>{const homeTab=e.target.closest('[data-home-update-filter]');if(homeTab){homeUpdateFilter=homeTab.dataset.homeUpdateFilter||'all';homeUpdateAuthor='all';$$('.home-update-tab').forEach(x=>x.classList.toggle('active',x===homeTab));renderHomeUpdatesOnly();return;}const homeAuthor=e.target.closest('[data-home-update-author]');if(homeAuthor){homeUpdateAuthor=homeAuthor.dataset.homeUpdateAuthor||'all';renderHomeUpdatesOnly();return;}const a=e.target.closest('a[href^="#"]');if(!a)return;const id=a.getAttribute('href').slice(1);if(routedSections.includes(id)){e.preventDefault();history.pushState(null,'',`#${id}`);setView(id,true)}})}
+
+let updatesLiveRefreshPromise=null;
+let updatesLastFreshAt=0;
+
+async function refreshUpdatesLive(force=false){
+  const now=Date.now();
+
+  // Avoid hammering Google Sheets while still making newly posted rows appear quickly.
+  if(!force && now-updatesLastFreshAt<4000)return;
+  if(updatesLiveRefreshPromise)return updatesLiveRefreshPromise;
+
+  updatesLiveRefreshPromise=(async()=>{
+    try{
+      const [updatesResult,usersResult]=await Promise.allSettled([
+        fetchLiveSheetRows('Updates',{fresh:true}),
+        fetchLiveSheetRows('Users',{fresh:true})
+      ]);
+
+      if(usersResult.status==='fulfilled' && Array.isArray(usersResult.value) && usersResult.value.length){
+        data.Users=usersResult.value;
+      }
+
+      if(updatesResult.status==='fulfilled' && Array.isArray(updatesResult.value)){
+        // Even an empty valid response should replace stale in-memory data.
+        data.Updates=updatesResult.value;
+      }
+
+      updatesLastFreshAt=Date.now();
+
+      renderUpdates(activeUpdateFilter||'all');
+      renderHomeUpdatesOnly();
+      try{ensureOfficialUpdateProfiles();}catch(e){}
+    }catch(e){
+      console.warn('Fresh Updates refresh failed',e);
+    }finally{
+      updatesLiveRefreshPromise=null;
+    }
+  })();
+
+  return updatesLiveRefreshPromise;
+}
+
 let homeUpdateFilter='all';
 let homeUpdateAuthor='all';
 function homeUpdateUsers(){
@@ -551,3 +604,16 @@ function ensureOfficialUpdateProfiles(){
     console.warn('Could not restore official update profiles',e);
   }
 }
+
+
+/* updates-live-pageshow-v11639 */
+window.addEventListener('pageshow',()=>{
+  const id=(location.hash||'#home').slice(1);
+  if(id==='home'||id==='updates')refreshUpdatesLive(true);
+});
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState!=='visible')return;
+  const id=(location.hash||'#home').slice(1);
+  if(id==='home'||id==='updates')refreshUpdatesLive(false);
+});
