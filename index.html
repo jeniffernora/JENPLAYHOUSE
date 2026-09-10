@@ -3891,6 +3891,52 @@ body.schedule-page-active > footer, body.news-page-active > footer{position:stat
 }
 </style>
 
+
+<style id="mobile-hero-transform-fix-v116345415">
+/* v1.16.34.5.4.15 — MOBILE HERO GAP ROOT FIX ONLY
+   Cancel the legacy negative translate that physically lifts the GIF layer
+   and leaves an empty strip at the bottom. */
+@media (max-width:700px){
+  #homeBackground,
+  .home-background,
+  body.hero-mobile-fit #homeBackground,
+  body.hero-mobile-cover #homeBackground{
+    background-size:cover !important;
+    background-repeat:no-repeat !important;
+    background-position:center 40% !important;
+    transform:none !important;
+  }
+}
+</style>
+
+
+<style id="mobile-hero-size-from-342-v116345416">
+/* v1.16.34.5.4.16 — MOBILE HERO SIZE ONLY
+   Reuse the approved visual scale from v1.16.34.2,
+   but DO NOT reuse its negative translateY. */
+@media (max-width:700px){
+  #homeBackground,
+  .home-background,
+  body.hero-mobile-fit #homeBackground,
+  body.hero-mobile-cover #homeBackground{
+    background-size:cover !important;
+    background-repeat:no-repeat !important;
+    background-position:center 40% !important;
+    transform:scale(1.045, 1.10) !important;
+    transform-origin:center center !important;
+  }
+}
+
+@media (max-width:390px){
+  #homeBackground,
+  .home-background,
+  body.hero-mobile-fit #homeBackground,
+  body.hero-mobile-cover #homeBackground{
+    transform:scale(1.04, 1.095) !important;
+  }
+}
+</style>
+
 </head>
 
 
