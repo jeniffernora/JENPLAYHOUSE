@@ -33,41 +33,23 @@ function renderHome(){
   const rawTitle=setting('hero_title','Hi, Jeadore ♡');
   const cleanTitle=String(rawTitle||'').replace(/\s*[♡♥❤]\s*$/,'').trim()||'Hi, Jeadore';
   const hasHeart=/[♡♥❤]\s*$/.test(String(rawTitle||''));
-
   $('#homeTitle').innerHTML=`<span class="home-title-text">${escape(cleanTitle)}</span>${hasHeart?'<span class="home-title-heart" aria-hidden="true">♡</span>':''}`;
   $('#homeDescription').textContent=setting('hero_description','You’ve entered Jeniffer Nora’s universe.');
   $('#homeLabel').textContent=setting('hero_label','Welcome to the universe');
-
   const staticHero=img(setting('hero_image'));
-  const gif=img(setting('hero_gif_desktop','assets/images/hero/jeniffer-home-desktop.gif'));
-  const bg=$('#homeBackground');
-
-  // Immediate lightweight visual while the animated GIF is still loading.
-  bg.style.backgroundImage=`url("${staticHero}")`;
+  const desktopGif=setting('hero_gif_desktop','assets/images/hero/jeniffer-home-desktop.gif');
+  const isMobile=window.matchMedia('(max-width: 700px)').matches;
+  // V21.7: mobile intentionally keeps the same LANDSCAPE hero asset as desktop.
+  const mobileGif=desktopGif;
+  const gif=desktopGif;
+  $('#homeBackground').style.backgroundImage=`url("${img(gif)}"), url("${staticHero}")`;
   document.body.classList.remove('hero-mobile-fit','hero-mobile-cover');
-
-  if(!window.__jenHeroGifLoader || window.__jenHeroGifSrc!==gif){
-    window.__jenHeroGifSrc=gif;
-    window.__jenHeroGifLoader=new Promise((resolve,reject)=>{
-      const preload=new Image();
-      try{preload.fetchPriority='high';}catch(e){}
-      preload.decoding='async';
-      preload.onload=()=>resolve(gif);
-      preload.onerror=reject;
-      preload.src=gif;
-    });
+  if(isMobile){
+    const probe=new Image();
+    probe.onload=()=>{document.body.classList.remove('hero-mobile-fit');document.body.classList.add('hero-mobile-cover')};
+    probe.onerror=()=>{document.body.classList.remove('hero-mobile-cover');document.body.classList.add('hero-mobile-fit')};
+    probe.src=desktopGif;
   }
-
-  window.__jenHeroGifLoader.then(src=>{
-    bg.style.backgroundImage=`url("${src}"), url("${staticHero}")`;
-    if(window.matchMedia('(max-width:700px)').matches){
-      document.body.classList.add('hero-mobile-cover');
-    }
-  }).catch(()=>{
-    if(window.matchMedia('(max-width:700px)').matches){
-      document.body.classList.add('hero-mobile-fit');
-    }
-  });
 }
 function warmCriticalAvatars(){
   const urls=[...new Set((data.Users||[])
@@ -263,85 +245,10 @@ async function deleteUpdateFromFeed(updateId){
 }
 
 let activeUpdateFilter='all';
-const OFFICIAL_UPDATE_PROFILE_ORDER=[
-  'Jeniffer','Helena','Ranu','Nona','Manu','Gadis','Atharya','Niki','Ed'
-];
-
-function mergedOfficialUsers(){
-  const bundled=(bundledData.Users||[]);
-  const live=(data.Users||[]);
-
-  const byId=new Map();
-  const byName=new Map();
-
-  bundled.forEach(u=>{
-    const id=String(u['User ID']||'').trim().toLowerCase();
-    const name=String(u.Name||u['Display Name']||'').trim().toLowerCase();
-    if(id)byId.set(id,{...u});
-    if(name)byName.set(name,{...u});
-  });
-
-  live.forEach(u=>{
-    const id=String(u['User ID']||'').trim().toLowerCase();
-    const name=String(u.Name||u['Display Name']||'').trim().toLowerCase();
-
-    const base=(id&&byId.get(id))||(name&&byName.get(name))||{};
-    const merged={...base,...u};
-
-    if(id)byId.set(id,merged);
-    if(name)byName.set(name,merged);
-  });
-
-  return OFFICIAL_UPDATE_PROFILE_ORDER
-    .map(name=>byName.get(name.toLowerCase()))
-    .filter(Boolean);
-}
-
-function getUpdateAuthor(id){
-  const key=String(id||'').trim().toLowerCase();
-  return (data.Users||[]).find(x=>
-    String(x['User ID']||'').trim().toLowerCase()===key
-  )||{Name:'J-Team',Position:'',Photo:'assets/images/jeniffer.jpg',Verified:'No'}
-}
+function getUpdateAuthor(id){return (data.Users||[]).find(x=>x['User ID']===id)||{Name:'J-Team',Position:'',Photo:'assets/images/jeniffer.jpg',Verified:'No'}}
 function updateVerified(author){return String(author.Verified||'').toLowerCase()==='yes'?'<span class="verified-badge" aria-label="Verified">✓</span>':''}
 function updateComments(id){return visible(data['Update Comments']||[]).filter(x=>x['Update ID']===id).sort((a,b)=>Number(a.Order||0)-Number(b.Order||0))}
-function renderUpdateMedia(r){
-  const type=String(r['Post Type']||r.Type||'Text').trim().toLowerCase();
-
-  const media=[
-    r['Media 1'],
-    r['Media 2'],
-    r['Media 3'],
-    r['Media 4']
-  ].map(x=>String(x||'').trim()).filter(Boolean);
-
-  const thumbnail=String(r.Thumbnail||r['Thumbnail URL']||'').trim();
-
-  if(!media.length && thumbnail && ['photo','carousel','image'].includes(type)){
-    media.push(thumbnail);
-  }
-
-  if(type==='voice note'){
-    const audio=media[0];
-    if(!audio)return '';
-    return `<div class="voice-note"><button type="button" aria-label="Play voice note">▶</button><audio controls preload="metadata" src="${escape(img(audio))}"></audio>${r.Duration?`<span>${escape(r.Duration)}</span>`:''}</div>`;
-  }
-
-  if(type==='video'){
-    const video=media[0];
-    if(!video)return '';
-    return `<div class="update-media"><video controls playsinline preload="metadata" ${thumbnail?`poster="${escape(img(thumbnail))}"`:''}><source src="${escape(img(video))}"></video></div>`;
-  }
-
-  if(media.length){
-    if(media.length>1||type==='carousel'){
-      return `<div class="update-media update-carousel">${media.map(m=>`<img src="${escape(img(m))}" alt="Update photo" loading="lazy" decoding="async" fetchpriority="low">`).join('')}</div>`;
-    }
-    return `<div class="update-media"><img src="${escape(img(media[0]))}" alt="Update photo" loading="lazy" decoding="async" fetchpriority="low"></div>`;
-  }
-
-  return '';
-}
+function renderUpdateMedia(r){const type=String(r['Post Type']||'Text').toLowerCase(),media=[r['Media 1'],r['Media 2'],r['Media 3'],r['Media 4']].filter(Boolean);if(type==='voice note'){if(!r['Media 1'])return '';return `<div class="voice-note"><button type="button" aria-label="Play voice note">▶</button><audio controls preload="metadata" src="${escape(img(r['Media 1']))}"></audio>${r.Duration?`<span>${escape(r.Duration)}</span>`:''}</div>`}if(type==='video'){if(!r['Media 1'])return '';return `<div class="update-media"><video controls playsinline preload="metadata" ${r.Thumbnail?`poster="${escape(img(r.Thumbnail))}"`:''}><source src="${escape(img(r['Media 1']))}"></video></div>`}if(media.length){if(media.length>1||type==='carousel')return `<div class="update-media update-carousel">${media.map(m=>`<img src="${escape(img(m))}" alt="Update photo" loading="lazy" decoding="async" fetchpriority="low">`).join('')}</div>`;return `<div class="update-media"><img src="${escape(img(media[0]))}" alt="Update photo" loading="lazy" decoding="async" fetchpriority="low"></div>`}return ''}
 function renderUpdateComments(id){const rows=updateComments(id);if(!rows.length)return '';return `<div class="update-comments">${rows.map(c=>{const a=getUpdateAuthor(c['Author ID']);return `<div class="update-comment"><img src="${escape(img(a.Photo))}" alt="" loading="lazy" decoding="async"><div class="update-comment-body"><strong>${escape(a.Name)}${updateVerified(a)}</strong><p>${escape(c.Comment||'')}</p></div></div>`}).join('')}</div>`}
 function renderUpdates(filter=activeUpdateFilter){
   activeUpdateFilter=filter;
@@ -382,25 +289,14 @@ function renderUpdates(filter=activeUpdateFilter){
     }else{
       authors.hidden=false;
       const seen=new Set;
-      let list=mergedOfficialUsers();
-      if(filter==='artist'){
-        list=list.filter(a=>
-          String(a['User ID']||'').startsWith('JN-') ||
-          /artist/i.test(String(a.Role||a.Position||''))
-        );
-      }
-      authors.innerHTML=list
-        .filter(a=>!seen.has(a['User ID'])&&seen.add(a['User ID']))
-        .map(a=>`<button type="button" class="update-author-bubble" data-author-filter="${escape(a['User ID'])}"><img src="${escape(img(a.Photo))}" alt="" loading="lazy" decoding="async"><span class="update-author-name">${escape(a['Display Name']||a.Name)}${updateVerified(a)}</span></button>`)
-        .join('');
+      let list=(data.Users||[]).filter(a=>String(a.Status||'').toLowerCase()==='active'&&String(a.Verified||'').toLowerCase()==='yes'&&rows.some(r=>r['Author ID']===a['User ID']));
+      if(filter==='artist')list=list.filter(a=>String(a['User ID']||'').startsWith('JN-')||/artist/i.test(String(a.Role||a.Position||'')));
+      authors.innerHTML=list.filter(a=>!seen.has(a['User ID'])&&seen.add(a['User ID'])).map(a=>`<button type="button" class="update-author-bubble" data-author-filter="${escape(a['User ID'])}"><img src="${escape(img(a.Photo))}" alt="" loading="lazy" decoding="async"><span class="update-author-name">${escape(a['Display Name']||a.Name)}${updateVerified(a)}</span></button>`).join('');
     }
   }
   if(memberFilters){
     if(filter==='j-team'){
-      const members=mergedOfficialUsers().filter(a=>
-        String(a['User ID']||'').startsWith('JT-') ||
-        !(/artist/i.test(String(a.Role||a.Position||'')) || String(a['User ID']||'').startsWith('JN-'))
-      );
+      const members=(data.Users||[]).filter(a=>String(a.Status||'').toLowerCase()==='active'&&String(a['User ID']||'').startsWith('JT-'));
       memberFilters.hidden=false;
       memberFilters.innerHTML=`<button class="jteam-member-filter jteam-member-bubble active" type="button" data-jteam-author="all"><span class="jteam-all-avatar">J</span><span class="jteam-member-name">All</span></button>`+members.map(a=>`<button class="jteam-member-filter jteam-member-bubble" type="button" data-jteam-author="${escape(a['User ID'])}"><img src="${escape(img(a.Photo))}" alt="${escape(a['Display Name']||a.Name||'J-Team')}" loading="lazy" decoding="async"><span class="jteam-member-name">${escape(a['Display Name']||String(a.Name||'').split(/\s+/)[0])}${updateVerified(a)}</span></button>`).join('');
     }else{
@@ -416,50 +312,8 @@ async function buildUpdateShareCard(id){const r=(data.Updates||[]).find(x=>x['Up
 async function shareUpdateToX(id){const card=await buildUpdateShareCard(id);if(!card||!card.blob)return;const file=new File([card.blob],`jeniffer-nora-${slugify(card.r['Update ID']||'update')}.png`,{type:'image/png'});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Jeniffer Nora'});return}catch(e){if(e&&e.name==='AbortError')return}}const link=document.createElement('a');link.download=file.name;link.href=URL.createObjectURL(card.blob);link.click();setTimeout(()=>URL.revokeObjectURL(link.href),2000);alert('Share card saved as an image. Attach the image when posting to X.')}
 function handleDeepLinks(){const p=new URLSearchParams(location.search);const song=p.get('song');if(song){setView('music',false);setTimeout(()=>openSong(song),50)}const product=p.get('product');if(product){setView('shop',false);setTimeout(()=>{const card=document.querySelector(`[data-product-slug="${CSS.escape(product)}"]`);if(card){card.classList.add('product-shared-focus');card.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>card.classList.remove('product-shared-focus'),2500)}},100)}const update=p.get('update');if(update)setView('updates',false)}
 const routedSections=['home','music','updates','schedule','shop','news','team','signup'];
-function setView(id,scroll=true){id=routedSections.includes(id)?id:'home';document.body.classList.add('section-routing-enabled');document.body.classList.toggle('view-home',id==='home');routedSections.forEach(key=>{const el=document.getElementById(key);if(el)el.classList.toggle('active-view',key===id)});$$('.navigation a[href^="#"]').forEach(a=>a.classList.toggle('active-nav',a.getAttribute('href')===`#${id}`));$('#navigation')?.classList.remove('open');if(scroll)window.scrollTo({top:0,behavior:'auto'});if(id==='home'||id==='updates')refreshUpdatesLive(true)}
+function setView(id,scroll=true){id=routedSections.includes(id)?id:'home';document.body.classList.add('section-routing-enabled');document.body.classList.toggle('view-home',id==='home');routedSections.forEach(key=>{const el=document.getElementById(key);if(el)el.classList.toggle('active-view',key===id)});$$('.navigation a[href^="#"]').forEach(a=>a.classList.toggle('active-nav',a.getAttribute('href')===`#${id}`));$('#navigation')?.classList.remove('open');if(scroll)window.scrollTo({top:0,behavior:'auto'})}
 function setupSectionRouting(){const initial=(location.hash||'#home').slice(1);setView(initial,false);window.addEventListener('hashchange',()=>setView((location.hash||'#home').slice(1),false));document.addEventListener('click',e=>{const homeTab=e.target.closest('[data-home-update-filter]');if(homeTab){homeUpdateFilter=homeTab.dataset.homeUpdateFilter||'all';homeUpdateAuthor='all';$$('.home-update-tab').forEach(x=>x.classList.toggle('active',x===homeTab));renderHomeUpdatesOnly();return;}const homeAuthor=e.target.closest('[data-home-update-author]');if(homeAuthor){homeUpdateAuthor=homeAuthor.dataset.homeUpdateAuthor||'all';renderHomeUpdatesOnly();return;}const a=e.target.closest('a[href^="#"]');if(!a)return;const id=a.getAttribute('href').slice(1);if(routedSections.includes(id)){e.preventDefault();history.pushState(null,'',`#${id}`);setView(id,true)}})}
-
-let updatesLiveRefreshPromise=null;
-let updatesLastFreshAt=0;
-
-async function refreshUpdatesLive(force=false){
-  const now=Date.now();
-
-  // Avoid hammering Google Sheets while still making newly posted rows appear quickly.
-  if(!force && now-updatesLastFreshAt<4000)return;
-  if(updatesLiveRefreshPromise)return updatesLiveRefreshPromise;
-
-  updatesLiveRefreshPromise=(async()=>{
-    try{
-      const [updatesResult,usersResult]=await Promise.allSettled([
-        fetchLiveSheetRows('Updates',{fresh:true}),
-        fetchLiveSheetRows('Users',{fresh:true})
-      ]);
-
-      if(usersResult.status==='fulfilled' && Array.isArray(usersResult.value) && usersResult.value.length){
-        data.Users=usersResult.value;
-      }
-
-      if(updatesResult.status==='fulfilled' && Array.isArray(updatesResult.value)){
-        // Even an empty valid response should replace stale in-memory data.
-        data.Updates=updatesResult.value;
-      }
-
-      updatesLastFreshAt=Date.now();
-
-      renderUpdates(activeUpdateFilter||'all');
-      renderHomeUpdatesOnly();
-      try{ensureOfficialUpdateProfiles();}catch(e){}
-    }catch(e){
-      console.warn('Fresh Updates refresh failed',e);
-    }finally{
-      updatesLiveRefreshPromise=null;
-    }
-  })();
-
-  return updatesLiveRefreshPromise;
-}
-
 let homeUpdateFilter='all';
 let homeUpdateAuthor='all';
 function homeUpdateUsers(){
@@ -569,51 +423,7 @@ window.addEventListener('jen-live-data-ready',()=>{
   try{
     renderUpdates(activeUpdateFilter||'all');
     renderHomeUpdatesOnly();
-    ensureOfficialUpdateProfiles();
   }catch(e){
     console.warn('Updates rerender failed',e);
   }
-});
-
-
-function ensureOfficialUpdateProfiles(){
-  try{
-    const official=mergedOfficialUsers();
-    if(!official.length)return;
-
-    const targets=[
-      document.querySelector('#homeUpdateProfiles'),
-      document.querySelector('.home-update-profiles'),
-      document.querySelector('#updateProfiles'),
-      document.querySelector('.update-profiles')
-    ].filter(Boolean);
-
-    targets.forEach(target=>{
-      const renderedNames=[...target.querySelectorAll('[data-profile-name], .profile-name, span, p')]
-        .map(el=>String(el.dataset?.profileName||el.textContent||'').trim().toLowerCase());
-
-      // If live Users caused an incomplete render, rebuild using the same profile-card renderer
-      // only when the target is clearly missing official members.
-      if(renderedNames.filter(Boolean).length<OFFICIAL_UPDATE_PROFILE_ORDER.length){
-        if(typeof renderUpdateProfilesInto==='function'){
-          renderUpdateProfilesInto(target,official);
-        }
-      }
-    });
-  }catch(e){
-    console.warn('Could not restore official update profiles',e);
-  }
-}
-
-
-/* updates-live-pageshow-v11639 */
-window.addEventListener('pageshow',()=>{
-  const id=(location.hash||'#home').slice(1);
-  if(id==='home'||id==='updates')refreshUpdatesLive(true);
-});
-
-document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState!=='visible')return;
-  const id=(location.hash||'#home').slice(1);
-  if(id==='home'||id==='updates')refreshUpdatesLive(false);
 });
