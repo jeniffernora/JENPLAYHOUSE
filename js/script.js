@@ -19,6 +19,9 @@ installImageRetryFallback();
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const C=window.JEN_CONFIG||{}, base=window.JEN_CMS_DATA||{};
 let data=JSON.parse(JSON.stringify(base));
+const bundledData=JSON.parse(JSON.stringify(data));
+if(Array.isArray(bundledData.Updates))bundledData.Updates=normalizeUpdateRows(bundledData.Updates);
+if(Array.isArray(data.Updates))data.Updates=normalizeUpdateRows(data.Updates);
 try{const x=localStorage.getItem(C.cmsStorageKey);if(x){const o=JSON.parse(x);data={...data,...o}}}catch(e){}
 const visible=(rows=[])=>rows.filter(r=>!['hidden','draft','archived'].includes(String(r.Status||'').trim().toLowerCase()));
 const img=v=>v||'assets/images/jeniffer.jpg'; const money=n=>'Rp'+Number(n||0).toLocaleString('id-ID');
@@ -135,13 +138,31 @@ async function loadLiveSheetData(){
       }
 
       if(updatesResult.status==='fulfilled' && Array.isArray(updatesResult.value) && updatesResult.value.length){
-        const usable=updatesResult.value.filter(r=>
+        const usable=normalizeUpdateRows(updatesResult.value).filter(r=>
           String(r['Update ID']||'').trim() ||
           String(r['Author ID']||'').trim() ||
           String(r['Text']||'').trim() ||
           String(r['Post Type']||'').trim()
         );
-        if(usable.length)data.Updates=usable;
+
+        if(usable.length){
+          const combined=[
+            ...(Array.isArray(bundledData.Updates)?bundledData.Updates:[]),
+            ...(Array.isArray(data.Updates)?data.Updates:[]),
+            ...usable
+          ];
+
+          const byId=new Map();
+          const noId=[];
+
+          combined.forEach((row,idx)=>{
+            const id=String(row['Update ID']||'').trim();
+            if(id)byId.set(id,{...row});
+            else noId.push({...row,__mergeIndex:idx});
+          });
+
+          data.Updates=[...byId.values(),...noId.map(({__mergeIndex,...row})=>row)];
+        }
       }
     }catch(e){
       console.warn('Live Updates/Users unavailable; using bundled CMS fallback.',e);
@@ -224,21 +245,37 @@ function safeUpdateType(row){
   ).trim() || 'Update';
 }
 
+const ACTIVE_PORTAL_SESSION_KEY='jeniffer-nora-active-session-v1';
+
 function currentPortalUser(){
-  try{return JSON.parse(localStorage.getItem('jeniffer-nora-admin-session-v1')||'null')}catch(e){return null}
+  try{
+    if(sessionStorage.getItem(ACTIVE_PORTAL_SESSION_KEY)!=='1')return null;
+    const u=JSON.parse(localStorage.getItem('jeniffer-nora-admin-session-v1')||'null');
+    return u&&u.Email&&u.Role?u:null;
+  }catch(e){
+    return null;
+  }
 }
-function canUsherDeleteUpdates(){
+
+function canManageUpdates(){
   const u=currentPortalUser();
-  return !!u && /usher|owner|manager/i.test(String(u.Role||''));
+  return !!u && /^(usher|admin|owner)$/i.test(String(u.Role||'').trim());
 }
+
+function updateShareButton(r){
+  return canManageUpdates()
+    ? `${updateShareButton(r)}`
+    : '';
+}
+
 function updateDeleteButton(r){
-  return canUsherDeleteUpdates()
+  return canManageUpdates()
     ? `<button class="update-delete-usher" type="button" data-update-delete="${escape(r['Update ID'])}">Delete</button>`
     : '';
 }
 async function deleteUpdateFromFeed(updateId){
   const u=currentPortalUser();
-  if(!u||!canUsherDeleteUpdates())return;
+  if(!u||!canManageUpdates())return;
   if(!confirm(`Delete ${updateId}?`))return;
   const body=new URLSearchParams({action:'deleteUpdate',email:u.Email||'',updateId});
   const r=await fetch((C.appsScriptUrl||'')+'?action=deleteUpdate',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:body.toString(),cache:'no-store'});
@@ -251,6 +288,59 @@ async function deleteUpdateFromFeed(updateId){
 }
 
 let activeUpdateFilter='all';
+
+function normalizeUpdateRow(raw){
+  const src=raw||{};
+  const clean={};
+
+  Object.entries(src).forEach(([k,v])=>{
+    const key=String(k||'')
+      .replace(/^\uFEFF/,'')
+      .replace(/\s+/g,' ')
+      .trim();
+    clean[key]=v;
+  });
+
+  const lower={};
+  Object.entries(clean).forEach(([k,v])=>{
+    lower[k.toLowerCase().replace(/[^a-z0-9]+/g,'')]=v;
+  });
+
+  const pick=(...names)=>{
+    for(const name of names){
+      const exact=clean[name];
+      if(exact!==undefined && exact!==null && String(exact).trim()!=='')return exact;
+      const key=String(name).toLowerCase().replace(/[^a-z0-9]+/g,'');
+      const loose=lower[key];
+      if(loose!==undefined && loose!==null && String(loose).trim()!=='')return loose;
+    }
+    return '';
+  };
+
+  return {
+    ...clean,
+    'Update ID': pick('Update ID','UpdateID','ID','Post ID','PostID'),
+    'Author ID': pick('Author ID','AuthorID','User ID','UserID','Author'),
+    'Post Type': pick('Post Type','PostType','Type','Update Type'),
+    'Text': pick('Text','Caption','Message','Content','Update'),
+    'Media 1': pick('Media 1','Media1','Media URL','MediaURL','Photo URL','PhotoURL','Image URL','ImageURL'),
+    'Media 2': pick('Media 2','Media2'),
+    'Media 3': pick('Media 3','Media3'),
+    'Media 4': pick('Media 4','Media4'),
+    'Thumbnail': pick('Thumbnail','Thumbnail URL','ThumbnailURL','Poster URL','PosterURL'),
+    'Date': pick('Date','Post Date','PostDate'),
+    'Time': pick('Time','Post Time','PostTime'),
+    'Order': pick('Order','Sort Order','SortOrder'),
+    'Status': pick('Status','Post Status','PostStatus'),
+    'Pinned': pick('Pinned','Pin','Is Pinned','IsPinned'),
+    'Category': pick('Category','Update Category','UpdateCategory')
+  };
+}
+
+function normalizeUpdateRows(rows){
+  return (Array.isArray(rows)?rows:[]).map(normalizeUpdateRow);
+}
+
 function getUpdateAuthor(id){return (data.Users||[]).find(x=>x['User ID']===id)||{Name:'J-Team',Position:'',Photo:'assets/images/jeniffer.jpg',Verified:'No'}}
 function updateVerified(author){return String(author.Verified||'').toLowerCase()==='yes'?'<span class="verified-badge" aria-label="Verified">✓</span>':''}
 function updateComments(id){return visible(data['Update Comments']||[]).filter(x=>x['Update ID']===id).sort((a,b)=>Number(a.Order||0)-Number(b.Order||0))}
@@ -284,7 +374,7 @@ function renderUpdates(filter=activeUpdateFilter){
   if(feedTitle)feedTitle.textContent=copy[3];
 
   const feed=$('#updatesFeed');
-  if(feed)feed.innerHTML=rows.map(r=>{const a=getUpdateAuthor(r['Author ID']);return `<article class="update-post ${String(r.Pinned||'').toLowerCase()==='yes'?'pinned':''}"><div class="update-post-head"><img class="update-post-avatar" src="${escape(img(a.Photo))}" alt="" loading="lazy" decoding="async"><div class="update-post-author"><strong>${escape(a.Name)}${updateVerified(a)}</strong><span>${escape(a.Position||a.Role||'')} · ${escape(r.Date||'')} ${escape(r.Time||'')}</span></div><span class="update-post-type">${escape(r['Post Type']||r.Category||'Update')}</span></div>${r.Text?`<p class="update-post-text">${escape(r.Text)}</p>`:''}${renderUpdateMedia(r)}<div class="update-post-actions"><span>${String(r.Pinned||'').toLowerCase()==='yes'?'Pinned · ':''}${escape(r.Category||'Update')}</span><button class="update-share-x" type="button" data-update-share="${escape(r['Update ID'])}">Share Image ↗</button>${updateDeleteButton(r)}</div>${renderUpdateComments(r['Update ID'])}</article>`}).join('')||'<p class="updates-empty">No updates posted yet.</p>';
+  if(feed)feed.innerHTML=rows.map(r=>{const a=getUpdateAuthor(r['Author ID']);return `<article class="update-post ${String(r.Pinned||'').toLowerCase()==='yes'?'pinned':''}"><div class="update-post-head"><img class="update-post-avatar" src="${escape(img(a.Photo))}" alt="" loading="lazy" decoding="async"><div class="update-post-author"><strong>${escape(a.Name)}${updateVerified(a)}</strong><span>${escape(a.Position||a.Role||'')} · ${escape(r.Date||'')} ${escape(r.Time||'')}</span></div><span class="update-post-type">${escape(r['Post Type']||r.Category||'Update')}</span></div>${r.Text?`<p class="update-post-text">${escape(r.Text)}</p>`:''}${renderUpdateMedia(r)}<div class="update-post-actions"><span>${String(r.Pinned||'').toLowerCase()==='yes'?'Pinned · ':''}${escape(r.Category||'Update')}</span>${updateShareButton(r)}${updateDeleteButton(r)}</div>${renderUpdateComments(r['Update ID'])}</article>`}).join('')||'<p class="updates-empty">No updates posted yet.</p>';
 
   const authors=$('#updatesAuthors');
   const memberFilters=$('#jteamMemberFilters');
@@ -326,7 +416,7 @@ async function refreshUpdatesPortal(){
     try{
       const rows=await fetchLiveSheetRows('Updates',{fresh:true});
       if(Array.isArray(rows)){
-        const usable=rows.filter(r=>
+        const usable=normalizeUpdateRows(rows).filter(r=>
           String(r['Update ID']||'').trim() ||
           String(r['Author ID']||'').trim() ||
           String(r['Text']||'').trim() ||
@@ -445,7 +535,11 @@ document.addEventListener('selectionchange',()=>{
 document.addEventListener('mouseup',captureHighlightedLyrics);
 document.addEventListener('touchend',()=>setTimeout(captureHighlightedLyrics,120),{passive:true});
 
-function bind(){document.addEventListener('click',e=>{const album=e.target.closest('.open-album');if(album)openAlbum(album.dataset.album);const lyric=e.target.closest('.lyric-choice');if(lyric)setLyric(lyric.dataset.lyricIndex);const play=e.target.closest('.play-song');if(play){$('#albumDetailModal')?.classList.remove('open');openSong(play.dataset.song);}const add=e.target.closest('.add-cart');if(add){const r=data.Shop.find(x=>x['Product ID']===add.dataset.product);if(r){const size=$(`[data-product-size="${CSS.escape(r['Product ID'])}"]`)?.value||'';const ex=cart.find(x=>x.id===r['Product ID']&&x.size===size);if(ex)ex.qty++;else cart.push({id:r['Product ID'],name:r['Product Name'],price:Number(r.Price),image:r['Image URL or Path'],size,qty:1});saveCart();$('#cartDrawer').classList.add('open')}}const shopShare=e.target.closest('[data-share-product]');if(shopShare){shareProduct(shopShare.dataset.shareProduct);return;}const rem=e.target.closest('.remove-cart');if(rem){cart.splice(Number(rem.dataset.i),1);saveCart()}const news=e.target.closest('.news-card');if(news)openNews(news.dataset.news);const updDel=e.target.closest('[data-update-delete]');if(updDel){deleteUpdateFromFeed(updDel.dataset.updateDelete).catch(err=>alert(err.message||'Could not delete update.'));return;}const share=e.target.closest('[data-update-share]');if(share)shareUpdateToX(share.dataset.updateShare);const jt=e.target.closest('[data-jteam-author]');if(jt){$$('.jteam-member-filter').forEach(x=>x.classList.toggle('active',x===jt));const id=jt.dataset.jteamAuthor;if(id==='all'){renderUpdates('j-team');return;}const rows=visible(data.Updates||[]).filter(r=>r['Author ID']===id);const feed=$('#updatesFeed');feed.innerHTML=rows.map(r=>{const a=getUpdateAuthor(r['Author ID']);return `<article class="update-post"><div class="update-post-head"><img class="update-post-avatar" src="${escape(img(a.Photo))}" alt="" loading="lazy" decoding="async"><div class="update-post-author"><strong>${escape(a.Name)}${updateVerified(a)}</strong><span>${escape(a.Position||'')} · ${escape(r.Date||'')} ${escape(r.Time||'')}</span></div><span class="update-post-type">${escape(r['Post Type']||'Update')}</span></div>${r.Text?`<p class="update-post-text">${escape(r.Text)}</p>`:''}${renderUpdateMedia(r)}<div class="update-post-actions"><span>${escape(r.Category||'Update')}</span><button class="update-share-x" data-update-share="${escape(r['Update ID'])}">Share Image ↗</button>${updateDeleteButton(r)}</div>${renderUpdateComments(r['Update ID'])}</article>`}).join('')||'<p>No updates from this J-Team member yet.</p>';return;}const author=e.target.closest('[data-author-filter]');if(author){const id=author.dataset.authorFilter;const user=getUpdateAuthor(id);activeUpdateFilter=String(user.Role||'').includes('Artist')?'artist':'j-team';$$('.update-tab').forEach(x=>x.classList.toggle('active',x.dataset.updateFilter===activeUpdateFilter));const rows=visible(data.Updates||[]).filter(r=>r['Author ID']===id);const feed=$('#updatesFeed');feed.innerHTML=rows.map(r=>{const a=getUpdateAuthor(r['Author ID']);return `<article class="update-post"><div class="update-post-head"><img class="update-post-avatar" src="${escape(img(a.Photo))}" alt="" loading="lazy" decoding="async"><div class="update-post-author"><strong>${escape(a.Name)}${updateVerified(a)}</strong><span>${escape(a.Position||'')} · ${escape(r.Date||'')} ${escape(r.Time||'')}</span></div><span class="update-post-type">${escape(r['Post Type']||'Update')}</span></div>${r.Text?`<p class="update-post-text">${escape(r.Text)}</p>`:''}${renderUpdateMedia(r)}<div class="update-post-actions"><span>${escape(r.Category||'Update')}</span><button class="update-share-x" data-update-share="${escape(r['Update ID'])}">Share Image ↗</button>${updateDeleteButton(r)}</div>${renderUpdateComments(r['Update ID'])}</article>`}).join('')||'<p>No updates from this author.</p>'}});$$('.music-tab').forEach(b=>b.onclick=()=>{$$('.music-tab').forEach(x=>x.classList.remove('active'));$$('.music-panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#'+b.dataset.target).classList.add('active')});$$('.shop-tab').forEach(b=>b.onclick=()=>{$$('.shop-tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderShop(b.dataset.category)});$$('.update-tab').forEach(b=>b.onclick=()=>{$$('.update-tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderUpdates(b.dataset.updateFilter)});$('#menuButton').onclick=()=>$('#navigation').classList.toggle('open');$('#openCartButton').onclick=()=>$('#cartDrawer').classList.add('open');$('#closeCartButton').onclick=()=>$('#cartDrawer').classList.remove('open');$('#closeMusicPlayer').onclick=()=>{$('#musicPlayerModal').classList.remove('open');$('#youtubePlayer').src=''};$('#closeNewsModal').onclick=()=>$('#newsModal').classList.remove('open');$('#closeAlbumDetail').onclick=()=>$('#albumDetailModal').classList.remove('open');$('#checkoutButton').onclick=()=>{if(cart.length){renderCart();$('#checkoutModal').classList.add('open')}};$('#closeCheckoutButton').onclick=()=>$('#checkoutModal').classList.remove('open');$('#fictionalCheckoutForm').onsubmit=e=>{e.preventDefault();const totals=renderCart();const fd=new FormData(e.target),num='JN-'+String(Math.floor(Math.random()*999999)).padStart(6,'0');$('#orderNumber').textContent=num;$('#successFullName').textContent=fd.get('fullName');$('#successOrderTotal').textContent=money(totals.total);$('#successPaymentMethod').textContent=fd.get('paymentMethod')||'Fictional Payment';cart=[];saveCart();$('#checkoutModal').classList.remove('open');$('#successModal').classList.add('open');};$('#closeSuccessButton').onclick=()=>$('#successModal').classList.remove('open');$('#signupForm').onsubmit=e=>{e.preventDefault();$('#formMessage').textContent='Welcome to the Jeadore List ♡';e.target.reset()};
+function bind(){document.addEventListener('click',e=>{const album=e.target.closest('.open-album');if(album)openAlbum(album.dataset.album);const lyric=e.target.closest('.lyric-choice');if(lyric)setLyric(lyric.dataset.lyricIndex);const play=e.target.closest('.play-song');if(play){$('#albumDetailModal')?.classList.remove('open');openSong(play.dataset.song);}const add=e.target.closest('.add-cart');if(add){const r=data.Shop.find(x=>x['Product ID']===add.dataset.product);if(r){const size=$(`[data-product-size="${CSS.escape(r['Product ID'])}"]`)?.value||'';const ex=cart.find(x=>x.id===r['Product ID']&&x.size===size);if(ex)ex.qty++;else cart.push({id:r['Product ID'],name:r['Product Name'],price:Number(r.Price),image:r['Image URL or Path'],size,qty:1});saveCart();$('#cartDrawer').classList.add('open')}}const shopShare=e.target.closest('[data-share-product]');if(shopShare){shareProduct(shopShare.dataset.shareProduct);return;}const rem=e.target.closest('.remove-cart');if(rem){cart.splice(Number(rem.dataset.i),1);saveCart()}const news=e.target.closest('.news-card');if(news)openNews(news.dataset.news);const updDel=e.target.closest('[data-update-delete]');if(updDel){deleteUpdateFromFeed(updDel.dataset.updateDelete).catch(err=>alert(err.message||'Could not delete update.'));return;}const share=e.target.closest('[data-update-share]');
+if(share){
+  if(!canManageUpdates())return;
+  shareUpdateToX(share.dataset.updateShare);
+}const jt=e.target.closest('[data-jteam-author]');if(jt){$$('.jteam-member-filter').forEach(x=>x.classList.toggle('active',x===jt));const id=jt.dataset.jteamAuthor;if(id==='all'){renderUpdates('j-team');return;}const rows=visible(data.Updates||[]).filter(r=>r['Author ID']===id);const feed=$('#updatesFeed');feed.innerHTML=rows.map(r=>{const a=getUpdateAuthor(r['Author ID']);return `<article class="update-post"><div class="update-post-head"><img class="update-post-avatar" src="${escape(img(a.Photo))}" alt="" loading="lazy" decoding="async"><div class="update-post-author"><strong>${escape(a.Name)}${updateVerified(a)}</strong><span>${escape(a.Position||'')} · ${escape(r.Date||'')} ${escape(r.Time||'')}</span></div><span class="update-post-type">${escape(r['Post Type']||'Update')}</span></div>${r.Text?`<p class="update-post-text">${escape(r.Text)}</p>`:''}${renderUpdateMedia(r)}<div class="update-post-actions"><span>${escape(r.Category||'Update')}</span>${updateShareButton(r)}${updateDeleteButton(r)}</div>${renderUpdateComments(r['Update ID'])}</article>`}).join('')||'<p>No updates from this J-Team member yet.</p>';return;}const author=e.target.closest('[data-author-filter]');if(author){const id=author.dataset.authorFilter;const user=getUpdateAuthor(id);activeUpdateFilter=String(user.Role||'').includes('Artist')?'artist':'j-team';$$('.update-tab').forEach(x=>x.classList.toggle('active',x.dataset.updateFilter===activeUpdateFilter));const rows=visible(data.Updates||[]).filter(r=>r['Author ID']===id);const feed=$('#updatesFeed');feed.innerHTML=rows.map(r=>{const a=getUpdateAuthor(r['Author ID']);return `<article class="update-post"><div class="update-post-head"><img class="update-post-avatar" src="${escape(img(a.Photo))}" alt="" loading="lazy" decoding="async"><div class="update-post-author"><strong>${escape(a.Name)}${updateVerified(a)}</strong><span>${escape(a.Position||'')} · ${escape(r.Date||'')} ${escape(r.Time||'')}</span></div><span class="update-post-type">${escape(r['Post Type']||'Update')}</span></div>${r.Text?`<p class="update-post-text">${escape(r.Text)}</p>`:''}${renderUpdateMedia(r)}<div class="update-post-actions"><span>${escape(r.Category||'Update')}</span>${updateShareButton(r)}${updateDeleteButton(r)}</div>${renderUpdateComments(r['Update ID'])}</article>`}).join('')||'<p>No updates from this author.</p>'}});$$('.music-tab').forEach(b=>b.onclick=()=>{$$('.music-tab').forEach(x=>x.classList.remove('active'));$$('.music-panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#'+b.dataset.target).classList.add('active')});$$('.shop-tab').forEach(b=>b.onclick=()=>{$$('.shop-tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderShop(b.dataset.category)});$$('.update-tab').forEach(b=>b.onclick=()=>{$$('.update-tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderUpdates(b.dataset.updateFilter)});$('#menuButton').onclick=()=>$('#navigation').classList.toggle('open');$('#openCartButton').onclick=()=>$('#cartDrawer').classList.add('open');$('#closeCartButton').onclick=()=>$('#cartDrawer').classList.remove('open');$('#closeMusicPlayer').onclick=()=>{$('#musicPlayerModal').classList.remove('open');$('#youtubePlayer').src=''};$('#closeNewsModal').onclick=()=>$('#newsModal').classList.remove('open');$('#closeAlbumDetail').onclick=()=>$('#albumDetailModal').classList.remove('open');$('#checkoutButton').onclick=()=>{if(cart.length){renderCart();$('#checkoutModal').classList.add('open')}};$('#closeCheckoutButton').onclick=()=>$('#checkoutModal').classList.remove('open');$('#fictionalCheckoutForm').onsubmit=e=>{e.preventDefault();const totals=renderCart();const fd=new FormData(e.target),num='JN-'+String(Math.floor(Math.random()*999999)).padStart(6,'0');$('#orderNumber').textContent=num;$('#successFullName').textContent=fd.get('fullName');$('#successOrderTotal').textContent=money(totals.total);$('#successPaymentMethod').textContent=fd.get('paymentMethod')||'Fictional Payment';cart=[];saveCart();$('#checkoutModal').classList.remove('open');$('#successModal').classList.add('open');};$('#closeSuccessButton').onclick=()=>$('#successModal').classList.remove('open');$('#signupForm').onsubmit=e=>{e.preventDefault();$('#formMessage').textContent='Welcome to the Jeadore List ♡';e.target.reset()};
 async function buildLyricCardBlob(){if(!currentSong)return null;const quote=selectedLyricText.trim();if(!quote){alert('Highlight the lyric lines you want to use first.');return null;}const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1080;const ctx=canvas.getContext('2d');ctx.fillStyle='#efbcc8';ctx.fillRect(0,0,1080,1080);const bg=currentSong['Lyric Background Image']||currentSong['Cover URL or Path'];try{const background=await loadCanvasImage(bg);ctx.globalAlpha=.18;const scale=Math.max(1080/background.width,1080/background.height),w=background.width*scale,h=background.height*scale;ctx.drawImage(background,(1080-w)/2,(1080-h)/2,w,h);ctx.globalAlpha=1}catch(e){}ctx.fillStyle='rgba(255,255,255,.28)';ctx.fillRect(58,58,964,964);try{const cover=await loadCanvasImage(currentSong['Cover URL or Path']);ctx.drawImage(cover,100,105,105,105)}catch(e){}ctx.fillStyle='#4b1d22';ctx.font='700 38px Arial';ctx.fillText(currentSong['Song Title']||'',235,142);ctx.font='30px Arial';ctx.fillText('Jeniffer Nora',235,184);ctx.font='20px Arial';ctx.globalAlpha=.75;ctx.fillText(originalCredit(currentSong)?`Original song by ${originalCredit(currentSong)}`:'Original credit unavailable',235,215);ctx.globalAlpha=1;ctx.font='700 58px Arial';const lines=wrapCanvasText(ctx,quote,850).slice(0,9);let y=365;for(const line of lines){ctx.fillText(line,100,y);y+=67}ctx.font='700 34px Arial';ctx.fillText('Jeniffer Nora',100,940);ctx.font='18px Arial';ctx.globalAlpha=.65;ctx.fillText('Fictional artist · For roleplay purpose',100,978);ctx.globalAlpha=1;return {blob:await canvasToBlob(canvas),canvas}}
 $('#saveLyricCard').onclick=async()=>{const card=await buildLyricCardBlob();if(!card)return;const link=document.createElement('a');link.download=`${slugify(currentSong['Song Title']||'jeniffer-lyric')}-lyric.png`;link.href=URL.createObjectURL(card.blob);link.click();setTimeout(()=>URL.revokeObjectURL(link.href),2000)};
 $('#shareSongButton').onclick=async()=>{const card=await buildLyricCardBlob();if(!card)return;const file=new File([card.blob],`${slugify(currentSong['Song Title']||'jeniffer-lyric')}-jeniffer-nora.png`,{type:'image/png'});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:`${currentSong['Song Title']} · Jeniffer Nora`});return}catch(e){if(e&&e.name==='AbortError')return}}const link=document.createElement('a');link.download=file.name;link.href=URL.createObjectURL(card.blob);link.click();setTimeout(()=>URL.revokeObjectURL(link.href),2000);alert('Lyric card saved as an image. You can attach it to X or another app.');};}
