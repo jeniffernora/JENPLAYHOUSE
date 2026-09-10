@@ -1,20 +1,4 @@
 (()=>{
-
-  if(!window.talkImageRetryInstalled){
-    window.talkImageRetryInstalled=true;
-    document.addEventListener("error",e=>{
-      const img=e.target;
-      if(!(img instanceof HTMLImageElement))return;
-      if(img.dataset.talkRetryDone==="1")return;
-      const src=img.currentSrc||img.src;
-      if(!src)return;
-      img.dataset.talkRetryDone="1";
-      setTimeout(()=>{
-        img.src=src+(src.includes("?")?"&":"?")+"retry="+Date.now();
-      },450);
-    },true);
-  }
-
 "use strict";
 
 const C=window.JEN_CONFIG||{};
@@ -84,7 +68,7 @@ async function loadLive(){
   }catch(e){console.warn("Talk: live Users unavailable",e)}
   try{
     const rows=await fetchSheet(C.talkMessagesSheetName||"Talk Messages");
-    if(rows&&rows.length)data["Talk Messages"]=rows;
+    if(rows)data["Talk Messages"]=rows;
   }catch(e){console.warn("Talk: live Talk Messages unavailable; using fallback.",e)}
 }
 
@@ -806,9 +790,7 @@ function renderRoom(u){
   updateRoomComposerState();
 
   const own=sortMessages(messages.filter(m=>clean(m["Author ID"])===clean(u["User ID"])));
-  const opening=demoMessages.filter(m=>clean(m["Author ID"])===clean(u["User ID"])).slice(0,1);
-  const roomRows=own.length?own:opening;
-  $("#roomMessages").innerHTML=roomRows.length?roomRows.map((m,i)=>`
+  $("#roomMessages").innerHTML=own.length?own.map((m,i)=>`
     <article class="message">
       <img class="message-avatar" src="${esc(img(u.Photo))}" alt="">
       <div class="message-stack">
@@ -816,8 +798,8 @@ function renderRoom(u){
         <div class="message-bubble">${messageContent(m)}</div>
         <span class="message-time">${esc(clean(m.Time)||clean(m.Date))}</span>
         <div class="message-actions">
-          ${clean(m.Demo)!=="yes"&&canShareTalkImage(loggedInUser)?`<button class="share-message" type="button" data-share-message="${esc(m["Message ID"]||String(i))}">Share image ↗</button>`:""}
-          ${clean(m.Demo)!=="yes"&&canDeleteTalkMessage(m)?`<button class="delete-message" type="button" data-delete-message="${esc(m["Message ID"]||String(i))}">Delete</button>`:""}
+          <button class="share-message" type="button" data-share-message="${esc(m["Message ID"]||String(i))}">Share image ↗</button>
+          ${canDeleteTalkMessage(m)?`<button class="delete-message" type="button" data-delete-message="${esc(m["Message ID"]||String(i))}">Delete</button>`:""}
         </div>
       </div>
     </article>
@@ -977,6 +959,7 @@ async function shareMessage(m,u){
   c.width=W;
   c.height=H;
   const ctx=c.getContext("2d");
+  const saveStatus=await getChatSaveStatus();
   const roomTheme=talkThemeForUser(u);
 
   const cream="#FFF9F4";
@@ -1026,7 +1009,8 @@ async function shareMessage(m,u){
   glow.addColorStop(1,"rgba(255,255,255,0)");
   ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
 
-  // Clean share image: no phone status bar/signal/battery.
+  // iPhone-like status bar for the saved chat only.
+  drawIOSStatusBar(ctx,saveStatus,W);
 
   // FRAME
   ctx.strokeStyle="rgba(42,23,24,.82)";
@@ -1378,10 +1362,6 @@ function bind(){
 
     const share=e.target.closest("[data-share-message]");
     if(share&&currentUser){
-      if(!canShareTalkImage(loggedInUser)){
-        alert("Share Image is available to Usher accounts only.");
-        return;
-      }
       const own=sortMessages(messages.filter(m=>clean(m["Author ID"])===clean(currentUser["User ID"])));
       const m=own.find((x,i)=>clean(x["Message ID"]||String(i))===clean(share.dataset.shareMessage));
       if(m)shareMessage(m,currentUser).catch(err=>{console.error(err);alert("Could not export this chat image.")});
