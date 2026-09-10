@@ -132,11 +132,11 @@ function saveSession(user){
   localStorage.setItem(SESSION_KEY,JSON.stringify(user));
 }
 function markActiveSession(){
-  sessionStorage.setItem(ACTIVE_SESSION_KEY,'1');
+  localStorage.setItem(ACTIVE_SESSION_KEY,'1');
 }
 function clearSession(){
   localStorage.removeItem(SESSION_KEY);
-  sessionStorage.removeItem(ACTIVE_SESSION_KEY);
+  localStorage.removeItem(ACTIVE_SESSION_KEY);
 }
 function setLoggedOut(message){
   currentUser=null;

@@ -302,7 +302,9 @@ const ACTIVE_PORTAL_SESSION_KEY='jeniffer-nora-active-session-v1';
 
 function currentPortalUser(){
   try{
-    if(sessionStorage.getItem(ACTIVE_PORTAL_SESSION_KEY)!=='1')return null;
+    // Global website session: one successful login is valid across Home, Updates,
+    // admin and other pages on this same JEN PLAY HOUSE origin until logout.
+    if(localStorage.getItem(ACTIVE_PORTAL_SESSION_KEY)!=='1')return null;
     const u=JSON.parse(localStorage.getItem('jeniffer-nora-admin-session-v1')||'null');
     return u&&u.Email&&u.Role?u:null;
   }catch(e){
@@ -317,7 +319,7 @@ function canManageUpdates(){
 
 function updateShareButton(r){
   return canManageUpdates()
-    ? `${updateShareButton(r)}`
+    ? `<button class="update-share-x" type="button" data-update-share="${escape(r['Update ID'])}">Share Image ↗</button>`
     : '';
 }
 
