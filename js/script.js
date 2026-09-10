@@ -119,6 +119,70 @@ async function fetchLiveSheetRows(sheetName,{fresh=false}={}){
   try{sessionStorage.setItem(key,JSON.stringify({time:Date.now(),rows}));}catch(e){}
   return rows;
 }
+
+async function fetchUpdatesFromBackend(){
+  const endpoint=String(C.appsScriptUrl||'').trim();
+  if(!endpoint)return null;
+
+  const url=`${endpoint}${endpoint.includes('?')?'&':'?'}action=getUpdates&_=${Date.now()}`;
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),8000);
+
+  try{
+    const response=await fetch(url,{
+      method:'GET',
+      cache:'no-store',
+      signal:controller.signal,
+      redirect:'follow'
+    });
+
+    if(!response.ok)throw new Error(`HTTP ${response.status}`);
+
+    const payload=await response.json();
+    if(!payload || payload.success!==true || !Array.isArray(payload.rows)){
+      throw new Error(payload?.message||'Invalid Updates response');
+    }
+
+    return normalizeUpdateRows(payload.rows);
+  }finally{
+    clearTimeout(timer);
+  }
+}
+
+async function fetchFreshUpdatesRows(){
+  // Primary source: Apps Script backend (same source that writes Updates).
+  try{
+    const rows=await fetchUpdatesFromBackend();
+    if(Array.isArray(rows))return rows;
+  }catch(e){
+    console.warn('Updates backend reader unavailable; falling back to Sheet reader.',e);
+  }
+
+  // Safe fallback: existing Google Sheet GViz reader.
+  return fetchLiveSheetRows('Updates',{fresh:true});
+}
+
+function mergeUpdateRows(...groups){
+  const byId=new Map();
+  const noId=[];
+
+  groups.flat().filter(Boolean).map(normalizeUpdateRow).forEach((row,idx)=>{
+    const id=String(row['Update ID']||'').trim();
+
+    if(id){
+      // Later groups win: live backend data overrides bundled copies.
+      byId.set(id,{...row});
+    }else{
+      noId.push({...row,__mergeIndex:idx});
+    }
+  });
+
+  return [
+    ...byId.values(),
+    ...noId.map(({__mergeIndex,...row})=>row)
+  ];
+}
+
 async function loadLiveSheetData(){
   const tasks=[];
   const newsName=C.newsSheetName||'News';
@@ -129,7 +193,7 @@ async function loadLiveSheetData(){
   tasks.push((async()=>{
     try{
       const [updatesResult,usersResult]=await Promise.allSettled([
-        fetchLiveSheetRows('Updates',{fresh:true}),
+        fetchFreshUpdatesRows(),
         fetchLiveSheetRows('Users')
       ]);
 
@@ -146,22 +210,11 @@ async function loadLiveSheetData(){
         );
 
         if(usable.length){
-          const combined=[
-            ...(Array.isArray(bundledData.Updates)?bundledData.Updates:[]),
-            ...(Array.isArray(data.Updates)?data.Updates:[]),
-            ...usable
-          ];
-
-          const byId=new Map();
-          const noId=[];
-
-          combined.forEach((row,idx)=>{
-            const id=String(row['Update ID']||'').trim();
-            if(id)byId.set(id,{...row});
-            else noId.push({...row,__mergeIndex:idx});
-          });
-
-          data.Updates=[...byId.values(),...noId.map(({__mergeIndex,...row})=>row)];
+          data.Updates=mergeUpdateRows(
+            Array.isArray(bundledData.Updates)?bundledData.Updates:[],
+            Array.isArray(data.Updates)?data.Updates:[],
+            usable
+          );
         }
       }
     }catch(e){
@@ -414,7 +467,7 @@ async function refreshUpdatesPortal(){
 
   updatesPortalRefreshInFlight=(async()=>{
     try{
-      const rows=await fetchLiveSheetRows('Updates',{fresh:true});
+      const rows=await fetchFreshUpdatesRows();
       if(Array.isArray(rows)){
         const usable=normalizeUpdateRows(rows).filter(r=>
           String(r['Update ID']||'').trim() ||
@@ -425,24 +478,11 @@ async function refreshUpdatesPortal(){
 
         // Merge fresh live rows with the bundled/base Updates instead of replacing them.
         // This preserves the previously existing posts while still pulling newly posted rows.
-        const baseRows=Array.isArray(bundledData.Updates)?bundledData.Updates:[];
-        const currentRows=Array.isArray(data.Updates)?data.Updates:[];
-        const combined=[...baseRows,...currentRows,...usable];
-
-        const byId=new Map();
-        const noId=[];
-
-        combined.forEach((row,idx)=>{
-          const id=String(row['Update ID']||'').trim();
-          if(id){
-            // Later rows win, so fresh live Sheet data overrides bundled copies.
-            byId.set(id,{...row});
-          }else{
-            noId.push({...row,__mergeIndex:idx});
-          }
-        });
-
-        data.Updates=[...byId.values(),...noId.map(({__mergeIndex,...row})=>row)];
+        data.Updates=mergeUpdateRows(
+          Array.isArray(bundledData.Updates)?bundledData.Updates:[],
+          Array.isArray(data.Updates)?data.Updates:[],
+          usable
+        );
         renderUpdates(activeUpdateFilter||'all');
         renderHomeUpdatesOnly();
       }
@@ -457,7 +497,7 @@ async function refreshUpdatesPortal(){
 }
 
 const routedSections=['home','music','updates','schedule','shop','news','team','signup'];
-function setView(id,scroll=true){id=routedSections.includes(id)?id:'home';document.body.classList.add('section-routing-enabled');document.body.classList.toggle('view-home',id==='home');routedSections.forEach(key=>{const el=document.getElementById(key);if(el)el.classList.toggle('active-view',key===id)});$$('.navigation a[href^="#"]').forEach(a=>a.classList.toggle('active-nav',a.getAttribute('href')===`#${id}`));$('#navigation')?.classList.remove('open');if(scroll)window.scrollTo({top:0,behavior:'auto'});if(id==='updates')refreshUpdatesPortal()}
+function setView(id,scroll=true){id=routedSections.includes(id)?id:'home';document.body.classList.add('section-routing-enabled');document.body.classList.toggle('view-home',id==='home');routedSections.forEach(key=>{const el=document.getElementById(key);if(el)el.classList.toggle('active-view',key===id)});$$('.navigation a[href^="#"]').forEach(a=>a.classList.toggle('active-nav',a.getAttribute('href')===`#${id}`));$('#navigation')?.classList.remove('open');if(scroll)window.scrollTo({top:0,behavior:'auto'});if(id==='home'||id==='updates')refreshUpdatesPortal()}
 function setupSectionRouting(){const initial=(location.hash||'#home').slice(1);setView(initial,false);window.addEventListener('hashchange',()=>setView((location.hash||'#home').slice(1),false));document.addEventListener('click',e=>{const homeTab=e.target.closest('[data-home-update-filter]');if(homeTab){homeUpdateFilter=homeTab.dataset.homeUpdateFilter||'all';homeUpdateAuthor='all';$$('.home-update-tab').forEach(x=>x.classList.toggle('active',x===homeTab));renderHomeUpdatesOnly();return;}const homeAuthor=e.target.closest('[data-home-update-author]');if(homeAuthor){homeUpdateAuthor=homeAuthor.dataset.homeUpdateAuthor||'all';renderHomeUpdatesOnly();return;}const a=e.target.closest('a[href^="#"]');if(!a)return;const id=a.getAttribute('href').slice(1);if(routedSections.includes(id)){e.preventDefault();history.pushState(null,'',`#${id}`);setView(id,true)}})}
 let homeUpdateFilter='all';
 let homeUpdateAuthor='all';
@@ -544,7 +584,8 @@ async function buildLyricCardBlob(){if(!currentSong)return null;const quote=sele
 $('#saveLyricCard').onclick=async()=>{const card=await buildLyricCardBlob();if(!card)return;const link=document.createElement('a');link.download=`${slugify(currentSong['Song Title']||'jeniffer-lyric')}-lyric.png`;link.href=URL.createObjectURL(card.blob);link.click();setTimeout(()=>URL.revokeObjectURL(link.href),2000)};
 $('#shareSongButton').onclick=async()=>{const card=await buildLyricCardBlob();if(!card)return;const file=new File([card.blob],`${slugify(currentSong['Song Title']||'jeniffer-lyric')}-jeniffer-nora.png`,{type:'image/png'});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:`${currentSong['Song Title']} · Jeniffer Nora`});return}catch(e){if(e&&e.name==='AbortError')return}}const link=document.createElement('a');link.download=file.name;link.href=URL.createObjectURL(card.blob);link.click();setTimeout(()=>URL.revokeObjectURL(link.href),2000);alert('Lyric card saved as an image. You can attach it to X or another app.');};}
 window.addEventListener('pageshow',()=>{
-  if((location.hash||'#home').slice(1)==='updates'){
+  const route=(location.hash||'#home').slice(1);
+  if(route==='home'||route==='updates'){
     refreshUpdatesPortal();
   }
 });
