@@ -311,8 +311,39 @@ function canvasToBlob(canvas){return new Promise(resolve=>canvas.toBlob(resolve,
 async function buildUpdateShareCard(id){const r=(data.Updates||[]).find(x=>x['Update ID']===id);if(!r)return null;const a=getUpdateAuthor(r['Author ID']);const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;const ctx=canvas.getContext('2d');ctx.fillStyle='#f7f7f5';ctx.fillRect(0,0,1080,1350);ctx.fillStyle='#171717';ctx.font='700 42px Arial';ctx.fillText('Jeniffer Nora',70,78);ctx.strokeStyle='#dfdfda';ctx.lineWidth=2;ctx.strokeRect(48,112,984,1190);try{const avatar=await loadCanvasImage(a.Photo);ctx.save();ctx.beginPath();ctx.arc(118,195,44,0,Math.PI*2);ctx.clip();ctx.drawImage(avatar,74,151,88,88);ctx.restore()}catch(e){}ctx.fillStyle='#171717';ctx.font='700 34px Arial';ctx.fillText(a.Name||'Jeniffer Nora',184,190);if(String(a.Verified||'').toLowerCase()==='yes'){const x=Math.min(930,202+ctx.measureText(a.Name||'Jeniffer Nora').width);ctx.fillStyle='#41b7d8';ctx.beginPath();ctx.arc(x,180,11,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.font='700 14px Arial';ctx.fillText('✓',x-5,185)}ctx.fillStyle='#929292';ctx.font='22px Arial';ctx.fillText(`${a.Position||a.Role||''} · ${r.Date||''} ${r.Time||''}`,184,226);let y=305;ctx.fillStyle='#222';ctx.font='36px Arial';wrapCanvasText(ctx,r.Text||'',880).slice(0,7).forEach(line=>{ctx.fillText(line,82,y);y+=50});const media=[r['Media 1'],r['Media 2'],r['Media 3'],r['Media 4']].filter(Boolean);const type=String(r['Post Type']||'').toLowerCase();if(media.length&&['photo','carousel'].includes(type)){try{const m=await loadCanvasImage(media[0]);const boxY=Math.max(y+25,500),boxH=650,scale=Math.max(900/m.width,boxH/m.height),w=m.width*scale,h=m.height*scale;ctx.save();ctx.beginPath();ctx.rect(90,boxY,900,boxH);ctx.clip();ctx.drawImage(m,90+(900-w)/2,boxY+(boxH-h)/2,w,h);ctx.restore();y=boxY+boxH+40}catch(e){}}else if(type==='video'||type==='voice note'){const boxY=Math.max(y+25,500);ctx.fillStyle='#ececea';ctx.fillRect(90,boxY,900,260);ctx.fillStyle='#171717';ctx.font='700 42px Arial';ctx.fillText(type==='video'?'VIDEO UPDATE':'VOICE NOTE',130,boxY+145);y=boxY+310}ctx.fillStyle='#777';ctx.font='20px Arial';ctx.fillText(`${r.Category||'Update'} · Fictional roleplay artist`,82,1260);ctx.fillStyle='#171717';ctx.font='700 24px Arial';ctx.fillText('Jeniffer Nora',802,1260);return {blob:await canvasToBlob(canvas),canvas,r,a}}
 async function shareUpdateToX(id){const card=await buildUpdateShareCard(id);if(!card||!card.blob)return;const file=new File([card.blob],`jeniffer-nora-${slugify(card.r['Update ID']||'update')}.png`,{type:'image/png'});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Jeniffer Nora'});return}catch(e){if(e&&e.name==='AbortError')return}}const link=document.createElement('a');link.download=file.name;link.href=URL.createObjectURL(card.blob);link.click();setTimeout(()=>URL.revokeObjectURL(link.href),2000);alert('Share card saved as an image. Attach the image when posting to X.')}
 function handleDeepLinks(){const p=new URLSearchParams(location.search);const song=p.get('song');if(song){setView('music',false);setTimeout(()=>openSong(song),50)}const product=p.get('product');if(product){setView('shop',false);setTimeout(()=>{const card=document.querySelector(`[data-product-slug="${CSS.escape(product)}"]`);if(card){card.classList.add('product-shared-focus');card.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>card.classList.remove('product-shared-focus'),2500)}},100)}const update=p.get('update');if(update)setView('updates',false)}
+
+let updatesPortalRefreshInFlight=null;
+async function refreshUpdatesPortal(){
+  if(updatesPortalRefreshInFlight)return updatesPortalRefreshInFlight;
+
+  updatesPortalRefreshInFlight=(async()=>{
+    try{
+      const rows=await fetchLiveSheetRows('Updates',{fresh:true});
+      if(Array.isArray(rows)){
+        const usable=rows.filter(r=>
+          String(r['Update ID']||'').trim() ||
+          String(r['Author ID']||'').trim() ||
+          String(r['Text']||'').trim() ||
+          String(r['Post Type']||'').trim()
+        );
+
+        // Replace stale in-memory Updates with the actual current sheet result.
+        data.Updates=usable;
+        renderUpdates(activeUpdateFilter||'all');
+        renderHomeUpdatesOnly();
+      }
+    }catch(e){
+      console.warn('Could not refresh Updates portal; keeping current data.',e);
+    }finally{
+      updatesPortalRefreshInFlight=null;
+    }
+  })();
+
+  return updatesPortalRefreshInFlight;
+}
+
 const routedSections=['home','music','updates','schedule','shop','news','team','signup'];
-function setView(id,scroll=true){id=routedSections.includes(id)?id:'home';document.body.classList.add('section-routing-enabled');document.body.classList.toggle('view-home',id==='home');routedSections.forEach(key=>{const el=document.getElementById(key);if(el)el.classList.toggle('active-view',key===id)});$$('.navigation a[href^="#"]').forEach(a=>a.classList.toggle('active-nav',a.getAttribute('href')===`#${id}`));$('#navigation')?.classList.remove('open');if(scroll)window.scrollTo({top:0,behavior:'auto'})}
+function setView(id,scroll=true){id=routedSections.includes(id)?id:'home';document.body.classList.add('section-routing-enabled');document.body.classList.toggle('view-home',id==='home');routedSections.forEach(key=>{const el=document.getElementById(key);if(el)el.classList.toggle('active-view',key===id)});$$('.navigation a[href^="#"]').forEach(a=>a.classList.toggle('active-nav',a.getAttribute('href')===`#${id}`));$('#navigation')?.classList.remove('open');if(scroll)window.scrollTo({top:0,behavior:'auto'});if(id==='updates')refreshUpdatesPortal()}
 function setupSectionRouting(){const initial=(location.hash||'#home').slice(1);setView(initial,false);window.addEventListener('hashchange',()=>setView((location.hash||'#home').slice(1),false));document.addEventListener('click',e=>{const homeTab=e.target.closest('[data-home-update-filter]');if(homeTab){homeUpdateFilter=homeTab.dataset.homeUpdateFilter||'all';homeUpdateAuthor='all';$$('.home-update-tab').forEach(x=>x.classList.toggle('active',x===homeTab));renderHomeUpdatesOnly();return;}const homeAuthor=e.target.closest('[data-home-update-author]');if(homeAuthor){homeUpdateAuthor=homeAuthor.dataset.homeUpdateAuthor||'all';renderHomeUpdatesOnly();return;}const a=e.target.closest('a[href^="#"]');if(!a)return;const id=a.getAttribute('href').slice(1);if(routedSections.includes(id)){e.preventDefault();history.pushState(null,'',`#${id}`);setView(id,true)}})}
 let homeUpdateFilter='all';
 let homeUpdateAuthor='all';
@@ -394,6 +425,11 @@ function bind(){document.addEventListener('click',e=>{const album=e.target.close
 async function buildLyricCardBlob(){if(!currentSong)return null;const quote=selectedLyricText.trim();if(!quote){alert('Highlight the lyric lines you want to use first.');return null;}const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1080;const ctx=canvas.getContext('2d');ctx.fillStyle='#efbcc8';ctx.fillRect(0,0,1080,1080);const bg=currentSong['Lyric Background Image']||currentSong['Cover URL or Path'];try{const background=await loadCanvasImage(bg);ctx.globalAlpha=.18;const scale=Math.max(1080/background.width,1080/background.height),w=background.width*scale,h=background.height*scale;ctx.drawImage(background,(1080-w)/2,(1080-h)/2,w,h);ctx.globalAlpha=1}catch(e){}ctx.fillStyle='rgba(255,255,255,.28)';ctx.fillRect(58,58,964,964);try{const cover=await loadCanvasImage(currentSong['Cover URL or Path']);ctx.drawImage(cover,100,105,105,105)}catch(e){}ctx.fillStyle='#4b1d22';ctx.font='700 38px Arial';ctx.fillText(currentSong['Song Title']||'',235,142);ctx.font='30px Arial';ctx.fillText('Jeniffer Nora',235,184);ctx.font='20px Arial';ctx.globalAlpha=.75;ctx.fillText(originalCredit(currentSong)?`Original song by ${originalCredit(currentSong)}`:'Original credit unavailable',235,215);ctx.globalAlpha=1;ctx.font='700 58px Arial';const lines=wrapCanvasText(ctx,quote,850).slice(0,9);let y=365;for(const line of lines){ctx.fillText(line,100,y);y+=67}ctx.font='700 34px Arial';ctx.fillText('Jeniffer Nora',100,940);ctx.font='18px Arial';ctx.globalAlpha=.65;ctx.fillText('Fictional artist · For roleplay purpose',100,978);ctx.globalAlpha=1;return {blob:await canvasToBlob(canvas),canvas}}
 $('#saveLyricCard').onclick=async()=>{const card=await buildLyricCardBlob();if(!card)return;const link=document.createElement('a');link.download=`${slugify(currentSong['Song Title']||'jeniffer-lyric')}-lyric.png`;link.href=URL.createObjectURL(card.blob);link.click();setTimeout(()=>URL.revokeObjectURL(link.href),2000)};
 $('#shareSongButton').onclick=async()=>{const card=await buildLyricCardBlob();if(!card)return;const file=new File([card.blob],`${slugify(currentSong['Song Title']||'jeniffer-lyric')}-jeniffer-nora.png`,{type:'image/png'});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:`${currentSong['Song Title']} · Jeniffer Nora`});return}catch(e){if(e&&e.name==='AbortError')return}}const link=document.createElement('a');link.download=file.name;link.href=URL.createObjectURL(card.blob);link.click();setTimeout(()=>URL.revokeObjectURL(link.href),2000);alert('Lyric card saved as an image. You can attach it to X or another app.');};}
+window.addEventListener('pageshow',()=>{
+  if((location.hash||'#home').slice(1)==='updates'){
+    refreshUpdatesPortal();
+  }
+});
 (async()=>{await loadLiveSheetData();warmCriticalAvatars();setupExtraUI();renderAll();bind();setupAdmin();setupSectionRouting();handleDeepLinks();})();})();
 /* V21.12 — robust mobile navigation patch. Existing navigation and
    section routing remain intact. This only guarantees the hamburger
