@@ -312,16 +312,21 @@ function currentPortalUser(){
   }
 }
 
-function isAllowedPortalRole(role){
+function isManagementPortalRole(role){
   const value=String(role||'').trim().toLowerCase();
-  // Existing backend may store administrative accounts as "Manager".
-  // Treat Manager as the Admin-equivalent role, not as a public/visitor role.
-  return ['usher','admin','manager','owner'].includes(value);
+  return /(^|\s|\/)(usher|admin|manager|owner)(\s|\/|$)/i.test(value);
 }
 
 function canManageUpdates(){
   const u=currentPortalUser();
-  return !!u && isAllowedPortalRole(u.Role);
+  if(!u)return false;
+
+  const roleAllowed=isManagementPortalRole(u.Role);
+  const canDelete=String(u['Can Delete']||u.CanDelete||'').trim().toLowerCase()==='yes';
+
+  // Management role is required; Can Delete can further confirm permission
+  // when the field is available from the Users sheet.
+  return roleAllowed && (canDelete || !('Can Delete' in u) && !('CanDelete' in u));
 }
 
 function updateShareButton(r){

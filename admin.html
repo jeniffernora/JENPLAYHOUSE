@@ -203,12 +203,14 @@ async function login(email,silent=false){
     const ok=j.success===true || j.ok===true;
     if(ok){
       const user=normalizeUser(j.user,email);
-      const role=String(user.Role||'').trim().toLowerCase();
-      if(!['usher','admin','manager','owner'].includes(role)){
+      const status=String(user.Status||'Active').trim().toLowerCase();
+      if(status && status!=='active'){
         clearSession();
-        setLoggedOut('Access denied. Portal login is only for Usher, Admin, or Owner.');
+        setLoggedOut('Access denied. This account is not active.');
         return false;
       }
+      // Any email successfully returned by the Users-sheet login endpoint
+      // is a registered portal account.
       markActiveSession();
       setLoggedIn(user);
       return true;
@@ -230,10 +232,10 @@ emailInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault()
   try{
     const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');
     if(saved && saved.Email){
-      const role=String(saved.Role||'').trim().toLowerCase();
-      if(!['usher','admin','manager','owner'].includes(role)){
+      const status=String(saved.Status||'Active').trim().toLowerCase();
+      if(status && status!=='active'){
         clearSession();
-        setLoggedOut('Access denied. Portal login is only for Usher, Admin, or Owner.');
+        setLoggedOut('Access denied. This account is not active.');
         return;
       }
       // Fast restore first; validate silently in the background.
