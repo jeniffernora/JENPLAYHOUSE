@@ -3841,10 +3841,72 @@ body.section-routing-enabled.view-home #signup{
 
 
 <style id="mobile-hero-up-v116342">
-/* v1.16.34.5.4.4 — MOBILE HERO POSITION ONLY */
+/* v1.16.34.5.4.6 — MOBILE HERO FILL ONLY */
 @media (max-width:700px){
   #homeBackground{
-    background-position:center 46% !important;
+    background-size:cover !important;
+    background-repeat:no-repeat !important;
+    background-position:center 36% !important;
+    width:100% !important;
+    min-width:100% !important;
+  }
+
+  body.hero-mobile-fit #homeBackground,
+  body.hero-mobile-cover #homeBackground{
+    background-size:cover !important;
+    background-position:center 36% !important;
+  }
+}
+</style>
+
+<style id="mobile-hero-extend-v11634548">
+/* v1.16.34.5.4.8 — MOBILE HERO EXTEND ONLY */
+@media (max-width:700px){
+
+  /* Keep the mobile hero image/GIF covering the full hero area. */
+  #homeBackground{
+    background-size:cover !important;
+    background-repeat:no-repeat !important;
+    background-position:center 36% !important;
+    min-height:100% !important;
+  }
+
+  /* Extend the visual hero downward so the former maroon gap
+     becomes part of the GIF/image area. */
+  #home{
+    position:relative !important;
+    overflow:hidden !important;
+    padding-bottom:58px !important;
+  }
+
+  #homeBackground{
+    position:absolute !important;
+    inset:0 !important;
+    height:100% !important;
+    margin:0 !important;
+    z-index:0 !important;
+  }
+
+  /* Keep hero content above the GIF. */
+  #home > *:not(#homeBackground){
+    position:relative !important;
+    z-index:2 !important;
+  }
+
+  /* Make the scroll hint sit on top of the GIF instead of on
+     a separate maroon strip. */
+  #home .scroll-to-explore,
+  #home .hero-scroll,
+  #home [class*="scroll"][class*="explore"]{
+    position:absolute !important;
+    left:50% !important;
+    bottom:14px !important;
+    transform:translateX(-50%) !important;
+    z-index:3 !important;
+    width:max-content !important;
+    max-width:90% !important;
+    margin:0 !important;
+    background:transparent !important;
   }
 }
 </style>
