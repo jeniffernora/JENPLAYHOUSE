@@ -3803,6 +3803,42 @@ body.schedule-page-active > footer{
 }
 </style>
 
+
+<style id="menu-routing-fix-v116341">
+/* =========================================================
+   v1.16.34.1 — MENU / SECTION ROUTING FIX ONLY
+   Keep exactly one routed section visible at a time.
+   ========================================================= */
+
+/* Hide routed sections unless JS marks them active. */
+body.section-routing-enabled #home:not(.active-view),
+body.section-routing-enabled #music:not(.active-view),
+body.section-routing-enabled #updates:not(.active-view),
+body.section-routing-enabled #schedule:not(.active-view),
+body.section-routing-enabled #shop:not(.active-view),
+body.section-routing-enabled #news:not(.active-view),
+body.section-routing-enabled #team:not(.active-view),
+body.section-routing-enabled #signup:not(.active-view){
+  display:none !important;
+}
+
+/* Home preview lives outside #home, so it follows the Home route state. */
+body.section-routing-enabled:not(.view-home) .home-preview-section{
+  display:none !important;
+}
+
+/* Defensive: when Home is active, hide all other routed pages. */
+body.section-routing-enabled.view-home #music,
+body.section-routing-enabled.view-home #updates,
+body.section-routing-enabled.view-home #schedule,
+body.section-routing-enabled.view-home #shop,
+body.section-routing-enabled.view-home #news,
+body.section-routing-enabled.view-home #team,
+body.section-routing-enabled.view-home #signup{
+  display:none !important;
+}
+</style>
+
 </head>
 
 
