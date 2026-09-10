@@ -33,23 +33,41 @@ function renderHome(){
   const rawTitle=setting('hero_title','Hi, Jeadore ♡');
   const cleanTitle=String(rawTitle||'').replace(/\s*[♡♥❤]\s*$/,'').trim()||'Hi, Jeadore';
   const hasHeart=/[♡♥❤]\s*$/.test(String(rawTitle||''));
+
   $('#homeTitle').innerHTML=`<span class="home-title-text">${escape(cleanTitle)}</span>${hasHeart?'<span class="home-title-heart" aria-hidden="true">♡</span>':''}`;
   $('#homeDescription').textContent=setting('hero_description','You’ve entered Jeniffer Nora’s universe.');
   $('#homeLabel').textContent=setting('hero_label','Welcome to the universe');
+
   const staticHero=img(setting('hero_image'));
-  const desktopGif=setting('hero_gif_desktop','assets/images/hero/jeniffer-home-desktop.gif');
-  const isMobile=window.matchMedia('(max-width: 700px)').matches;
-  // V21.7: mobile intentionally keeps the same LANDSCAPE hero asset as desktop.
-  const mobileGif=desktopGif;
-  const gif=desktopGif;
-  $('#homeBackground').style.backgroundImage=`url("${img(gif)}"), url("${staticHero}")`;
+  const gif=img(setting('hero_gif_desktop','assets/images/hero/jeniffer-home-desktop.gif'));
+  const bg=$('#homeBackground');
+
+  // Immediate lightweight visual while the animated GIF is still loading.
+  bg.style.backgroundImage=`url("${staticHero}")`;
   document.body.classList.remove('hero-mobile-fit','hero-mobile-cover');
-  if(isMobile){
-    const probe=new Image();
-    probe.onload=()=>{document.body.classList.remove('hero-mobile-fit');document.body.classList.add('hero-mobile-cover')};
-    probe.onerror=()=>{document.body.classList.remove('hero-mobile-cover');document.body.classList.add('hero-mobile-fit')};
-    probe.src=desktopGif;
+
+  if(!window.__jenHeroGifLoader || window.__jenHeroGifSrc!==gif){
+    window.__jenHeroGifSrc=gif;
+    window.__jenHeroGifLoader=new Promise((resolve,reject)=>{
+      const preload=new Image();
+      try{preload.fetchPriority='high';}catch(e){}
+      preload.decoding='async';
+      preload.onload=()=>resolve(gif);
+      preload.onerror=reject;
+      preload.src=gif;
+    });
   }
+
+  window.__jenHeroGifLoader.then(src=>{
+    bg.style.backgroundImage=`url("${src}"), url("${staticHero}")`;
+    if(window.matchMedia('(max-width:700px)').matches){
+      document.body.classList.add('hero-mobile-cover');
+    }
+  }).catch(()=>{
+    if(window.matchMedia('(max-width:700px)').matches){
+      document.body.classList.add('hero-mobile-fit');
+    }
+  });
 }
 function warmCriticalAvatars(){
   const urls=[...new Set((data.Users||[])
@@ -177,25 +195,6 @@ function findAlbum(name){for(const key of ['Albums','Korean Albums']){const trac
 function openAlbum(name){const tracks=findAlbum(name);if(!tracks.length)return;currentAlbumName=name;const first=tracks[0];$('#albumDetailCover').src=img(first['Cover URL or Path']);$('#albumDetailLabel').textContent=first['Release Label']||'Album';$('#albumDetailTitle').textContent=name;$('#albumTrackList').innerHTML=tracks.map((r,i)=>`<button type="button" class="album-track-row play-song" data-song="${escape(r['Song Title'])}"><span class="track-number">${String(r['Track Number']||i+1).padStart(2,'0')}</span><span class="track-main"><strong>${escape(r['Song Title'])}</strong><small>${escape(roleplay(r))}</small><small class="track-original-credit">${escape(roleplayCreditLine(r))}</small></span><span class="track-action">Lyrics →</span></button>`).join('');$('#albumDetailModal').classList.add('open')}
 function renderSchedule(){const rows=visible(data.Schedule||[]).sort((a,b)=>Number(a.Order)-Number(b.Order));const target=$('#scheduleList');if(!target)return;target.innerHTML=rows.map(r=>`<article class="schedule-row"><div class="schedule-date"><span>${escape(r.Day||'')}</span><strong>${escape(r.Date||'')}</strong></div><div class="schedule-event"><p>${escape(r.Category||'Appearance')}</p><h3>${escape(r['Event Name']||'')}</h3>${r.Details?`<small>${escape(r.Details)}</small>`:''}</div>${r['Link URL']?`<a class="schedule-link" href="${escape(r['Link URL'])}" target="_blank" rel="noopener">${escape(r['Link Text']||'Details')}</a>`:'<span></span>'}</article>`).join('')||'<p>No upcoming schedule.</p>'}
 let cart=[]; function saveCart(){localStorage.setItem('jen-cart',JSON.stringify(cart));renderCart()}; try{cart=JSON.parse(localStorage.getItem('jen-cart')||'[]')}catch(e){}
-function renderTour(){
-  const source=(data.Tour&&data.Tour.length)?data.Tour:(data.Schedule||[]);
-  const rows=visible(source).sort((a,b)=>Number(a.Order)-Number(b.Order));
-  const target=$('#tourList');
-  if(!target)return;
-  target.innerHTML=rows.map(r=>`<article class="tour-row">
-    <div class="tour-date">
-      <span>${escape(r.Day||r.City||'Tour Date')}</span>
-      <strong>${escape(r.Date||'')}</strong>
-    </div>
-    <div class="tour-event">
-      <p>${escape(r.Category||r.Country||'Tour')}</p>
-      <h3>${escape(r['Event Name']||r.Venue||r.Title||'')}</h3>
-      ${(r.Details||r.Location)?`<small>${escape(r.Details||r.Location)}</small>`:''}
-    </div>
-    ${r['Link URL']?`<a class="tour-link" href="${escape(r['Link URL'])}" target="_blank" rel="noopener">${escape(r['Link Text']||'Details')}</a>`:'<span></span>'}
-  </article>`).join('')||'<p class="loading-text">No tour dates yet.</p>';
-}
-
 function renderShop(cat='all'){const rows=visible(data.Shop).filter(r=>cat==='all'||String(r.Category).toLowerCase()===cat|| (cat==='merch'&&!/album/i.test(r.Category)));$('#shopProductList').innerHTML=rows.map(r=>`<article class="product-card" data-product-slug="${escape(shopSlug(r))}"><img class="media-cover" src="${escape(img(r['Image URL or Path']))}" alt="${escape(r['Product Name']||'Product')}" loading="lazy" decoding="async" fetchpriority="low"><p class="card-meta">${escape(r.Category)} · ${String(r.Status||'').toLowerCase()==='preorder'?'PRE-ORDER':`Stock ${escape(r.Stock)}`}</p><h3 class="card-title">${escape(r['Product Name'])}</h3><p>${escape(r.Description)}</p><strong>${money(r.Price)}</strong>${/shirt|t-shirt|long sleeve|hoodie/i.test(r['Product Name'])?`<div class="product-size-selector"><label>Size</label><select class="product-size-select" data-product-size="${escape(r['Product ID'])}"><option>S</option><option selected>M</option><option>L</option><option>XL</option></select></div>`:''}<div class="card-actions"><button class="add-cart" data-product="${escape(r['Product ID'])}">Add to Bag</button><button class="share-product" data-share-product="${escape(r['Product ID'])}">Share</button></div></article>`).join('')||'<p>No products posted.</p>'}
 async function shareProduct(id){const r=(data.Shop||[]).find(x=>x['Product ID']===id);if(!r)return;const url=shopShareUrl(r);const title=r['Product Name']||'Jeniffer Nora Shop';const text=`${title} — Jeniffer Nora`;if(navigator.share){try{await navigator.share({title,text,url});return}catch(e){if(e&&e.name==='AbortError')return}}try{await navigator.clipboard.writeText(url);alert('Product share link copied.')}catch(e){prompt('Copy this product link:',url)}}
 function renderCart(){const box=$('#cartItems');if(!cart.length)box.innerHTML='<p class="empty-cart-message">Your bag is empty.</p>';else box.innerHTML=cart.map((x,i)=>`<div class="cart-item"><img src="${escape(img(x.image))}" loading="lazy" decoding="async"><div class="cart-item-info"><strong>${escape(x.name)}</strong><span class="cart-item-size">${escape(x.size||'')}</span><span>${money(x.price)} × ${x.qty}</span></div><button class="remove-cart" data-i="${i}">×</button></div>`).join(''); const sub=cart.reduce((s,x)=>s+x.price*x.qty,0),tax=Math.round(sub*(C.taxRate||.11)),ship=cart.length?(C.shippingFee||25000):0,total=sub+tax+ship; ['cart','checkout'].forEach(p=>{const a=$(`#${p}Subtotal`),b=$(`#${p}Tax`),c=$(`#${p}Shipping`),d=$(`#${p}Total`);if(a)a.textContent=money(sub);if(b)b.textContent=money(tax);if(c)c.textContent=money(ship);if(d)d.textContent=money(total)});$('#cartCount').textContent=cart.reduce((s,x)=>s+x.qty,0);return {sub,tax,ship,total}}
@@ -264,10 +263,85 @@ async function deleteUpdateFromFeed(updateId){
 }
 
 let activeUpdateFilter='all';
-function getUpdateAuthor(id){return (data.Users||[]).find(x=>x['User ID']===id)||{Name:'J-Team',Position:'',Photo:'assets/images/jeniffer.jpg',Verified:'No'}}
+const OFFICIAL_UPDATE_PROFILE_ORDER=[
+  'Jeniffer','Helena','Ranu','Nona','Manu','Gadis','Atharya','Niki','Ed'
+];
+
+function mergedOfficialUsers(){
+  const bundled=(bundledData.Users||[]);
+  const live=(data.Users||[]);
+
+  const byId=new Map();
+  const byName=new Map();
+
+  bundled.forEach(u=>{
+    const id=String(u['User ID']||'').trim().toLowerCase();
+    const name=String(u.Name||u['Display Name']||'').trim().toLowerCase();
+    if(id)byId.set(id,{...u});
+    if(name)byName.set(name,{...u});
+  });
+
+  live.forEach(u=>{
+    const id=String(u['User ID']||'').trim().toLowerCase();
+    const name=String(u.Name||u['Display Name']||'').trim().toLowerCase();
+
+    const base=(id&&byId.get(id))||(name&&byName.get(name))||{};
+    const merged={...base,...u};
+
+    if(id)byId.set(id,merged);
+    if(name)byName.set(name,merged);
+  });
+
+  return OFFICIAL_UPDATE_PROFILE_ORDER
+    .map(name=>byName.get(name.toLowerCase()))
+    .filter(Boolean);
+}
+
+function getUpdateAuthor(id){
+  const key=String(id||'').trim().toLowerCase();
+  return (data.Users||[]).find(x=>
+    String(x['User ID']||'').trim().toLowerCase()===key
+  )||{Name:'J-Team',Position:'',Photo:'assets/images/jeniffer.jpg',Verified:'No'}
+}
 function updateVerified(author){return String(author.Verified||'').toLowerCase()==='yes'?'<span class="verified-badge" aria-label="Verified">✓</span>':''}
 function updateComments(id){return visible(data['Update Comments']||[]).filter(x=>x['Update ID']===id).sort((a,b)=>Number(a.Order||0)-Number(b.Order||0))}
-function renderUpdateMedia(r){const type=String(r['Post Type']||'Text').toLowerCase(),media=[r['Media 1'],r['Media 2'],r['Media 3'],r['Media 4']].filter(Boolean);if(type==='voice note'){if(!r['Media 1'])return '';return `<div class="voice-note"><button type="button" aria-label="Play voice note">▶</button><audio controls preload="metadata" src="${escape(img(r['Media 1']))}"></audio>${r.Duration?`<span>${escape(r.Duration)}</span>`:''}</div>`}if(type==='video'){if(!r['Media 1'])return '';return `<div class="update-media"><video controls playsinline preload="metadata" ${r.Thumbnail?`poster="${escape(img(r.Thumbnail))}"`:''}><source src="${escape(img(r['Media 1']))}"></video></div>`}if(media.length){if(media.length>1||type==='carousel')return `<div class="update-media update-carousel">${media.map(m=>`<img src="${escape(img(m))}" alt="Update photo" loading="lazy" decoding="async" fetchpriority="low">`).join('')}</div>`;return `<div class="update-media"><img src="${escape(img(media[0]))}" alt="Update photo" loading="lazy" decoding="async" fetchpriority="low"></div>`}return ''}
+function renderUpdateMedia(r){
+  const type=String(r['Post Type']||r.Type||'Text').trim().toLowerCase();
+
+  const media=[
+    r['Media 1'],
+    r['Media 2'],
+    r['Media 3'],
+    r['Media 4']
+  ].map(x=>String(x||'').trim()).filter(Boolean);
+
+  const thumbnail=String(r.Thumbnail||r['Thumbnail URL']||'').trim();
+
+  if(!media.length && thumbnail && ['photo','carousel','image'].includes(type)){
+    media.push(thumbnail);
+  }
+
+  if(type==='voice note'){
+    const audio=media[0];
+    if(!audio)return '';
+    return `<div class="voice-note"><button type="button" aria-label="Play voice note">▶</button><audio controls preload="metadata" src="${escape(img(audio))}"></audio>${r.Duration?`<span>${escape(r.Duration)}</span>`:''}</div>`;
+  }
+
+  if(type==='video'){
+    const video=media[0];
+    if(!video)return '';
+    return `<div class="update-media"><video controls playsinline preload="metadata" ${thumbnail?`poster="${escape(img(thumbnail))}"`:''}><source src="${escape(img(video))}"></video></div>`;
+  }
+
+  if(media.length){
+    if(media.length>1||type==='carousel'){
+      return `<div class="update-media update-carousel">${media.map(m=>`<img src="${escape(img(m))}" alt="Update photo" loading="lazy" decoding="async" fetchpriority="low">`).join('')}</div>`;
+    }
+    return `<div class="update-media"><img src="${escape(img(media[0]))}" alt="Update photo" loading="lazy" decoding="async" fetchpriority="low"></div>`;
+  }
+
+  return '';
+}
 function renderUpdateComments(id){const rows=updateComments(id);if(!rows.length)return '';return `<div class="update-comments">${rows.map(c=>{const a=getUpdateAuthor(c['Author ID']);return `<div class="update-comment"><img src="${escape(img(a.Photo))}" alt="" loading="lazy" decoding="async"><div class="update-comment-body"><strong>${escape(a.Name)}${updateVerified(a)}</strong><p>${escape(c.Comment||'')}</p></div></div>`}).join('')}</div>`}
 function renderUpdates(filter=activeUpdateFilter){
   activeUpdateFilter=filter;
@@ -330,7 +404,7 @@ function canvasToBlob(canvas){return new Promise(resolve=>canvas.toBlob(resolve,
 async function buildUpdateShareCard(id){const r=(data.Updates||[]).find(x=>x['Update ID']===id);if(!r)return null;const a=getUpdateAuthor(r['Author ID']);const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;const ctx=canvas.getContext('2d');ctx.fillStyle='#f7f7f5';ctx.fillRect(0,0,1080,1350);ctx.fillStyle='#171717';ctx.font='700 42px Arial';ctx.fillText('Jeniffer Nora',70,78);ctx.strokeStyle='#dfdfda';ctx.lineWidth=2;ctx.strokeRect(48,112,984,1190);try{const avatar=await loadCanvasImage(a.Photo);ctx.save();ctx.beginPath();ctx.arc(118,195,44,0,Math.PI*2);ctx.clip();ctx.drawImage(avatar,74,151,88,88);ctx.restore()}catch(e){}ctx.fillStyle='#171717';ctx.font='700 34px Arial';ctx.fillText(a.Name||'Jeniffer Nora',184,190);if(String(a.Verified||'').toLowerCase()==='yes'){const x=Math.min(930,202+ctx.measureText(a.Name||'Jeniffer Nora').width);ctx.fillStyle='#41b7d8';ctx.beginPath();ctx.arc(x,180,11,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.font='700 14px Arial';ctx.fillText('✓',x-5,185)}ctx.fillStyle='#929292';ctx.font='22px Arial';ctx.fillText(`${a.Position||a.Role||''} · ${r.Date||''} ${r.Time||''}`,184,226);let y=305;ctx.fillStyle='#222';ctx.font='36px Arial';wrapCanvasText(ctx,r.Text||'',880).slice(0,7).forEach(line=>{ctx.fillText(line,82,y);y+=50});const media=[r['Media 1'],r['Media 2'],r['Media 3'],r['Media 4']].filter(Boolean);const type=String(r['Post Type']||'').toLowerCase();if(media.length&&['photo','carousel'].includes(type)){try{const m=await loadCanvasImage(media[0]);const boxY=Math.max(y+25,500),boxH=650,scale=Math.max(900/m.width,boxH/m.height),w=m.width*scale,h=m.height*scale;ctx.save();ctx.beginPath();ctx.rect(90,boxY,900,boxH);ctx.clip();ctx.drawImage(m,90+(900-w)/2,boxY+(boxH-h)/2,w,h);ctx.restore();y=boxY+boxH+40}catch(e){}}else if(type==='video'||type==='voice note'){const boxY=Math.max(y+25,500);ctx.fillStyle='#ececea';ctx.fillRect(90,boxY,900,260);ctx.fillStyle='#171717';ctx.font='700 42px Arial';ctx.fillText(type==='video'?'VIDEO UPDATE':'VOICE NOTE',130,boxY+145);y=boxY+310}ctx.fillStyle='#777';ctx.font='20px Arial';ctx.fillText(`${r.Category||'Update'} · Fictional roleplay artist`,82,1260);ctx.fillStyle='#171717';ctx.font='700 24px Arial';ctx.fillText('Jeniffer Nora',802,1260);return {blob:await canvasToBlob(canvas),canvas,r,a}}
 async function shareUpdateToX(id){const card=await buildUpdateShareCard(id);if(!card||!card.blob)return;const file=new File([card.blob],`jeniffer-nora-${slugify(card.r['Update ID']||'update')}.png`,{type:'image/png'});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Jeniffer Nora'});return}catch(e){if(e&&e.name==='AbortError')return}}const link=document.createElement('a');link.download=file.name;link.href=URL.createObjectURL(card.blob);link.click();setTimeout(()=>URL.revokeObjectURL(link.href),2000);alert('Share card saved as an image. Attach the image when posting to X.')}
 function handleDeepLinks(){const p=new URLSearchParams(location.search);const song=p.get('song');if(song){setView('music',false);setTimeout(()=>openSong(song),50)}const product=p.get('product');if(product){setView('shop',false);setTimeout(()=>{const card=document.querySelector(`[data-product-slug="${CSS.escape(product)}"]`);if(card){card.classList.add('product-shared-focus');card.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>card.classList.remove('product-shared-focus'),2500)}},100)}const update=p.get('update');if(update)setView('updates',false)}
-const routedSections=['home','music','updates','schedule','tour','shop','news','team','signup'];
+const routedSections=['home','music','updates','schedule','shop','news','team','signup'];
 function setView(id,scroll=true){id=routedSections.includes(id)?id:'home';document.body.classList.add('section-routing-enabled');document.body.classList.toggle('view-home',id==='home');routedSections.forEach(key=>{const el=document.getElementById(key);if(el)el.classList.toggle('active-view',key===id)});$$('.navigation a[href^="#"]').forEach(a=>a.classList.toggle('active-nav',a.getAttribute('href')===`#${id}`));$('#navigation')?.classList.remove('open');if(scroll)window.scrollTo({top:0,behavior:'auto'})}
 function setupSectionRouting(){const initial=(location.hash||'#home').slice(1);setView(initial,false);window.addEventListener('hashchange',()=>setView((location.hash||'#home').slice(1),false));document.addEventListener('click',e=>{const homeTab=e.target.closest('[data-home-update-filter]');if(homeTab){homeUpdateFilter=homeTab.dataset.homeUpdateFilter||'all';homeUpdateAuthor='all';$$('.home-update-tab').forEach(x=>x.classList.toggle('active',x===homeTab));renderHomeUpdatesOnly();return;}const homeAuthor=e.target.closest('[data-home-update-author]');if(homeAuthor){homeUpdateAuthor=homeAuthor.dataset.homeUpdateAuthor||'all';renderHomeUpdatesOnly();return;}const a=e.target.closest('a[href^="#"]');if(!a)return;const id=a.getAttribute('href').slice(1);if(routedSections.includes(id)){e.preventDefault();history.pushState(null,'',`#${id}`);setView(id,true)}})}
 let homeUpdateFilter='all';
@@ -385,7 +459,7 @@ function renderHomePreview(){
     scheduleTarget.innerHTML=rows.map(r=>`<article class="home-schedule-row"><div><span>${escape(r.Day||'')}</span><strong>${escape(r.Date||'')}</strong></div><div><small>${escape(r.Category||'Appearance')}</small><strong>${escape(r['Event Name']||'')}</strong></div></article>`).join('')||'<p class="loading-text">No upcoming schedule.</p>';
   }
 }
-function renderAll(){renderHome();renderMusic();renderUpdates();renderSchedule();renderTour();renderShop();renderNews();renderTeam();renderCart();renderHomePreview();$('#currentYear').textContent=new Date().getFullYear()}
+function renderAll(){renderHome();renderMusic();renderUpdates();renderSchedule();renderShop();renderNews();renderTeam();renderCart();renderHomePreview();$('#currentYear').textContent=new Date().getFullYear()}
 function setupAdmin(){}
 
 function captureHighlightedLyrics(){
@@ -442,7 +516,38 @@ window.addEventListener('jen-live-data-ready',()=>{
   try{
     renderUpdates(activeUpdateFilter||'all');
     renderHomeUpdatesOnly();
+    ensureOfficialUpdateProfiles();
   }catch(e){
     console.warn('Updates rerender failed',e);
   }
 });
+
+
+function ensureOfficialUpdateProfiles(){
+  try{
+    const official=mergedOfficialUsers();
+    if(!official.length)return;
+
+    const targets=[
+      document.querySelector('#homeUpdateProfiles'),
+      document.querySelector('.home-update-profiles'),
+      document.querySelector('#updateProfiles'),
+      document.querySelector('.update-profiles')
+    ].filter(Boolean);
+
+    targets.forEach(target=>{
+      const renderedNames=[...target.querySelectorAll('[data-profile-name], .profile-name, span, p')]
+        .map(el=>String(el.dataset?.profileName||el.textContent||'').trim().toLowerCase());
+
+      // If live Users caused an incomplete render, rebuild using the same profile-card renderer
+      // only when the target is clearly missing official members.
+      if(renderedNames.filter(Boolean).length<OFFICIAL_UPDATE_PROFILE_ORDER.length){
+        if(typeof renderUpdateProfilesInto==='function'){
+          renderUpdateProfilesInto(target,official);
+        }
+      }
+    });
+  }catch(e){
+    console.warn('Could not restore official update profiles',e);
+  }
+}
