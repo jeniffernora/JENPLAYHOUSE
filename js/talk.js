@@ -954,331 +954,165 @@ function drawIOSStatusBar(ctx,status,W){
 }
 
 async function shareMessage(m,u){
-  const W=1080,H=1920;
-  const c=document.createElement("canvas");
-  c.width=W;
-  c.height=H;
-  const ctx=c.getContext("2d");
+  const W=1080;
   const roomTheme=talkThemeForUser(u);
-
   const cream="#FFF9F4";
   const warm="#F8F0E6";
-  const blush="#FBE3E8";
-  const bubbleBottom="#F3AFC0";
   const maroon="#7A0F24";
   const ink="#2A1718";
   const muted="#7B666B";
   const cyan="#44B8DB";
 
-  // LIVE-ROOM-LIKE BACKGROUND, matching the selected profile theme
-  const bg=ctx.createLinearGradient(0,0,0,H);
+  // Export every real bubble currently shown in this room, in chronological order.
+  const uid=clean(u&&u["User ID"]);
+  let roomMessages=sortMessages(messages.filter(x=>clean(x["Author ID"])===uid));
+  if(!roomMessages.length && m)roomMessages=[m];
 
-  if(roomTheme==="male"){
-    bg.addColorStop(0,"#F8FBFF");
-    bg.addColorStop(.42,"#DCEAFF");
-    bg.addColorStop(.76,"#F9FBFF");
-    bg.addColorStop(1,warm);
-  }else{
-    bg.addColorStop(0,"#FFF7F6");
-    bg.addColorStop(.42,"#FAD4DE");
-    bg.addColorStop(.76,"#FFF8F3");
-    bg.addColorStop(1,warm);
-  }
-
-  ctx.fillStyle=bg;
-  ctx.fillRect(0,0,W,H);
-
-  let glow=ctx.createRadialGradient(220,300,0,220,300,430);
-  glow.addColorStop(
-    0,
-    roomTheme==="male"
-      ?"rgba(186,218,255,.48)"
-      :"rgba(255,170,195,.48)"
-  );
-  glow.addColorStop(1,"rgba(255,255,255,0)");
-  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
-
-  glow=ctx.createRadialGradient(870,580,0,870,580,420);
-  glow.addColorStop(
-    0,
-    roomTheme==="male"
-      ?"rgba(88,136,205,.10)"
-      :"rgba(201,47,69,.10)"
-  );
-  glow.addColorStop(1,"rgba(255,255,255,0)");
-  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
-
-  // FRAME
-  ctx.strokeStyle="rgba(42,23,24,.82)";
-  ctx.lineWidth=4;
-  rounded(ctx,38,34,W-76,H-68,48);
-  ctx.stroke();
-
-  ctx.strokeStyle="rgba(122,15,36,.16)";
-  ctx.lineWidth=2;
-  rounded(ctx,50,46,W-100,H-92,40);
-  ctx.stroke();
-
-  // HEADER
-  ctx.fillStyle=ink;
-  ctx.font="700 46px Arial";
-  ctx.fillText("←",76,158);
+  const c=document.createElement("canvas");
+  c.width=W;
+  c.height=1920;
+  let ctx=c.getContext("2d");
 
   const av=await loadImage(img(u.Photo));
-  if(av){
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(176,137,43,0,Math.PI*2);
-    ctx.clip();
-    cover(ctx,av,133,94,86,86);
-    ctx.restore();
-  }
-
   const displayName=authorName(u);
-  ctx.fillStyle=ink;
-  ctx.font="700 34px Arial";
-  ctx.fillText(displayName,244,136);
-
-  if(verified(u)){
-    const nameW=ctx.measureText(displayName).width;
-    const vx=244+nameW+24, vy=125;
-    ctx.fillStyle=cyan;
-    ctx.beginPath();ctx.arc(vx,vy,14,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#fff";
-    ctx.font="700 16px Arial";
-    ctx.textAlign="center";
-    ctx.textBaseline="middle";
-    ctx.fillText("✓",vx,vy+1);
-    ctx.textAlign="left";
-    ctx.textBaseline="alphabetic";
-  }
-
-  ctx.fillStyle=muted;
-  ctx.font="400 21px Arial";
-  ctx.fillText(authorRole(u),244,168);
-
-  ctx.fillStyle=ink;
-  ctx.font="700 44px Arial";
-  ctx.fillText("⋮",944,156);
-
-  ctx.strokeStyle="rgba(122,15,36,.16)";
-  ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(68,208);ctx.lineTo(W-68,208);ctx.stroke();
-
-  // MESSAGE HEADER
-  const avatarX=118, avatarY=318;
-  if(av){
-    ctx.save();
-    ctx.beginPath();ctx.arc(avatarX,avatarY,30,0,Math.PI*2);ctx.clip();
-    cover(ctx,av,avatarX-30,avatarY-30,60,60);
-    ctx.restore();
-  }
-
-  ctx.fillStyle=ink;
-  ctx.font="700 24px Arial";
-  ctx.fillText(displayName,160,300);
-
-  const type=messageType(m);
-  const bubbleX=160;
-  const bubbleY=326;
+  const liveFontSize=40;
+  const liveLineHeight=52;
   const maxBubbleW=760;
   const padX=28;
   const padY=23;
 
-  let bubbleW=0, bubbleH=0;
-  let textLines=[];
-  let mediaImage=null;
-  let mediaDrawW=0, mediaDrawH=0;
-  let captionLines=[];
+  // Prepare media + dimensions first, so the canvas can grow to fit ALL bubbles.
+  const prepared=[];
+  for(const msg of roomMessages){
+    const type=messageType(msg);
+    let bubbleW=0,bubbleH=0,textLines=[],mediaImage=null,mediaDrawW=0,mediaDrawH=0,captionLines=[];
 
-  const liveFontSize=40;
-  const liveLineHeight=52;
-
-  if(type==="text"||!type){
-    ctx.font=`400 ${liveFontSize}px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", Arial`;
-    textLines=wrap(ctx,messageText(m)||"…",690);
-    const widest=Math.max(...textLines.map(line=>ctx.measureText(line).width),80);
-    bubbleW=Math.min(maxBubbleW,Math.max(160,Math.ceil(widest)+padX*2));
-    bubbleH=padY*2+(textLines.length*liveLineHeight)-8;
-  }else if(type==="photo"||type==="image"||type==="video"){
-    const src=type==="video"?posterUrl(m):mediaUrl(m);
-    mediaImage=await loadImage(src);
-
-    const innerMaxW=716;
-    const innerMaxH=800;
-
-    if(mediaImage){
-      const ratio=mediaImage.naturalWidth/mediaImage.naturalHeight;
-      mediaDrawW=innerMaxW;
-      mediaDrawH=mediaDrawW/ratio;
-
-      if(mediaDrawH>innerMaxH){
-        mediaDrawH=innerMaxH;
-        mediaDrawW=mediaDrawH*ratio;
+    if(type==="text"||!type){
+      ctx.font=`400 ${liveFontSize}px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", Arial`;
+      textLines=wrap(ctx,messageText(msg)||"…",690);
+      const widest=Math.max(...textLines.map(line=>ctx.measureText(line).width),80);
+      bubbleW=Math.min(maxBubbleW,Math.max(160,Math.ceil(widest)+padX*2));
+      bubbleH=padY*2+(textLines.length*liveLineHeight)-8;
+    }else if(type==="photo"||type==="image"||type==="video"){
+      const src=type==="video"?posterUrl(msg):mediaUrl(msg);
+      mediaImage=await loadImage(src);
+      const innerMaxW=716;
+      const innerMaxH=760;
+      if(mediaImage){
+        const ratio=mediaImage.naturalWidth/mediaImage.naturalHeight;
+        mediaDrawW=innerMaxW;
+        mediaDrawH=mediaDrawW/ratio;
+        if(mediaDrawH>innerMaxH){mediaDrawH=innerMaxH;mediaDrawW=mediaDrawH*ratio;}
+      }else{mediaDrawW=innerMaxW;mediaDrawH=480;}
+      const cap=messageText(msg);
+      if(cap){
+        ctx.font='400 31px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", Arial';
+        captionLines=wrap(ctx,cap,Math.max(260,mediaDrawW-20));
       }
+      bubbleW=Math.min(maxBubbleW,Math.max(260,mediaDrawW+36));
+      bubbleH=18+mediaDrawH+18+(captionLines.length?captionLines.length*42+12:0);
     }else{
-      mediaDrawW=innerMaxW;
-      mediaDrawH=480;
+      bubbleW=650;
+      bubbleH=178+(messageText(msg)?70:0);
     }
 
-    const cap=messageText(m);
-    if(cap){
-      ctx.font='400 31px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", Arial';
-      captionLines=wrap(ctx,cap,Math.max(260,mediaDrawW-20));
-    }
-
-    bubbleW=Math.min(maxBubbleW,Math.max(260,mediaDrawW+36));
-    bubbleH=18+mediaDrawH+18+(captionLines.length?captionLines.length*42+12:0);
-  }else{
-    bubbleW=650;
-    bubbleH=178+(messageText(m)?70:0);
+    prepared.push({msg,type,bubbleW,bubbleH,textLines,mediaImage,mediaDrawW,mediaDrawH,captionLines});
   }
 
-  // LIVE-LIKE BUBBLE SHADOW
-  ctx.save();
-  ctx.shadowColor=roomTheme==="male"?"rgba(65,105,165,.18)":"rgba(169,32,70,.18)";
-  ctx.shadowBlur=14;
-  ctx.shadowOffsetY=8;
-  const bubbleGrad=ctx.createLinearGradient(0,bubbleY,0,bubbleY+bubbleH);
+  const headerH=230;
+  const messageGap=94;
+  const composerArea=235;
+  const messagesH=prepared.reduce((sum,p)=>sum+Math.max(120,p.bubbleH+62)+messageGap,0);
 
+  // Keep the classic screenshot size exactly like the old approved export.
+  // Multi-bubble content can continue below the frame and is intentionally cropped.
+  const H=1920;
+  c.height=H;
+  ctx=c.getContext("2d");
+
+  // BACKGROUND — exact same visual family as the approved single-bubble export.
+  const bg=ctx.createLinearGradient(0,0,0,H);
   if(roomTheme==="male"){
-    bubbleGrad.addColorStop(0,"#FFFFFF");
-    bubbleGrad.addColorStop(.28,"#F6FAFF");
-    bubbleGrad.addColorStop(.70,"#BFD8FF");
-    bubbleGrad.addColorStop(1,"#8EB8F2");
+    bg.addColorStop(0,"#F8FBFF");bg.addColorStop(.42,"#DCEAFF");bg.addColorStop(.76,"#F9FBFF");bg.addColorStop(1,warm);
   }else{
-    bubbleGrad.addColorStop(0,"#FFFDFB");
-    bubbleGrad.addColorStop(.27,"#FFF5F7");
-    bubbleGrad.addColorStop(.70,"#F7BFD0");
-    bubbleGrad.addColorStop(1,"#EF94AE");
+    bg.addColorStop(0,"#FFF7F6");bg.addColorStop(.42,"#FAD4DE");bg.addColorStop(.76,"#FFF8F3");bg.addColorStop(1,warm);
   }
-  ctx.fillStyle=bubbleGrad;
-  rounded(ctx,bubbleX,bubbleY,bubbleW,bubbleH,30);
-  ctx.fill();
-  ctx.restore();
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
 
-  ctx.strokeStyle="rgba(42,23,24,.88)";
-  ctx.lineWidth=4;
-  rounded(ctx,bubbleX,bubbleY,bubbleW,bubbleH,30);
-  ctx.stroke();
+  let glow=ctx.createRadialGradient(220,300,0,220,300,430);
+  glow.addColorStop(0,roomTheme==="male"?"rgba(186,218,255,.48)":"rgba(255,170,195,.48)");
+  glow.addColorStop(1,"rgba(255,255,255,0)");ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
 
-  // CONTENT
-  if(type==="photo"||type==="image"||type==="video"){
-    const mx=bubbleX+(bubbleW-mediaDrawW)/2;
-    const my=bubbleY+18;
+  ctx.strokeStyle="rgba(42,23,24,.82)";ctx.lineWidth=4;rounded(ctx,38,34,W-76,H-68,48);ctx.stroke();
+  ctx.strokeStyle="rgba(122,15,36,.16)";ctx.lineWidth=2;rounded(ctx,50,46,W-100,H-92,40);ctx.stroke();
 
-    if(mediaImage){
-      ctx.save();
-      rounded(ctx,mx,my,mediaDrawW,mediaDrawH,22);
-      ctx.clip();
-      // Draw exact image ratio — no crop.
-      ctx.drawImage(mediaImage,mx,my,mediaDrawW,mediaDrawH);
-      ctx.restore();
+  // CLEAN HEADER — no fake iPhone time / signal / Wi-Fi / battery.
+  ctx.fillStyle=ink;ctx.font="700 46px Arial";ctx.fillText("←",76,158);
+  if(av){ctx.save();ctx.beginPath();ctx.arc(176,137,43,0,Math.PI*2);ctx.clip();cover(ctx,av,133,94,86,86);ctx.restore();}
+  ctx.fillStyle=ink;ctx.font="700 34px Arial";ctx.fillText(displayName,244,136);
+  if(verified(u)){
+    const nameW=ctx.measureText(displayName).width,vx=244+nameW+24,vy=125;
+    ctx.fillStyle=cyan;ctx.beginPath();ctx.arc(vx,vy,14,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.font="700 16px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("✓",vx,vy+1);ctx.textAlign="left";ctx.textBaseline="alphabetic";
+  }
+  ctx.fillStyle=muted;ctx.font="400 21px Arial";ctx.fillText(authorRole(u),244,168);
+  ctx.fillStyle=ink;ctx.font="700 44px Arial";ctx.fillText("⋮",944,156);
+  ctx.strokeStyle="rgba(122,15,36,.16)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(68,208);ctx.lineTo(W-68,208);ctx.stroke();
+
+  let cursorY=285;
+  const bubbleX=160;
+
+  for(const p of prepared){
+    const {msg,type,bubbleW,bubbleH,textLines,mediaImage,mediaDrawW,mediaDrawH,captionLines}=p;
+    const avatarX=118,avatarY=cursorY+30;
+    if(av){ctx.save();ctx.beginPath();ctx.arc(avatarX,avatarY,30,0,Math.PI*2);ctx.clip();cover(ctx,av,avatarX-30,avatarY-30,60,60);ctx.restore();}
+    ctx.fillStyle=ink;ctx.font="700 24px Arial";ctx.fillText(displayName,160,cursorY+12);
+    const bubbleY=cursorY+38;
+
+    ctx.save();ctx.shadowColor=roomTheme==="male"?"rgba(65,105,165,.18)":"rgba(169,32,70,.18)";ctx.shadowBlur=14;ctx.shadowOffsetY=8;
+    const bubbleGrad=ctx.createLinearGradient(0,bubbleY,0,bubbleY+bubbleH);
+    if(roomTheme==="male"){
+      bubbleGrad.addColorStop(0,"#FFFFFF");bubbleGrad.addColorStop(.28,"#F6FAFF");bubbleGrad.addColorStop(.70,"#BFD8FF");bubbleGrad.addColorStop(1,"#8EB8F2");
+    }else{
+      bubbleGrad.addColorStop(0,"#FFFDFB");bubbleGrad.addColorStop(.27,"#FFF5F7");bubbleGrad.addColorStop(.70,"#F7BFD0");bubbleGrad.addColorStop(1,"#EF94AE");
+    }
+    ctx.fillStyle=bubbleGrad;rounded(ctx,bubbleX,bubbleY,bubbleW,bubbleH,30);ctx.fill();ctx.restore();
+    ctx.strokeStyle="rgba(42,23,24,.88)";ctx.lineWidth=4;rounded(ctx,bubbleX,bubbleY,bubbleW,bubbleH,30);ctx.stroke();
+
+    if(type==="photo"||type==="image"||type==="video"){
+      const mx=bubbleX+(bubbleW-mediaDrawW)/2,my=bubbleY+18;
+      if(mediaImage){ctx.save();rounded(ctx,mx,my,mediaDrawW,mediaDrawH,22);ctx.clip();ctx.drawImage(mediaImage,mx,my,mediaDrawW,mediaDrawH);ctx.restore();}
+      if(type==="video"){
+        const cx=bubbleX+bubbleW/2,cy=my+mediaDrawH/2;ctx.fillStyle="rgba(255,249,244,.94)";ctx.strokeStyle="rgba(42,23,24,.65)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,54,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle=maroon;ctx.font="700 43px Arial";ctx.fillText("▶",cx-15,cy+15);
+      }
+      if(captionLines.length){ctx.fillStyle=ink;ctx.font='400 31px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", Arial';const capY=my+mediaDrawH+48;captionLines.forEach((line,i)=>ctx.fillText(line,bubbleX+26,capY+i*42));}
+    }else if(type.includes("voice")||type==="audio"){
+      ctx.fillStyle=maroon;ctx.beginPath();ctx.arc(bubbleX+66,bubbleY+84,32,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.font="700 29px Arial";ctx.fillText("♪",bubbleX+56,bubbleY+95);
+      for(let i=0;i<28;i++){const hh=12+Math.abs(Math.sin(i*.74))*40;ctx.fillStyle=maroon;ctx.globalAlpha=.74;ctx.fillRect(bubbleX+120+i*14,bubbleY+84-hh/2,5,hh);}ctx.globalAlpha=1;
+      ctx.fillStyle=muted;ctx.font="400 21px Arial";ctx.fillText(duration(msg),bubbleX+bubbleW-90,bubbleY+92);
+      const txt=messageText(msg);if(txt){ctx.fillStyle=ink;ctx.font='400 28px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", Arial';ctx.fillText(txt,bubbleX+26,bubbleY+150);}
+    }else{
+      ctx.fillStyle=ink;ctx.font=`400 ${liveFontSize}px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", Arial`;textLines.forEach((line,i)=>ctx.fillText(line,bubbleX+padX,bubbleY+padY+37+i*liveLineHeight));
     }
 
-    if(type==="video"){
-      const cx=bubbleX+bubbleW/2, cy=my+mediaDrawH/2;
-      ctx.fillStyle="rgba(255,249,244,.94)";
-      ctx.strokeStyle="rgba(42,23,24,.65)";
-      ctx.lineWidth=2;
-      ctx.beginPath();ctx.arc(cx,cy,54,0,Math.PI*2);ctx.fill();ctx.stroke();
-      ctx.fillStyle=maroon;
-      ctx.font="700 43px Arial";
-      ctx.fillText("▶",cx-15,cy+15);
-    }
-
-    if(captionLines.length){
-      ctx.fillStyle=ink;
-      ctx.font='400 31px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", Arial';
-      const capY=my+mediaDrawH+48;
-      captionLines.forEach((line,i)=>{
-        ctx.fillText(line,bubbleX+26,capY+i*42);
-      });
-    }
-  }else if(type.includes("voice")||type==="audio"){
-    ctx.fillStyle=maroon;
-    ctx.beginPath();ctx.arc(bubbleX+66,bubbleY+84,32,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#fff";ctx.font="700 29px Arial";ctx.fillText("♪",bubbleX+56,bubbleY+95);
-
-    for(let i=0;i<28;i++){
-      const hh=12+Math.abs(Math.sin(i*.74))*40;
-      ctx.fillStyle=maroon;ctx.globalAlpha=.74;
-      ctx.fillRect(bubbleX+120+i*14,bubbleY+84-hh/2,5,hh);
-    }
-    ctx.globalAlpha=1;
-    ctx.fillStyle=muted;ctx.font="400 21px Arial";
-    ctx.fillText(duration(m),bubbleX+bubbleW-90,bubbleY+92);
-
-    const txt=messageText(m);
-    if(txt){
-      ctx.fillStyle=ink;ctx.font='400 28px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", Arial';
-      ctx.fillText(txt,bubbleX+26,bubbleY+150);
-    }
-  }else{
-    ctx.fillStyle=ink;
-    ctx.font=`400 ${liveFontSize}px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", Arial`;
-    textLines.forEach((line,i)=>{
-      ctx.fillText(line,bubbleX+padX,bubbleY+padY+37+i*liveLineHeight);
-    });
+    ctx.fillStyle=muted;ctx.font="700 22px Arial";ctx.textAlign="right";ctx.fillText(clean(msg.Time)||clean(msg.Date),bubbleX+bubbleW,bubbleY+bubbleH+34);ctx.textAlign="left";
+    cursorY=bubbleY+bubbleH+messageGap;
   }
 
-  // TIME: close to the bubble like live view
-  ctx.fillStyle=muted;
-  ctx.font="700 22px Arial";
-  ctx.textAlign="right";
-  ctx.fillText(clean(m.Time)||clean(m.Date),bubbleX+bubbleW,bubbleY+bubbleH+34);
-  ctx.textAlign="left";
-
-  // COMPOSER — closer to footer
+  // Composer stays at the bottom of the full exported conversation.
   const composerY=H-178;
-  ctx.fillStyle="rgba(248,240,230,.92)";
-  ctx.fillRect(52,composerY-18,W-104,96);
+  ctx.fillStyle="rgba(248,240,230,.92)";ctx.fillRect(52,composerY-18,W-104,96);
+  ctx.fillStyle=cream;ctx.strokeStyle="rgba(42,23,24,.62)";ctx.lineWidth=3;rounded(ctx,82,composerY,772,66,33);ctx.fill();ctx.stroke();
+  ctx.fillStyle="#8C7379";ctx.font="400 21px Arial";ctx.fillText("Enter a message.",116,composerY+41);
+  ctx.fillStyle="#F3AFC0";ctx.strokeStyle="rgba(42,23,24,.62)";ctx.beginPath();ctx.arc(916,composerY+33,33,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.fillStyle=maroon;ctx.font="700 25px Arial";ctx.fillText("➤",904,composerY+42);
+  ctx.fillStyle=maroon;ctx.font="700 15px Arial";ctx.textAlign="center";ctx.fillText("JEN PLAY HOUSE APP 2026 — ROLEPLAY PURPOSE",W/2,H-64);ctx.textAlign="left";
 
-  ctx.fillStyle=cream;
-  ctx.strokeStyle="rgba(42,23,24,.62)";
-  ctx.lineWidth=3;
-  rounded(ctx,82,composerY,772,66,33);
-  ctx.fill();ctx.stroke();
-
-  ctx.fillStyle="#8C7379";
-  ctx.font="400 21px Arial";
-  ctx.fillText("Enter a message.",116,composerY+41);
-
-  ctx.fillStyle="#F3AFC0";
-  ctx.strokeStyle="rgba(42,23,24,.62)";
-  ctx.beginPath();ctx.arc(916,composerY+33,33,0,Math.PI*2);ctx.fill();ctx.stroke();
-
-  ctx.fillStyle=maroon;
-  ctx.font="700 25px Arial";
-  ctx.fillText("➤",904,composerY+42);
-
-  // BOLD, CAPS, CENTERED, CLOSE TO BOTTOM BUT SAFE
-  ctx.fillStyle=maroon;
-  ctx.font="700 15px Arial";
-  ctx.textAlign="center";
-  ctx.fillText(
-    "JEN PLAY HOUSE APP 2026 — ROLEPLAY PURPOSE",
-    W/2,
-    H-64
-  );
-  ctx.textAlign="left";
-
-  const blob=await new Promise((resolve,reject)=>{
-    c.toBlob(b=>b?resolve(b):reject(new Error("PNG export failed")),"image/png");
-  });
-
+  const blob=await new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(new Error("PNG export failed")),"image/png"));
   const url=URL.createObjectURL(blob);
   const a=document.createElement("a");
   const slug=displayName.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
-  a.href=url;
-  a.download=`talk-with-${slug}-${clean(m["Message ID"]||"message")}.png`;
-  a.style.display="none";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),4000);
+  a.href=url;a.download=`talk-with-${slug}-${roomMessages.length}-messages.png`;a.style.display="none";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
 }
-
 
 async function deleteTalkMessage(messageId){
   const id=clean(messageId);
