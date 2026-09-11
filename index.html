@@ -3937,29 +3937,18 @@ body.schedule-page-active > footer, body.news-page-active > footer{position:stat
 }
 </style>
 
-
-<style id="mobile-hero-css-zoomout-v116345420">
-/* v1.16.34.5.4.20 — MOBILE HERO FRAMING ONLY
-   Zoom out the mobile GIF without changing the hero structure. */
+<style id="mobile-hero-fit-v116345424">
+/* v1.16.34.5.4.24 — MOBILE HERO FIT ONLY
+   Keep the current layout; only make the mobile GIF fit more naturally. */
 @media (max-width:700px){
   #homeBackground,
   .home-background,
   body.hero-mobile-fit #homeBackground,
   body.hero-mobile-cover #homeBackground{
-    background-size:92% auto !important;
+    background-size:100% auto !important;
     background-repeat:no-repeat !important;
-    background-position:center center !important;
+    background-position:center bottom !important;
     transform:none !important;
-    background-color:#7A0F24 !important;
-  }
-}
-
-@media (max-width:390px){
-  #homeBackground,
-  .home-background,
-  body.hero-mobile-fit #homeBackground,
-  body.hero-mobile-cover #homeBackground{
-    background-size:90% auto !important;
   }
 }
 </style>
