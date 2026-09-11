@@ -959,7 +959,6 @@ async function shareMessage(m,u){
   c.width=W;
   c.height=H;
   const ctx=c.getContext("2d");
-  const saveStatus=await getChatSaveStatus();
   const roomTheme=talkThemeForUser(u);
 
   const cream="#FFF9F4";
@@ -1008,9 +1007,6 @@ async function shareMessage(m,u){
   );
   glow.addColorStop(1,"rgba(255,255,255,0)");
   ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
-
-  // iPhone-like status bar for the saved chat only.
-  drawIOSStatusBar(ctx,saveStatus,W);
 
   // FRAME
   ctx.strokeStyle="rgba(42,23,24,.82)";

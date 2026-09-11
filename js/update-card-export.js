@@ -1,846 +1,221 @@
 (() => {
   "use strict";
 
-  /**
-   * JEN PLAY HOUSE — SAVED UPDATES CARD v2.1
-   * Fixes:
-   * - [object Object] author bug
-   * - more breathing room between author header and caption/body
-   * - more breathing room between media and caption
-   * Preserves the v2 rounded social-card design.
+  /*
+   * JEN PLAY HOUSE — UPDATES SAVE IMAGE EXPORT ONLY
+   * This file does NOT change the visible Updates website UI.
+   * Public API preserved:
+   *   JenUpdateCardExport.export(update)
+   *   JenUpdateCardExport.render(update)
    */
 
   const CFG = Object.freeze({
     width: 1080,
-    mediaHeight: 1350,
-    side: 54,
-    footer: 54,
+    side: 56,
+    radius: 34,
+    footer: 58,
     ink: "#171717",
-    muted: "#77736f",
-    outline: "#241b1c",
-    cream: "#FFF9F4",
-    disclaimer: "JEN PLAY HOUSE APP 2026 — ROLEPLAY PURPOSE"
+    muted: "#7A6D70",
+    femaleTop: "#FFF6F8",
+    femaleBottom: "#F7B8C9",
+    maleTop: "#F4F9FF",
+    maleBottom: "#B8D8F7",
+    border: "#2A2526",
+    verified: "#44B8DB",
+    footerText: "JEN PLAY HOUSE APP 2026 — ROLEPLAY PURPOSE"
   });
-
-  function cleanText(value) {
-    if (value === null || value === undefined) return "";
-
-    if (typeof value === "object") {
-      const candidates = [
-        value["Display Name"],
-        value["displayName"],
-        value["Name"],
-        value["name"],
-        value["Username"],
-        value["username"],
-        value["User Name"],
-        value["label"],
-        value["text"],
-        value["value"],
-        value["v"]
-      ];
-
-      for (const candidate of candidates) {
-        const resolved = cleanText(candidate);
-        if (resolved && resolved !== "[object Object]") return resolved;
-      }
-
-      return "";
-    }
-
-    const text = String(value).trim();
-    return text === "[object Object]" ? "" : text;
-  }
 
   const get = (obj, keys, fallback = "") => {
     for (const key of keys) {
-      const value = cleanText(obj?.[key]);
-      if (value) return value;
+      const value = obj?.[key];
+      if (value !== undefined && value !== null && String(value).trim() !== "") return value;
     }
-    return cleanText(fallback);
+    return fallback;
   };
 
-  const getType = update =>
-    get(update, ["Post Type", "postType", "type", "Type"], "Text").toLowerCase();
+  const clean = v => String(v ?? "").trim();
+  const getType = update => clean(get(update,["Post Type","postType","type","Type"],"Text")).toLowerCase();
+  const getName = update => clean(get(update,["Author","Author Name","Display Name","displayName","Name","name"],"Jeniffer Nora"));
+  const getAvatar = update => clean(get(update,["Author Photo","Avatar","Photo","photo","Profile Photo","profilePhoto"],""));
+  const getText = update => clean(get(update,["Text","text","Caption","caption","Post Text","postText"],""));
+  const getDate = update => clean(get(update,["Date","date","Created At","createdAt","Timestamp","timestamp"],""));
+  const getTime = update => clean(get(update,["Time","time"],""));
+  const getThumbnail = update => clean(get(update,["Thumbnail","thumbnail","Poster","poster","Video Thumbnail","videoThumbnail"],""));
+  const isVerified = update => ["yes","true","1","verified"].includes(clean(get(update,["Verified","verified"],"yes")).toLowerCase());
 
-  const getName = update => {
-    const direct = get(
-      update,
-      [
-        "Author Name",
-        "Display Name",
-        "displayName",
-        "Username",
-        "username",
-        "User Name",
-        "Name",
-        "name"
-      ],
-      ""
-    );
-
-    if (direct) return direct;
-
-    const nested = cleanText(
-      update?.Author ||
-      update?.author ||
-      update?.User ||
-      update?.user
-    );
-
-    return nested || "Jeniffer Nora";
-  };
-
-  const getRole = update =>
-    get(update, ["Role", "role", "Position", "position", "Category", "category"], "Artist");
-
-  const getAvatar = update =>
-    get(update, ["Author Photo", "Avatar", "Photo", "photo", "Profile Photo", "profilePhoto"], "");
-
-  const getText = update =>
-    get(update, ["Text", "text", "Caption", "caption", "Post Text", "postText"], "");
-
-  const getDate = update =>
-    get(update, ["Date", "date", "Created At", "createdAt", "Timestamp", "timestamp"], "");
-
-  const getTime = update =>
-    get(update, ["Time", "time"], "");
-
-  const getDuration = update =>
-    get(update, ["Duration", "duration", "Audio Duration", "audioDuration"], "");
-
-  const getThumbnail = update =>
-    get(update, ["Thumbnail", "thumbnail", "Poster", "poster", "Video Thumbnail", "videoThumbnail"], "");
-
-  function getMedia(update) {
-    if (Array.isArray(update?.media)) {
-      return update.media
-        .map(cleanText)
-        .filter(Boolean);
-    }
-
-    const keys = [
-      "Media 1", "Media1", "media1",
-      "Media 2", "Media2", "media2",
-      "Media 3", "Media3", "media3",
-      "Media 4", "Media4", "media4"
-    ];
-
-    const output = [];
-
-    for (const key of keys) {
-      const value = cleanText(update?.[key]);
-      if (value && !output.includes(value)) output.push(value);
-    }
-
-    return output;
+  function getMedia(update){
+    if(Array.isArray(update?.media)) return update.media.filter(Boolean).map(String).slice(0,4);
+    const out=[];
+    ["Media 1","Media1","media1","Media 2","Media2","media2","Media 3","Media3","media3","Media 4","Media4","media4"].forEach(k=>{
+      const v=update?.[k];
+      if(v && !out.includes(String(v))) out.push(String(v));
+    });
+    return out.slice(0,4);
   }
 
-  function bodyFont() {
-    try {
-      return getComputedStyle(document.body).fontFamily || "Arial, sans-serif";
-    } catch {
-      return "Arial, sans-serif";
-    }
+  function bodyFont(){
+    try{return getComputedStyle(document.body).fontFamily||"Arial, sans-serif"}catch{return "Arial, sans-serif"}
+  }
+  const font=(size,weight=400)=>`${weight} ${size}px ${bodyFont()}`;
+
+  function genderTheme(update){
+    const explicit=clean(get(update,["Gender","gender","Sex","sex"],"")).toLowerCase();
+    if(/male|man|boy|laki/.test(explicit)) return "male";
+    if(/female|woman|girl|perempuan/.test(explicit)) return "female";
+    const n=getName(update).toLowerCase();
+    const males=["manu","atharya","niki","ed","nathan"];
+    const females=["jeniffer","helena","ranu","nona","gadis"];
+    if(males.some(x=>n.includes(x))) return "male";
+    if(females.some(x=>n.includes(x))) return "female";
+    return "female";
   }
 
-  const f = (size, weight = 400, family = bodyFont()) =>
-    `${weight} ${size}px ${family}`;
-
-  function roundedRect(ctx, x, y, w, h, r) {
-    const rr = Math.min(r, w / 2, h / 2);
-    ctx.beginPath();
-    ctx.moveTo(x + rr, y);
-    ctx.arcTo(x + w, y, x + w, y + h, rr);
-    ctx.arcTo(x + w, y + h, x, y + h, rr);
-    ctx.arcTo(x, y + h, x, y, rr);
-    ctx.arcTo(x, y, x + w, y, rr);
-    ctx.closePath();
+  function makeCanvas(w,h){
+    const node=document.createElement("canvas"); node.width=w; node.height=h;
+    const ctx=node.getContext("2d",{alpha:false});
+    return {node,ctx};
   }
 
-  function wrap(ctx, text, width) {
-    const lines = [];
-    const paragraphs = String(text || "").split(/\n/);
+  function rounded(ctx,x,y,w,h,r){
+    const rr=Math.min(r,w/2,h/2);
+    ctx.beginPath(); ctx.moveTo(x+rr,y); ctx.arcTo(x+w,y,x+w,y+h,rr); ctx.arcTo(x+w,y+h,x,y+h,rr); ctx.arcTo(x,y+h,x,y,rr); ctx.arcTo(x,y,x+w,y,rr); ctx.closePath();
+  }
 
-    for (const paragraph of paragraphs) {
-      if (!paragraph.trim()) {
-        lines.push("");
-        continue;
-      }
+  async function loadImage(url){
+    if(!url) return null;
+    return new Promise(resolve=>{const im=new Image(); im.crossOrigin="anonymous"; im.onload=()=>resolve(im); im.onerror=()=>resolve(null); im.src=url;});
+  }
 
-      const words = paragraph.split(/\s+/);
-      let line = "";
+  function cover(ctx,im,x,y,w,h){
+    if(!im){ctx.fillStyle="rgba(255,255,255,.28)";ctx.fillRect(x,y,w,h);return;}
+    const s=Math.max(w/im.width,h/im.height), sw=w/s, sh=h/s, sx=(im.width-sw)/2, sy=(im.height-sh)/2;
+    ctx.drawImage(im,sx,sy,sw,sh,x,y,w,h);
+  }
 
-      for (const word of words) {
-        const test = line ? `${line} ${word}` : word;
-        if (!line || ctx.measureText(test).width <= width) {
-          line = test;
-        } else {
-          lines.push(line);
-          line = word;
-        }
-      }
+  function contain(ctx,im,x,y,w,h){
+    if(!im){ctx.fillStyle="rgba(255,255,255,.28)";ctx.fillRect(x,y,w,h);return;}
+    const s=Math.min(w/im.width,h/im.height), dw=im.width*s, dh=im.height*s;
+    ctx.drawImage(im,x+(w-dw)/2,y+(h-dh)/2,dw,dh);
+  }
 
-      if (line) lines.push(line);
-    }
-
+  function wrap(ctx,text,maxW){
+    const paragraphs=String(text||"").split(/\n/), lines=[];
+    paragraphs.forEach(p=>{
+      if(!p.trim()){lines.push("");return;}
+      let line="";
+      p.split(/\s+/).forEach(word=>{
+        const test=line?`${line} ${word}`:word;
+        if(line && ctx.measureText(test).width>maxW){lines.push(line);line=word}else line=test;
+      });
+      if(line)lines.push(line);
+    });
     return lines;
   }
 
-  function drawTextBlock(ctx, text, x, y, width, lineHeight) {
-    const lines = wrap(ctx, text, width);
-    let yy = y;
-
-    for (const line of lines) {
-      ctx.fillText(line, x, yy);
-      yy += lineHeight;
-    }
-
-    return yy;
+  function themeGradient(ctx,h,theme){
+    const g=ctx.createLinearGradient(0,0,0,h);
+    if(theme==="male"){g.addColorStop(0,CFG.maleTop);g.addColorStop(1,CFG.maleBottom)}
+    else{g.addColorStop(0,CFG.femaleTop);g.addColorStop(1,CFG.femaleBottom)}
+    return g;
   }
 
-  async function loadImage(url) {
-    if (!url) return null;
-
-    return new Promise(resolve => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => resolve(img);
-      img.onerror = () => resolve(null);
-      img.src = url;
-    });
-  }
-
-  function drawCover(ctx, img, x, y, w, h) {
-    if (!img) {
-      ctx.fillStyle = "#F5EFEA";
-      ctx.fillRect(x, y, w, h);
-      return;
-    }
-
-    const scale = Math.max(w / img.width, h / img.height);
-    const sw = w / scale;
-    const sh = h / scale;
-    const sx = (img.width - sw) / 2;
-    const sy = (img.height - sh) / 2;
-
-    ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
-  }
-
-  function isArtist(update) {
-    const hay = `${getName(update)} ${getRole(update)} ${get(update, ["Category","category"], "")}`.toLowerCase();
-    return hay.includes("jeniffer") || hay.includes("artist");
-  }
-
-  function palette(update) {
-    if (isArtist(update)) {
-      return {
-        top: "#FFFDFC",
-        mid: "#FCEAF0",
-        bottom: "#F4AFC1",
-        glow: "rgba(201,47,69,.15)",
-        accent: "#9A1430"
-      };
-    }
-
-    return {
-      top: "#FFFFFF",
-      mid: "#EEF5FF",
-      bottom: "#AFCDF6",
-      glow: "rgba(76,124,190,.16)",
-      accent: "#315E9C"
-    };
-  }
-
-  function makeCanvas(width, height, update) {
-    const node = document.createElement("canvas");
-    node.width = width;
-    node.height = height;
-
-    const ctx = node.getContext("2d", { alpha: false });
-    const p = palette(update);
-
-    ctx.fillStyle = "#FFF9F4";
-    ctx.fillRect(0, 0, width, height);
-
-    const glow = ctx.createRadialGradient(
-      width * .18,
-      height * .16,
-      0,
-      width * .18,
-      height * .16,
-      width * .8
-    );
-
-    glow.addColorStop(0, p.glow);
-    glow.addColorStop(1, "rgba(255,255,255,0)");
-
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, width, height);
-
-    return { node, ctx, p };
-  }
-
-  function drawCardShell(ctx, update, x, y, w, h, radius = 34) {
-    const p = palette(update);
-
+  function drawCardShell(ctx,w,h,theme){
+    ctx.fillStyle="#FFF9F4"; ctx.fillRect(0,0,w,h);
     ctx.save();
-    ctx.shadowColor = "rgba(42,23,24,.13)";
-    ctx.shadowBlur = 20;
-    ctx.shadowOffsetY = 8;
-
-    const grad = ctx.createLinearGradient(0, y, 0, y + h);
-    grad.addColorStop(0, p.top);
-    grad.addColorStop(.32, p.mid);
-    grad.addColorStop(1, p.bottom);
-
-    ctx.fillStyle = grad;
-    roundedRect(ctx, x, y, w, h, radius);
-    ctx.fill();
-    ctx.restore();
-
-    ctx.strokeStyle = CFG.outline;
-    ctx.lineWidth = 3.2;
-    roundedRect(ctx, x, y, w, h, radius);
-    ctx.stroke();
+    ctx.shadowColor="rgba(42,23,24,.12)";ctx.shadowBlur=22;ctx.shadowOffsetY=10;
+    ctx.fillStyle=themeGradient(ctx,h-40,theme); rounded(ctx,28,28,w-56,h-86,CFG.radius);ctx.fill();ctx.restore();
+    ctx.strokeStyle=CFG.border;ctx.lineWidth=4;rounded(ctx,28,28,w-56,h-86,CFG.radius);ctx.stroke();
   }
 
-  async function drawAuthor(ctx, update, x, y, width) {
-    const avatarSize = 64;
-    const avatar = await loadImage(getAvatar(update));
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(
-      x + avatarSize / 2,
-      y + avatarSize / 2,
-      avatarSize / 2,
-      0,
-      Math.PI * 2
-    );
-    ctx.clip();
-    drawCover(ctx, avatar, x, y, avatarSize, avatarSize);
-    ctx.restore();
-
-    const tx = x + avatarSize + 18;
-    const authorName = getName(update);
-
-    ctx.fillStyle = CFG.ink;
-    ctx.font = f(29, 700);
-    ctx.fillText(authorName, tx, y + 30);
-
-    const verifiedRaw = get(update, ["Verified", "verified"], "yes").toLowerCase();
-
-    if (["yes", "true", "1", "verified"].includes(verifiedRaw)) {
-      const nw = ctx.measureText(authorName).width;
-      const vx = tx + nw + 18;
-      const vy = y + 20;
-
-      ctx.fillStyle = "#43B7D8";
-      ctx.beginPath();
-      ctx.arc(vx, vy, 11, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "#fff";
-      ctx.font = f(13, 700, "Arial");
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("✓", vx, vy + 1);
-      ctx.textAlign = "left";
-      ctx.textBaseline = "alphabetic";
+  async function drawHeader(ctx,update,y=66){
+    const av=await loadImage(getAvatar(update)); const size=64, x=64;
+    ctx.save();ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2,0,Math.PI*2);ctx.clip();cover(ctx,av,x,y,size,size);ctx.restore();
+    const tx=x+size+18;
+    ctx.fillStyle=CFG.ink;ctx.font=font(28,700);ctx.fillText(getName(update),tx,y+29);
+    if(isVerified(update)){
+      const nw=ctx.measureText(getName(update)).width, vx=tx+nw+18,vy=y+21;
+      ctx.fillStyle=CFG.verified;ctx.beginPath();ctx.arc(vx,vy,11,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.font="700 14px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("✓",vx,vy+1);ctx.textAlign="left";ctx.textBaseline="alphabetic";
     }
-
-    const meta = [getDate(update), getTime(update)]
-      .filter(Boolean)
-      .join(" · ");
-
-    ctx.fillStyle = CFG.muted;
-    ctx.font = f(18, 400);
-    ctx.fillText(meta || getRole(update), tx, y + 57);
-
-    ctx.fillStyle = "#968F8E";
-    ctx.font = f(25, 500);
-    ctx.textAlign = "right";
-    ctx.fillText("文", x + width - 42, y + 31);
-
-    ctx.font = f(34, 700, "Arial");
-    ctx.fillText("⋮", x + width - 8, y + 31);
-
-    ctx.textAlign = "left";
-
-    return y + avatarSize;
+    const meta=[getDate(update),getTime(update)].filter(Boolean).join(" · ");
+    ctx.fillStyle=CFG.muted;ctx.font=font(16,400);ctx.fillText(meta,tx,y+54);
+    ctx.fillStyle=CFG.muted;ctx.font="700 34px Arial";ctx.fillText("⋮",975,y+36);
+    return y+size;
   }
 
-  function drawFooter(ctx, width, height) {
-    ctx.fillStyle = "#7A0F24";
-    ctx.font = f(12, 700);
-    ctx.textAlign = "center";
-    ctx.fillText(CFG.disclaimer, width / 2, height - 19);
-    ctx.textAlign = "left";
+  function drawCaption(ctx,update,y,w){
+    const text=getText(update); if(!text) return y;
+    ctx.fillStyle=CFG.ink;ctx.font=font(29,400);
+    const lines=wrap(ctx,text,w); const lh=40;
+    lines.forEach((line,i)=>ctx.fillText(line,64,y+i*lh));
+    return y+lines.length*lh;
   }
 
-  function textCardHeight(update, voice = false) {
-    const probe = document.createElement("canvas").getContext("2d");
-    probe.font = f(34, 500);
-
-    const cardW = CFG.width - CFG.side * 2;
-    const contentW = cardW - 76;
-    const lines = wrap(probe, getText(update), contentW);
-    const textHeight = Math.max(1, lines.length) * 46;
-
-    let cardHeight =
-      36 +
-      64 +
-      58 +     // FIX: more breathing room below author
-      textHeight +
-      (voice ? 150 : 0) +
-      44;
-
-    cardHeight = Math.max(270, cardHeight);
-    cardHeight = Math.min(1160, cardHeight);
-
-    return Math.round(
-      cardHeight +
-      CFG.side * 2 +
-      CFG.footer -
-      10
-    );
+  function drawFooter(ctx,w,h){
+    ctx.fillStyle="#7A0F24";ctx.font="700 13px Arial";ctx.textAlign="center";ctx.fillText(CFG.footerText,w/2,h-24);ctx.textAlign="left";
   }
 
-  async function renderText(update) {
-    const height = textCardHeight(update, false);
-    const { node, ctx } = makeCanvas(CFG.width, height, update);
-
-    const x = CFG.side;
-    const y = 38;
-    const w = CFG.width - CFG.side * 2;
-    const h = height - 38 - CFG.footer - 18;
-
-    drawCardShell(ctx, update, x, y, w, h);
-
-    let yy = y + 34;
-    yy = await drawAuthor(ctx, update, x + 36, yy, w - 72);
-
-    // FIX: body/caption should not hug the author header.
-    yy += 58;
-
-    ctx.fillStyle = CFG.ink;
-    ctx.font = f(34, 500);
-
-    drawTextBlock(
-      ctx,
-      getText(update),
-      x + 36,
-      yy,
-      w - 72,
-      46
-    );
-
-    drawFooter(ctx, CFG.width, height);
-
-    return node;
+  async function renderText(update){
+    const probe=document.createElement("canvas").getContext("2d");probe.font=font(29,400);
+    const lines=wrap(probe,getText(update),CFG.width-128); const textH=Math.max(1,lines.length)*40;
+    const h=Math.max(330,66+64+34+textH+92);
+    const {node,ctx}=makeCanvas(CFG.width,h);const theme=genderTheme(update);drawCardShell(ctx,CFG.width,h,theme);
+    let y=await drawHeader(ctx,update,66); y+=34; drawCaption(ctx,update,y,CFG.width-128); drawFooter(ctx,CFG.width,h); return node;
   }
 
-  function waveform(ctx, x, y, width, height, accent) {
-    const bars = 44;
-    const gap = 5;
-    const barW = (width - gap * (bars - 1)) / bars;
-
-    ctx.fillStyle = accent;
-
-    for (let i = 0; i < bars; i++) {
-      const power =
-        .22 +
-        .78 *
-        Math.abs(
-          Math.sin(i * .62) *
-          Math.cos(i * .29)
-        );
-
-      const bh = Math.max(5, height * power);
-
-      ctx.fillRect(
-        x + i * (barW + gap),
-        y + (height - bh) / 2,
-        barW,
-        bh
-      );
-    }
+  async function renderSinglePhoto(update,url,kind="photo"){
+    const im=await loadImage(url); const innerW=CFG.width-128; const ratio=im?.width&&im?.height?im.width/im.height:4/5;
+    const mediaH=Math.max(280,Math.min(980,innerW/ratio));
+    const probe=document.createElement("canvas").getContext("2d");probe.font=font(29,400);const lines=wrap(probe,getText(update),innerW);const capH=getText(update)?lines.length*40+22:0;
+    const h=Math.round(66+64+28+capH+mediaH+96);
+    const {node,ctx}=makeCanvas(CFG.width,h);const theme=genderTheme(update);drawCardShell(ctx,CFG.width,h,theme);
+    let y=await drawHeader(ctx,update,66);y+=28;if(getText(update)){y=drawCaption(ctx,update,y,innerW)+22;}
+    ctx.save();rounded(ctx,64,y,innerW,mediaH,24);ctx.clip();contain(ctx,im,64,y,innerW,mediaH);ctx.restore();
+    if(kind==="video"){ctx.fillStyle="rgba(0,0,0,.55)";ctx.beginPath();ctx.arc(CFG.width/2,y+mediaH/2,44,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.beginPath();ctx.moveTo(CFG.width/2-10,y+mediaH/2-18);ctx.lineTo(CFG.width/2+22,y+mediaH/2);ctx.lineTo(CFG.width/2-10,y+mediaH/2+18);ctx.closePath();ctx.fill();}
+    drawFooter(ctx,CFG.width,h); return node;
   }
 
-  async function renderVoice(update) {
-    const height = textCardHeight(update, true);
-    const { node, ctx, p } = makeCanvas(CFG.width, height, update);
-
-    const x = CFG.side;
-    const y = 38;
-    const w = CFG.width - CFG.side * 2;
-    const h = height - 38 - CFG.footer - 18;
-
-    drawCardShell(ctx, update, x, y, w, h);
-
-    let yy = y + 34;
-    yy = await drawAuthor(ctx, update, x + 36, yy, w - 72);
-    yy += 48;
-
-    if (getText(update)) {
-      ctx.fillStyle = CFG.ink;
-      ctx.font = f(31, 500);
-
-      yy = drawTextBlock(
-        ctx,
-        getText(update),
-        x + 36,
-        yy,
-        w - 72,
-        42
-      ) + 28;
-    }
-
-    const boxX = x + 36;
-    const boxW = w - 72;
-    const boxH = 108;
-
-    ctx.fillStyle = "rgba(255,255,255,.72)";
-    roundedRect(ctx, boxX, yy, boxW, boxH, 26);
-    ctx.fill();
-
-    ctx.strokeStyle = "rgba(36,27,28,.45)";
-    ctx.lineWidth = 2;
-    roundedRect(ctx, boxX, yy, boxW, boxH, 26);
-    ctx.stroke();
-
-    ctx.fillStyle = p.accent;
-    ctx.beginPath();
-    ctx.arc(boxX + 54, yy + boxH / 2, 27, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = "#fff";
-    ctx.font = f(24, 700, "Arial");
-    ctx.textAlign = "center";
-    ctx.fillText("♪", boxX + 54, yy + 63);
-    ctx.textAlign = "left";
-
-    waveform(
-      ctx,
-      boxX + 105,
-      yy + 34,
-      boxW - 220,
-      42,
-      p.accent
-    );
-
-    ctx.fillStyle = CFG.muted;
-    ctx.font = f(15, 600);
-    ctx.textAlign = "right";
-    ctx.fillText(
-      getDuration(update) || "VOICE NOTE",
-      boxX + boxW - 18,
-      yy + 61
-    );
-    ctx.textAlign = "left";
-
-    drawFooter(ctx, CFG.width, height);
-
-    return node;
+  async function renderTwoPhotos(update,urls){
+    const H=1350, W=1080, theme=genderTheme(update), {node,ctx}=makeCanvas(W,H); drawCardShell(ctx,W,H,theme);
+    let y=await drawHeader(ctx,update,66);y+=28;if(getText(update)) y=drawCaption(ctx,update,y,W-128)+20;
+    const gap=14, x=64, totalW=W-128, cellW=(totalW-gap)/2, footerTop=H-84, mediaH=Math.max(380,footerTop-y-22);
+    const ims=await Promise.all(urls.slice(0,2).map(loadImage));
+    ims.forEach((im,i)=>{const xx=x+i*(cellW+gap);ctx.save();rounded(ctx,xx,y,cellW,mediaH,22);ctx.clip();cover(ctx,im,xx,y,cellW,mediaH);ctx.restore();});
+    drawFooter(ctx,W,H);return node;
   }
 
-  async function renderMedia(update, url, kind, slideIndex = 0, totalSlides = 1) {
-    const { node, ctx } = makeCanvas(
-      CFG.width,
-      CFG.mediaHeight,
-      update
-    );
-
-    const x = CFG.side;
-    const y = 34;
-    const w = CFG.width - CFG.side * 2;
-    const h = CFG.mediaHeight - y - CFG.footer - 18;
-
-    drawCardShell(ctx, update, x, y, w, h);
-
-    let yy = y + 30;
-    yy = await drawAuthor(ctx, update, x + 34, yy, w - 68);
-
-    // FIX: do not press media against author header.
-    yy += 40;
-
-    const innerX = x + 34;
-    const innerW = w - 68;
-    const hasText = Boolean(getText(update));
-
-    ctx.font = f(25, 500);
-    const capLines = hasText
-      ? wrap(ctx, getText(update), innerW)
-      : [];
-
-    // FIX: reserve more room before caption below media.
-    const captionH =
-      capLines.length
-        ? capLines.length * 34 + 52
-        : 0;
-
-    const mediaBottom =
-      y + h - 34 - captionH;
-
-    const mediaH =
-      Math.max(350, mediaBottom - yy);
-
-    const img = await loadImage(url);
-
-    ctx.save();
-    roundedRect(ctx, innerX, yy, innerW, mediaH, 24);
-    ctx.clip();
-    drawCover(ctx, img, innerX, yy, innerW, mediaH);
-    ctx.restore();
-
-    ctx.strokeStyle = "rgba(36,27,28,.50)";
-    ctx.lineWidth = 2;
-    roundedRect(ctx, innerX, yy, innerW, mediaH, 24);
-    ctx.stroke();
-
-    if (kind === "video") {
-      ctx.fillStyle = "rgba(255,255,255,.88)";
-      ctx.strokeStyle = "rgba(36,27,28,.6)";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(
-        CFG.width / 2,
-        yy + mediaH / 2,
-        50,
-        0,
-        Math.PI * 2
-      );
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = "#7A0F24";
-      ctx.beginPath();
-      ctx.moveTo(
-        CFG.width / 2 - 10,
-        yy + mediaH / 2 - 20
-      );
-      ctx.lineTo(
-        CFG.width / 2 + 24,
-        yy + mediaH / 2
-      );
-      ctx.lineTo(
-        CFG.width / 2 - 10,
-        yy + mediaH / 2 + 20
-      );
-      ctx.closePath();
-      ctx.fill();
-    }
-
-    if (totalSlides > 1) {
-      ctx.fillStyle = "rgba(20,16,17,.58)";
-      roundedRect(
-        ctx,
-        innerX + innerW - 72,
-        yy + 14,
-        56,
-        30,
-        15
-      );
-      ctx.fill();
-
-      ctx.fillStyle = "#fff";
-      ctx.font = f(13, 700);
-      ctx.textAlign = "center";
-      ctx.fillText(
-        `${slideIndex + 1}/${totalSlides}`,
-        innerX + innerW - 44,
-        yy + 34
-      );
-      ctx.textAlign = "left";
-    }
-
-    if (capLines.length) {
-      ctx.fillStyle = CFG.ink;
-      ctx.font = f(25, 500);
-
-      // FIX: caption sits lower, not attached to the media edge.
-      let cy = yy + mediaH + 52;
-
-      for (const line of capLines) {
-        ctx.fillText(line, innerX, cy);
-        cy += 34;
-      }
-    }
-
-    drawFooter(ctx, CFG.width, CFG.mediaHeight);
-
-    return node;
+  async function renderMasonry(update,urls){
+    const W=1080, theme=genderTheme(update), colGap=14, x=64, totalW=W-128, colW=(totalW-colGap)/2;
+    const imgs=await Promise.all(urls.slice(0,4).map(loadImage));
+    const probe=document.createElement("canvas").getContext("2d");probe.font=font(29,400);const lines=wrap(probe,getText(update),totalW);const capH=getText(update)?lines.length*40+20:0;
+    const mediaStart=66+64+28+capH; const cols=[[],[]], heights=[0,0];
+    imgs.forEach((im,i)=>{const ratio=im?.width&&im?.height?im.width/im.height:1;const h=Math.max(180,Math.min(620,colW/ratio));const col=heights[0]<=heights[1]?0:1;cols[col].push({im,h});heights[col]+=h+(cols[col].length>1?colGap:0);});
+    const H=Math.round(mediaStart+Math.max(...heights)+110);
+    const {node,ctx}=makeCanvas(W,H);drawCardShell(ctx,W,H,theme);
+    let y=await drawHeader(ctx,update,66);y+=28;if(getText(update)) y=drawCaption(ctx,update,y,totalW)+20;
+    cols.forEach((items,col)=>{let yy=y;items.forEach(item=>{const xx=x+col*(colW+colGap);ctx.save();rounded(ctx,xx,yy,colW,item.h,20);ctx.clip();contain(ctx,item.im,xx,yy,colW,item.h);ctx.restore();yy+=item.h+colGap;});});
+    drawFooter(ctx,W,H);return node;
   }
 
-  function filename(update, suffix) {
-    const raw =
-      `${getName(update)}-${getDate(update) || "update"}-${suffix}`;
+  function filename(update,suffix){return `${getName(update)}-${getDate(update)||"update"}-${suffix}`.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,90)+".png";}
+  const toBlob=node=>new Promise((res,rej)=>node.toBlob(b=>b?res(b):rej(new Error("Could not create image.")),"image/png",1));
+  async function save(node,name){const blob=await toBlob(node),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 
-    return raw
-      .toLowerCase()
-      .normalize("NFKD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 90) + ".png";
-  }
-
-  function toBlob(canvasNode) {
-    return new Promise((resolve, reject) => {
-      canvasNode.toBlob(
-        blob =>
-          blob
-            ? resolve(blob)
-            : reject(
-                new Error(
-                  "Could not create image."
-                )
-              ),
-        "image/png",
-        1
-      );
-    });
-  }
-
-  async function save(canvasNode, name) {
-    const blob = await toBlob(canvasNode);
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = name;
-
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-
-    setTimeout(
-      () => URL.revokeObjectURL(url),
-      1500
-    );
-  }
-
-  async function render(update = {}) {
+  async function render(update={}){
     await document.fonts?.ready;
-
-    const type = getType(update);
-    const media = getMedia(update);
-
-    if (type.includes("carousel")) {
-      if (!media.length) {
-        throw new Error(
-          "Carousel post has no media."
-        );
-      }
-
-      const slides = [];
-
-      for (let i = 0; i < media.length; i++) {
-        slides.push(
-          await renderMedia(
-            update,
-            media[i],
-            "photo",
-            i,
-            media.length
-          )
-        );
-      }
-
-      return slides;
+    const type=getType(update), media=getMedia(update);
+    if(type.includes("video")){const src=getThumbnail(update)||media[0];if(!src)throw new Error("Video post needs a thumbnail/poster.");return [await renderSinglePhoto(update,src,"video")];}
+    if(type.includes("photo")||type.includes("image")||type.includes("carousel")){
+      if(!media.length)throw new Error("Media post has no media.");
+      if(media.length===1)return [await renderSinglePhoto(update,media[0],"photo")];
+      if(media.length===2)return [await renderTwoPhotos(update,media)];
+      return [await renderMasonry(update,media)];
     }
-
-    if (type.includes("video")) {
-      const source =
-        getThumbnail(update) ||
-        media[0];
-
-      if (!source) {
-        throw new Error(
-          "Video post needs a thumbnail/poster."
-        );
-      }
-
-      return [
-        await renderMedia(
-          update,
-          source,
-          "video",
-          0,
-          1
-        )
-      ];
-    }
-
-    if (
-      type.includes("voice") ||
-      type.includes("audio")
-    ) {
-      return [
-        await renderVoice(update)
-      ];
-    }
-
-    if (
-      type.includes("photo") ||
-      type.includes("image")
-    ) {
-      if (!media.length) {
-        throw new Error(
-          "Photo post has no media."
-        );
-      }
-
-      return [
-        await renderMedia(
-          update,
-          media[0],
-          "photo",
-          0,
-          1
-        )
-      ];
-    }
-
-    return [
-      await renderText(update)
-    ];
+    return [await renderText(update)];
   }
 
-  async function exportUpdate(update = {}) {
-    const type = getType(update);
-    const outputs = await render(update);
-
-    for (let i = 0; i < outputs.length; i++) {
-      let suffix = "text";
-
-      if (type.includes("carousel")) {
-        suffix = `carousel-${i + 1}`;
-      } else if (type.includes("video")) {
-        suffix = "video";
-      } else if (
-        type.includes("voice") ||
-        type.includes("audio")
-      ) {
-        suffix = "voice-note";
-      } else if (
-        type.includes("photo") ||
-        type.includes("image")
-      ) {
-        suffix = "photo";
-      }
-
-      await save(
-        outputs[i],
-        filename(update, suffix)
-      );
-    }
+  async function exportUpdate(update={}){
+    const outputs=await render(update);for(let i=0;i<outputs.length;i++)await save(outputs[i],filename(update,outputs.length>1?`part-${i+1}`:"update"));
   }
 
-  window.JenUpdateCardExport =
-    Object.freeze({
-      render,
-      export: exportUpdate
-    });
+  window.JenUpdateCardExport=Object.freeze({export:exportUpdate,render,config:CFG});
 })();
